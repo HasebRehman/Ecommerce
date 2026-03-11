@@ -89,11 +89,14 @@ USERS: {
   },
 
   // ── ADMIN ─────────────────────────────────
-  ADMIN: {
-    STATS:       `${BASE}/admin/stats`,
-    USERS:       `${BASE}/admin/users`,
-    WORKSPACES:  `${BASE}/admin/workspaces`,
-    PLANS:       `${BASE}/admin/plans`,
-  },
+ADMIN: {
+  STATS:          `${BASE}/admin/stats`,
+  USERS:          `${BASE}/admin/users`,
+  USER_DETAIL:    (id: string) => `${BASE}/admin/users/${id}`,
+  ROLE_REQUESTS:  `${BASE}/admin/role-requests`,
+  ROLE_REQUEST:   (id: string) => `${BASE}/admin/role-requests/${id}`,
+  WORKSPACES:     `${BASE}/admin/workspaces`,
+  PLANS:          `${BASE}/admin/plans`,
+},
 
 } as const

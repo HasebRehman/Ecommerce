@@ -7,57 +7,96 @@ import { useAuthStore } from '@/store/authStore'
 import { authService } from '@/lib/services/auth.service'
 import LoadingScreen from '@/components/common/LoadingScreen'
 
-const PUBLIC_ROUTES = [
-  '/',
-  '/login',
-  '/signup',
-  '/forgot-password',
-]
+// Pages anyone can visit without login
+const PUBLIC_ROUTES = ['/', '/login', '/signup', '/forgot-password']
 
-const AUTH_ROUTES = [
-  '/login',
-  '/signup',
-  '/forgot-password',
-]
+// Auth pages — logged-in users should not see these
+const AUTH_ROUTES = ['/login', '/signup', '/forgot-password']
 
-export default function AuthProvider({ children }: { children: React.ReactNode }) {
-    const { isLoading } = useAuthStore()
-    const router = useRouter()
-    const pathname = usePathname()
-    const { setUser, setRole, setSubRoles, setLoading, clearAuth, isAuthenticated } = useAuthStore()
+// Where each role goes after login
+const ROLE_HOME: Record<string, string> = {
+  super_admin:       '/super-admin/dashboard',
+  platform_admin:    '/platform-admin/dashboard',
+  operations_admin:  '/operations-admin/dashboard',
+  business_owner:    '/dashboard',
+  courier:           '/rider/dashboard',
+  customer:          '/account',
+}
+
+// Which routes each role is allowed to access
+const ROLE_ALLOWED_PREFIXES: Record<string, string[]> = {
+  super_admin:       ['/super-admin', '/account'],
+  platform_admin:    ['/platform-admin', '/account'],
+  operations_admin:  ['/operations-admin', '/account'],
+  business_owner:    ['/dashboard', '/workspaces', '/account'],
+  courier:           ['/rider', '/account'],
+  customer:          ['/account', '/cart', '/wishlist'],
+}
+
+export default function AuthProvider({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const router   = useRouter()
+  const pathname = usePathname()
+  const {
+    setUser,
+    setRole,
+    setSubRoles,
+    setLoading,
+    clearAuth,
+    isLoading,
+  } = useAuthStore()
 
   useEffect(() => {
     const supabase = createClient()
 
-    // Check session on first load
     const initializeAuth = async () => {
       setLoading(true)
       try {
         const { data: { session } } = await supabase.auth.getSession()
 
-        
-
         if (session) {
-          // Session exists — get user data
+          // ── Logged in ──
           const userData = await authService.getMe()
+
+          if (!userData?.profile) {
+            clearAuth()
+            return
+          }
+
           setUser(userData.profile)
           setRole(userData.role)
           setSubRoles(userData.subRoles)
 
-          // If on auth page, redirect to account
-          if (AUTH_ROUTES.includes(pathname)) {
-            router.push('/account')
+          const userRole = userData.role
+          const home     = ROLE_HOME[userRole] ?? '/account'
+
+          // If on auth page → go to their home
+          if (AUTH_ROUTES.some(r => pathname.startsWith(r))) {
+            router.replace(home)
+            return
           }
 
+          // If on wrong role page → go to their home
+          const allowedPrefixes = ROLE_ALLOWED_PREFIXES[userRole] ?? ['/account']
+          const isAllowed = allowedPrefixes.some(prefix =>
+            pathname.startsWith(prefix)
+          )
+          const isPublic = PUBLIC_ROUTES.includes(pathname)
+
+          if (!isAllowed && !isPublic) {
+            router.replace(home)
+          }
 
         } else {
-          // No session — clear auth
+          // ── Not logged in ──
           clearAuth()
 
-          // If on protected page, redirect to login
-          const isProtected = !PUBLIC_ROUTES.includes(pathname)
-          if (isProtected) {
-            router.push('/login')
+          const isPublic = PUBLIC_ROUTES.some(r => pathname.startsWith(r))
+          if (!isPublic) {
+            router.replace('/login')
           }
         }
       } catch {
@@ -69,15 +108,17 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
     initializeAuth()
 
-    // Listen for auth state changes (login/logout)
+    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' && session) {
           try {
             const userData = await authService.getMe()
-            setUser(userData.profile)
-            setRole(userData.role)
-            setSubRoles(userData.subRoles)
+            if (userData?.profile) {
+              setUser(userData.profile)
+              setRole(userData.role)
+              setSubRoles(userData.subRoles)
+            }
           } catch {
             clearAuth()
           }
@@ -85,24 +126,17 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
         if (event === 'SIGNED_OUT') {
           clearAuth()
-          router.push('/login')
-        }
-
-        if (event === 'TOKEN_REFRESHED' && session) {
-          // Token auto-refreshed — session continues silently
-          console.log('Session refreshed automatically')
+          router.replace('/login')
         }
       }
     )
 
-    return () => {
-      subscription.unsubscribe()
-    }
+    return () => subscription.unsubscribe()
   }, [])
 
   if (isLoading) {
     return <LoadingScreen />
-}
+  }
 
-return <>{children}</>
+  return <>{children}</>
 }
