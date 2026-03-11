@@ -41,13 +41,9 @@ USERS: {
 
   // ── PRODUCTS ──────────────────────────────
   PRODUCTS: {
-    LIST:     `${BASE}/products`,
-    CREATE:   `${BASE}/products`,
-    DETAIL:   (id: string) => `${BASE}/products/${id}`,
-    UPDATE:   (id: string) => `${BASE}/products/${id}`,
-    DELETE:   (id: string) => `${BASE}/products/${id}`,
-    BY_WORKSPACE: (workspaceId: string) => `${BASE}/workspaces/${workspaceId}/products`,
-  },
+  LIST:   `${BASE}/products`,
+  DETAIL: (id: string) => `${BASE}/products/${id}`,
+},
 
   // ── INVENTORY ─────────────────────────────
   INVENTORY: {
@@ -56,6 +52,12 @@ USERS: {
     LOW_STOCK:  (workspaceId: string) => `${BASE}/workspaces/${workspaceId}/inventory/low-stock`,
     MOVEMENTS:  (workspaceId: string) => `${BASE}/workspaces/${workspaceId}/inventory/movements`,
   },
+
+  // ── CATEGORIES ────────────────────────────
+CATEGORIES: {
+  LIST:   `${BASE}/categories`,
+  CREATE: `${BASE}/categories`,
+},
 
   // ── ORDERS ────────────────────────────────
   ORDERS: {
