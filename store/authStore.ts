@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { Profile, UserRole, SubRole } from '../types'
+import type { Profile, UserRole, SubRole } from '@/types'
 
 interface AuthState {
   user: Profile | null
@@ -22,14 +22,15 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoading: true,
   isAuthenticated: false,
 
-  setUser: (user) => set({ user, isAuthenticated: !!user }),
-  setRole: (role) => set({ role }),
-  setSubRoles: (subRoles) => set({ subRoles }),
-  setLoading: (isLoading) => set({ isLoading }),
-  clearAuth: () => set({
-    user: null,
-    role: null,
-    subRoles: [],
+  setUser:     (user)      => set({ user, isAuthenticated: !!user }),
+  setRole:     (role)      => set({ role }),
+  setSubRoles: (subRoles)  => set({ subRoles }),
+  setLoading:  (isLoading) => set({ isLoading }),
+  clearAuth:   ()          => set({
+    user:            null,
+    role:            null,
+    subRoles:        [],
     isAuthenticated: false,
+    isLoading:       false,
   }),
 }))
