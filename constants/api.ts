@@ -12,13 +12,15 @@ export const API = {
   },
 
   // ── USERS ─────────────────────────────────
-  USERS: {
-    LIST:       `${BASE}/users`,
-    DETAIL:     (id: string) => `${BASE}/users/${id}`,
-    UPDATE:     (id: string) => `${BASE}/users/${id}`,
-    DELETE:     (id: string) => `${BASE}/users/${id}`,
-    ROLES:      (id: string) => `${BASE}/users/${id}/roles`,
-  },
+USERS: {
+  LIST:       `${BASE}/users`,
+  DETAIL:     (id: string) => `${BASE}/users/${id}`,
+  UPDATE:     (id: string) => `${BASE}/users/${id}`,
+  DELETE:     (id: string) => `${BASE}/users/${id}`,
+  ROLES:      (id: string) => `${BASE}/users/${id}/roles`,
+  PROFILE:    `${BASE}/users/profile`,
+  AVATAR:     `${BASE}/users/profile/avatar`,
+},
 
   // ── ROLES ─────────────────────────────────
   ROLES: {
