@@ -2,24 +2,24 @@ import { create } from 'zustand'
 import type { Profile, UserRole, SubRole } from '@/types'
 
 interface AuthState {
-  user: Profile | null
-  role: UserRole | null
-  subRoles: SubRole[]
-  isLoading: boolean
+  user:            Profile | null
+  role:            UserRole | null
+  subRoles:        SubRole[]
+  isLoading:       boolean
   isAuthenticated: boolean
 
-  setUser: (user: Profile | null) => void
-  setRole: (role: UserRole | null) => void
-  setSubRoles: (subRoles: SubRole[]) => void
-  setLoading: (loading: boolean) => void
-  clearAuth: () => void
+  setUser:     (user: Profile | null)     => void
+  setRole:     (role: UserRole | null)    => void
+  setSubRoles: (subRoles: SubRole[])      => void
+  setLoading:  (loading: boolean)         => void
+  clearAuth:   ()                         => void
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  role: null,
-  subRoles: [],
-  isLoading: true,
+  user:            null,
+  role:            null,
+  subRoles:        [],
+  isLoading:       true,
   isAuthenticated: false,
 
   setUser:     (user)      => set({ user, isAuthenticated: !!user }),

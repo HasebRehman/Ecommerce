@@ -98,4 +98,11 @@ ADMIN: {
   WORKSPACES:    `${BASE}/admin/workspaces`,
 },
 
+// ── BUSINESS ──────────────────────────────
+BUSINESS: {
+  STATS:     `${BASE}/business/stats`,
+  ORDERS:    `${BASE}/business/orders`,
+  INVENTORY: `${BASE}/business/inventory`,
+},
+
 } as const
