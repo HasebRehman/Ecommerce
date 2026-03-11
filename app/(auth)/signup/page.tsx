@@ -38,17 +38,17 @@ export default function SignupPage() {
   })
 
   const onSubmit = async (data: SignupFormData) => {
-    setIsLoading(true)
-    try {
-      const result = await authService.signup(data)
-      toast.success(result.message || 'Account created!')
-      router.push('/login?signup=success')
-    } catch (err: any) {
-      toast.error(err.message || 'Something went wrong')
-    } finally {
-      setIsLoading(false)
-    }
+  setIsLoading(true)
+  try {
+    await authService.signup(data)
+    toast.success('Account created! Please login.')
+    router.push('/login')   // ← always goes to login after signup
+  } catch (err: any) {
+    toast.error(err.message || 'Signup failed')
+  } finally {
+    setIsLoading(false)
   }
+}
 
   return (
     <Card className="bg-slate-800/50 border-slate-700 backdrop-blur-sm">

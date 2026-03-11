@@ -1,29 +1,23 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-// Routes that logged-in users should NOT access
 const AUTH_ROUTES = ['/login', '/signup', '/forgot-password']
 
-// Routes that require login
-const PROTECTED_ROUTES = [
-  '/account',
-  '/dashboard',
-  '/workspaces',
-  '/cart',
-  '/wishlist',
-  '/super-admin',
-  '/platform-admin',
-  '/operations-admin',
-  '/rider',
-]
+const ROLE_ROUTE_MAP: Record<string, string[]> = {
+  '/admin':            ['super_admin', 'platform_admin', 'operations_admin'],
+  '/dashboard':        ['business_owner', 'super_admin'],
+  '/workspaces':       ['business_owner', 'super_admin'],
+  '/rider':            ['courier', 'super_admin'],
+  '/account':          ['customer', 'business_owner', 'courier'],
+}
 
-// Role-based route protection
-const ROLE_ROUTES: Record<string, string[]> = {
-  '/super-admin':       ['super_admin'],
-  '/platform-admin':    ['platform_admin', 'super_admin'],
-  '/operations-admin':  ['operations_admin', 'super_admin'],
-  '/dashboard':         ['business_owner', 'super_admin'],
-  '/rider':             ['courier', 'super_admin'],
+export const ROLE_HOME: Record<string, string> = {
+  super_admin:       '/admin/dashboard',
+  platform_admin:    '/admin/dashboard',
+  operations_admin:  '/admin/dashboard',
+  business_owner:    '/dashboard',
+  courier:           '/rider/dashboard',
+  customer:          '/account',
 }
 
 export async function middleware(request: NextRequest) {
@@ -34,9 +28,7 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
+        getAll() { return request.cookies.getAll() },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
@@ -50,25 +42,32 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // Get current session
   const { data: { user } } = await supabase.auth.getUser()
   const pathname = request.nextUrl.pathname
 
-  // ── Rule 1: Logged-in users can't access auth pages ──
-  const isAuthRoute = AUTH_ROUTES.some(route => pathname.startsWith(route))
+  // Rule 1: Auth pages — redirect logged-in users
+  const isAuthRoute = AUTH_ROUTES.some(r => pathname.startsWith(r))
   if (isAuthRoute && user) {
-    return NextResponse.redirect(new URL('/account', request.url))
+    const { data: roleRecord } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .single()
+    const home = ROLE_HOME[roleRecord?.role ?? 'customer'] ?? '/account'
+    return NextResponse.redirect(new URL(home, request.url))
   }
 
-  // ── Rule 2: Protected routes need login ──
-  const isProtected = PROTECTED_ROUTES.some(route => pathname.startsWith(route))
+  // Rule 2: Protected routes — redirect logged-out users
+  const isProtected = Object.keys(ROLE_ROUTE_MAP).some(r =>
+    pathname.startsWith(r)
+  )
   if (isProtected && !user) {
-    const loginUrl = new URL('/login', request.url)
-    loginUrl.searchParams.set('redirect', pathname)
-    return NextResponse.redirect(loginUrl)
+    const url = new URL('/login', request.url)
+    url.searchParams.set('redirect', pathname)
+    return NextResponse.redirect(url)
   }
 
-  // ── Rule 3: Role-based protection ──
+  // Rule 3: Role-based access control
   if (user && isProtected) {
     const { data: roleRecord } = await supabase
       .from('user_roles')
@@ -78,10 +77,13 @@ export async function middleware(request: NextRequest) {
 
     const userRole = roleRecord?.role ?? 'customer'
 
-    for (const [route, allowedRoles] of Object.entries(ROLE_ROUTES)) {
-      if (pathname.startsWith(route) && !allowedRoles.includes(userRole)) {
-        // Redirect to appropriate page based on role
-        return NextResponse.redirect(new URL('/account', request.url))
+    for (const [route, allowedRoles] of Object.entries(ROLE_ROUTE_MAP)) {
+      if (pathname.startsWith(route)) {
+        if (!allowedRoles.includes(userRole)) {
+          const home = ROLE_HOME[userRole] ?? '/account'
+          return NextResponse.redirect(new URL(home, request.url))
+        }
+        break
       }
     }
   }
