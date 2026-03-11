@@ -36,7 +36,7 @@ export async function middleware(request: NextRequest) {
     '/super-admin',
     '/platform-admin',
     '/operations-admin',
-  ]
+    ]
 
   const isProtected = protectedRoutes.some(route =>
     request.nextUrl.pathname.startsWith(route)
