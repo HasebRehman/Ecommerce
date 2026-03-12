@@ -23,6 +23,8 @@ export default function RoleRequestsPage() {
   const loadRequests = async () => {
     try {
       const data = await adminService.getRoleRequests()
+      console.log('data', data);
+      
       setRequests(data.requests ?? [])
     } catch {
       toast.error('Failed to load requests')

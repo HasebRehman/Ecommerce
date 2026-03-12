@@ -104,6 +104,7 @@ ADMIN: {
 BUSINESS: {
   STATS:     `${BASE}/business/stats`,
   ORDERS:    `${BASE}/business/orders`,
+  ORDER:     (id: string) => `${BASE}/business/orders/${id}`,
   INVENTORY: `${BASE}/business/inventory`,
 },
 
@@ -113,6 +114,19 @@ SHOPS: {
   DETAIL:   (id: string) => `${BASE}/shops/${id}`,
   PRODUCTS: (id: string) => `${BASE}/shops/${id}/products`,
   STATUS:   (id: string) => `${BASE}/shops/${id}/status`,
+},
+
+STORE: {
+  PRODUCTS:       `${BASE}/store/products`,
+  FEATURED:       `${BASE}/store/products/featured`,
+  DISCOUNTED:     `${BASE}/store/products/discounted`,
+  TOP_SHOPS:      `${BASE}/store/shops/top`,
+  WISHLIST:       `${BASE}/store/wishlist`,
+  WISHLIST_ITEM:  (id: string) => `${BASE}/store/wishlist/${id}`,
+  CART:           `${BASE}/store/cart`,
+  CART_ITEM:      (id: string) => `${BASE}/store/cart/${id}`,
+  ORDERS:         `${BASE}/store/orders`,
+  ROLE_REQUEST:   `${BASE}/store/role-request`,
 },
 
 } as const

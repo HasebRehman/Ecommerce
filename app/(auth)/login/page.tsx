@@ -74,7 +74,7 @@ export default function LoginPage() {
       toast.success(`Welcome back, ${userData.profile.full_name}!`)
 
       // Step 4: Redirect based on role
-      const redirectTo = ROLE_REDIRECTS[userData.role] ?? '/account'
+      const redirectTo = '/'
       router.push(redirectTo)
       router.refresh()
 

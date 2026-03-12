@@ -15,12 +15,12 @@ const AUTH_ROUTES = ['/login', '/signup', '/forgot-password']
 
 // Where each role goes after login
 const ROLE_HOME: Record<string, string> = {
-  super_admin:       '/admin/dashboard',
-  platform_admin:    '/admin/dashboard',
-  operations_admin:  '/admin/dashboard',
-  business_owner:    '/dashboard',
-  courier:           '/rider/dashboard',
-  customer:          '/account',
+  super_admin:       '/',
+  platform_admin:    '/',
+  operations_admin:  '/',
+  business_owner:    '/',
+  courier:           '/',
+  customer:          '/',
 }
 
 // Which route prefixes each role is allowed to access
@@ -78,7 +78,7 @@ export default function AuthProvider({
 
           // If on auth page → redirect to their home
           if (AUTH_ROUTES.some(r => pathname.startsWith(r))) {
-            routerNav.replace(home)
+            routerNav.replace("/")
             return
           }
 

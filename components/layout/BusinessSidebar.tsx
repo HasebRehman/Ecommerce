@@ -25,9 +25,9 @@ const MENU_ITEMS = [
     icon:  Store,
   },
   {
-    label: 'Orders',
-    href:  '/dashboard/orders',
-    icon:  ShoppingBag,
+     href: '/dashboard/orders', 
+     icon: ShoppingBag, 
+     label: 'Orders' 
   },
   {
     label: 'Inventory',

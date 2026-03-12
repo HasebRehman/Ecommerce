@@ -5,12 +5,14 @@ const ADMIN_ROLES = ['super_admin', 'platform_admin', 'operations_admin']
 
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    const { id }        = await params
+    const supabase      = await createClient()
+    const adminSupabase = createAdminSupabaseClient()
 
+    const { data: { user } } = await supabase.auth.getUser()
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
@@ -25,80 +27,73 @@ export async function PUT(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const { action, review_notes } = await request.json()
+    // Accept BOTH 'status' and 'action' formats
+    const body = await request.json()
+    const status = body.status ?? (body.action === 'approve' ? 'approved' : body.action === 'reject' ? 'rejected' : null)
 
-    if (!['approve', 'reject'].includes(action)) {
-      return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
+    console.log('Review body:', body, '| Resolved status:', status)
+
+    if (!['approved', 'rejected'].includes(status)) {
+      return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
 
-    const adminClient = createAdminSupabaseClient()
-
-    const { data: upgradeRequest, error: fetchError } = await adminClient
+    // Fetch the request
+    const { data: upgradeRequest, error: fetchError } = await adminSupabase
       .from('role_upgrade_requests')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .single()
+
+    console.log('Upgrade request:', upgradeRequest, '| Fetch error:', fetchError?.message)
 
     if (fetchError || !upgradeRequest) {
       return NextResponse.json({ error: 'Request not found' }, { status: 404 })
     }
 
-    // Update request status
-    await adminClient
+    // Update status
+    const { error: updateError } = await adminSupabase
       .from('role_upgrade_requests')
       .update({
-        status:       action === 'approve' ? 'approved' : 'rejected',
+        status,
         reviewed_by:  user.id,
         reviewed_at:  new Date().toISOString(),
-        review_notes: review_notes ?? null,
+        review_notes: body.review_notes ?? null,
       })
-      .eq('id', params.id)
+      .eq('id', id)
 
-    // If approved — upgrade the user's role
-    if (action === 'approve') {
-      const { data: existingRole } = await adminClient
+    console.log('Update error:', updateError?.message)
+
+    if (updateError) {
+      return NextResponse.json({ error: updateError.message }, { status: 400 })
+    }
+
+    // If approved — upgrade role
+    if (status === 'approved') {
+      const { error: roleError } = await adminSupabase
         .from('user_roles')
-        .select('*')
+        .update({
+          role:      'business_owner',
+          sub_roles: ['retailer'],
+          is_active: true,
+        })
         .eq('user_id', upgradeRequest.user_id)
-        .single()
 
-      if (upgradeRequest.requested_sub_role) {
-        const currentSubRoles = existingRole?.sub_roles ?? []
-        let newSubRoles = [...currentSubRoles, upgradeRequest.requested_sub_role]
+      console.log('Role upgrade error:', roleError?.message)
 
-        // Auto-upgrade to merchant if has both retailer and supplier
-        if (
-          newSubRoles.includes('retailer') &&
-          newSubRoles.includes('supplier')
-        ) {
-          newSubRoles = ['merchant']
-        }
-
-        await adminClient
-          .from('user_roles')
-          .update({ role: 'business_owner', sub_roles: newSubRoles })
-          .eq('user_id', upgradeRequest.user_id)
-
-      } else {
-        await adminClient
-          .from('user_roles')
-          .update({ role: upgradeRequest.requested_role })
-          .eq('user_id', upgradeRequest.user_id)
+      if (roleError) {
+        return NextResponse.json({ error: roleError.message }, { status: 400 })
       }
     }
 
     return NextResponse.json({
       success: true,
-      message: action === 'approve'
-        ? 'Request approved and role upgraded!'
+      message: status === 'approved'
+        ? 'Request approved! User is now a Retailer.'
         : 'Request rejected.',
     })
 
-  } catch (err) {
+  } catch (err: any) {
     console.error('Role request review error:', err)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }

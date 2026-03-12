@@ -32,15 +32,9 @@ export const adminService = {
   },
 
   // Approve or reject a role request
-  async reviewRoleRequest(
-    id:           string,
-    action:       'approve' | 'reject',
-    review_notes?: string
-  ) {
-    const response = await api.put(API.ADMIN.ROLE_REQUEST(id), {
-      action,
-      review_notes,
-    })
+  async reviewRoleRequest(id: string, action: 'approve' | 'reject') {
+    const status = action === 'approve' ? 'approved' : 'rejected'
+    const response = await api.put(API.ADMIN.ROLE_REQUEST(id), { status })
     return response.data
   },
 
