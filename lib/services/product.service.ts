@@ -42,5 +42,5 @@ export const productService = {
   async deleteProduct(id: string) {
     const response = await api.delete(API.PRODUCTS.DETAIL(id))
     return response.data
-  },
+},
 }

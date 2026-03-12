@@ -62,17 +62,28 @@ export default function ProductCard({ product, onDelete }: Props) {
 
         {/* Action buttons on hover */}
         <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-          <Link href={`/dashboard/inventory/${product.id}/edit`}>
-            <button className="p-2 bg-white rounded-lg hover:bg-blue-50 transition-colors">
-              <Edit className="w-4 h-4 text-slate-700" />
+        <Link
+            href={`/dashboard/inventory/${product.id}/edit`}
+            onClick={(e) => e.stopPropagation()}
+        >
+            <button
+            type="button"
+            className="p-2 bg-white rounded-lg hover:bg-blue-50 transition-colors"
+            >
+            <Edit className="w-4 h-4 text-slate-700" />
             </button>
-          </Link>
-          <button
-            onClick={() => onDelete(product.id)}
+        </Link>
+        <button
+            type="button"
+            onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            onDelete(product.id)
+            }}
             className="p-2 bg-white rounded-lg hover:bg-red-50 transition-colors"
-          >
+        >
             <Trash2 className="w-4 h-4 text-red-500" />
-          </button>
+        </button>
         </div>
       </div>
 

@@ -14,24 +14,36 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { data: product, error } = await supabase
-      .from('products')
-      .select(`*, categories(id, name)`)
+    const { data: shop, error } = await supabase
+      .from('shops')
+      .select(`
+        *,
+        shop_products(
+          product_id,
+          products(
+            id, name, price, discount_price,
+            images, stock, is_active
+          )
+        )
+      `)
       .eq('id', id)
+      .eq('owner_id', user.id)
       .single()
 
-    if (error || !product) {
-      return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+    if (error || !shop) {
+      return NextResponse.json(
+        { error: 'Shop not found' },
+        { status: 404 }
+      )
     }
 
-    if (product.owner_id !== user.id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
-    return NextResponse.json({ product })
+    return NextResponse.json({ shop })
 
   } catch (err) {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
   }
 }
 
@@ -51,24 +63,27 @@ export async function PUT(
     const body = await request.json()
 
     const { data: existing } = await supabase
-      .from('products')
+      .from('shops')
       .select('id, owner_id')
       .eq('id', id)
       .single()
 
     if (!existing) {
-      return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+      return NextResponse.json(
+        { error: 'Shop not found' },
+        { status: 404 }
+      )
     }
 
     if (existing.owner_id !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const { data: product, error } = await supabase
-      .from('products')
+    const { data: shop, error } = await supabase
+      .from('shops')
       .update({ ...body, updated_at: new Date().toISOString() })
       .eq('id', id)
-      .select(`*, categories(id, name)`)
+      .select()
       .single()
 
     if (error) {
@@ -76,12 +91,15 @@ export async function PUT(
     }
 
     return NextResponse.json({
-      product,
-      message: 'Product updated successfully!',
+      shop,
+      message: 'Shop updated successfully!',
     })
 
   } catch (err) {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
   }
 }
 
@@ -98,32 +116,38 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { data: existing, error: fetchError } = await supabase
-      .from('products')
+    const { data: existing } = await supabase
+      .from('shops')
       .select('id, owner_id')
       .eq('id', id)
       .single()
 
-    if (fetchError || !existing) {
-      return NextResponse.json({ error: 'Product not found' }, { status: 404 })
+    if (!existing) {
+      return NextResponse.json(
+        { error: 'Shop not found' },
+        { status: 404 }
+      )
     }
 
     if (existing.owner_id !== user.id) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const { error: deleteError } = await supabase
-      .from('products')
+    const { error } = await supabase
+      .from('shops')
       .delete()
       .eq('id', id)
 
-    if (deleteError) {
-      return NextResponse.json({ error: deleteError.message }, { status: 400 })
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
-    return NextResponse.json({ message: 'Product deleted successfully!' })
+    return NextResponse.json({ message: 'Shop deleted successfully!' })
 
   } catch (err) {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    )
   }
 }

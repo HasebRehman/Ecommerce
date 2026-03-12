@@ -41,8 +41,8 @@ USERS: {
 
   // ── PRODUCTS ──────────────────────────────
   PRODUCTS: {
-  LIST:   `${BASE}/products`,
-  DETAIL: (id: string) => `${BASE}/products/${id}`,
+    LIST:   `${BASE}/products`,
+    DETAIL: (id: string) => `${BASE}/products/${id}`,
 },
 
   // ── INVENTORY ─────────────────────────────
@@ -105,6 +105,14 @@ BUSINESS: {
   STATS:     `${BASE}/business/stats`,
   ORDERS:    `${BASE}/business/orders`,
   INVENTORY: `${BASE}/business/inventory`,
+},
+
+// ── SHOPS ─────────────────────────────────
+SHOPS: {
+  LIST:     `${BASE}/shops`,
+  DETAIL:   (id: string) => `${BASE}/shops/${id}`,
+  PRODUCTS: (id: string) => `${BASE}/shops/${id}/products`,
+  STATUS:   (id: string) => `${BASE}/shops/${id}/status`,
 },
 
 } as const

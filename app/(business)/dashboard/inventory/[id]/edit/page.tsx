@@ -7,14 +7,25 @@ import { productService } from '@/lib/services/product.service'
 import ProductForm from '@/components/dashboard/business/inventory/ProductForm'
 
 export default function EditProductPage() {
-  const params = useParams()
+  const params            = useParams()
   const [product, setProduct] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError]   = useState('')
 
   useEffect(() => {
+    const id = params.id as string
+    if (!id) return
+
     productService
-      .getProduct(params.id as string)
-      .then(data => setProduct(data.product))
+      .getProduct(id)
+      .then(data => {
+        if (data?.product) {
+          setProduct(data.product)
+        } else {
+          setError('Product not found')
+        }
+      })
+      .catch(() => setError('Failed to load product'))
       .finally(() => setLoading(false))
   }, [params.id])
 
@@ -26,10 +37,10 @@ export default function EditProductPage() {
     )
   }
 
-  if (!product) {
+  if (error) {
     return (
       <div className="text-center py-20">
-        <p className="text-slate-400">Product not found</p>
+        <p className="text-red-400 font-medium">{error}</p>
       </div>
     )
   }

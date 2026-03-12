@@ -68,16 +68,37 @@ export default function InventoryPage() {
     loadProducts(search, categoryId, 1)
   }, [categoryId])
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete this product?')) return
-    try {
-      await productService.deleteProduct(id)
-      toast.success('Product deleted!')
-      loadProducts()
-    } catch {
-      toast.error('Failed to delete product')
-    }
+  const handleDelete = (id: string) => {
+  toast('Delete this product?', {
+    description: 'This action cannot be undone.',
+    duration: 10000,
+    action: {
+      label: 'Yes, Delete',
+      onClick: () => {
+        // Use void to handle async in sync context
+        void deleteProduct(id)
+      },
+    },
+    cancel: {
+      label: 'Cancel',
+      onClick: () => {},
+    },
+  })
+}
+
+// Separate async function for actual deletion
+const deleteProduct = async (id: string) => {
+  const toastId = toast.loading('Deleting product...')
+  try {
+    await productService.deleteProduct(id)
+    toast.dismiss(toastId)
+    toast.success('Product deleted!')
+    loadProducts()
+  } catch (err: any) {
+    toast.dismiss(toastId)
+    toast.error(err.message || 'Failed to delete product')
   }
+}
 
   return (
     <div className="space-y-6">

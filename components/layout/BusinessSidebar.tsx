@@ -20,11 +20,6 @@ const MENU_ITEMS = [
     icon:  LayoutDashboard,
   },
   {
-    label: 'Workspaces',
-    href:  '/workspaces',
-    icon:  Building2,
-  },
-  {
     label: 'My Shops',
     href:  '/dashboard/shops',
     icon:  Store,

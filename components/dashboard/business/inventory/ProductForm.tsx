@@ -72,46 +72,47 @@ export default function ProductForm({
   const price         = parseFloat(watch('price') || '0')
   const discountPrice = parseFloat(watch('discount_price') || '0')
 
-  const onSubmit = async (data: FormData) => {
-    if (images.length === 0) {
-      toast.error('Please upload at least one product image')
-      return
-    }
-
-    setLoading(true)
-    try {
-      const payload = {
-        name:           data.name,
-        description:    data.description,
-        price:          parseFloat(data.price),
-        discount_price: data.discount_price
-          ? parseFloat(data.discount_price)
-          : null,
-        stock:          parseInt(data.stock),
-        sku:            data.sku || null,
-        images,
-        category_id:    categoryId || null,
-        sizes,
-        colors,
-      }
-
-      if (mode === 'create') {
-        await productService.createProduct(payload)
-        toast.success('Product created successfully!')
-      } else {
-        await productService.updateProduct(productId!, payload)
-        toast.success('Product updated successfully!')
-      }
-
-      router.push('/dashboard/inventory')
-      router.refresh()
-
-    } catch (err: any) {
-      toast.error(err.message || 'Something went wrong')
-    } finally {
-      setLoading(false)
-    }
+ const onSubmit = async (data: FormData) => {
+  if (images.length === 0) {
+    toast.error('Please upload at least one product image')
+    return
   }
+
+  setLoading(true)
+  try {
+    const payload = {
+      name:           data.name,
+      description:    data.description  || null,
+      price:          parseFloat(data.price),
+      discount_price: data.discount_price
+        ? parseFloat(data.discount_price)
+        : null,
+      stock:          parseInt(data.stock) || 0,
+      sku:            data.sku           || null,
+      images,
+      category_id:    categoryId         || null,
+      sizes,
+      colors,
+    }
+
+    if (mode === 'create') {
+      await productService.createProduct(payload)
+      toast.success('Product created successfully!')
+      router.push('/dashboard/inventory')
+    } else {
+      await productService.updateProduct(productId!, payload)
+      toast.success('Product updated successfully!')
+      router.push('/dashboard/inventory')
+    }
+
+    router.refresh()
+
+  } catch (err: any) {
+    toast.error(err.message || 'Something went wrong')
+  } finally {
+    setLoading(false)
+  }
+}
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
