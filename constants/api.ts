@@ -115,4 +115,15 @@ SHOPS: {
   STATUS:   (id: string) => `${BASE}/shops/${id}/status`,
 },
 
+// ── STORE (public facing) ──────────────────
+STORE: {
+  PRODUCTS:    `${BASE}/store/products`,
+  WISHLIST:    `${BASE}/store/wishlist`,
+  WISHLIST_ITEM: (id: string) => `${BASE}/store/wishlist/${id}`,
+  CART:        `${BASE}/store/cart`,
+  CART_ITEM:   (id: string) => `${BASE}/store/cart/${id}`,
+  ORDERS:      `${BASE}/store/orders`,
+  ROLE_REQUEST: `${BASE}/store/role-request`,
+},
+
 } as const

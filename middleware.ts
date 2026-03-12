@@ -4,11 +4,14 @@ import { NextResponse, type NextRequest } from 'next/server'
 const AUTH_ROUTES = ['/login', '/signup', '/forgot-password']
 
 const ROLE_ROUTE_MAP: Record<string, string[]> = {
-  '/admin':            ['super_admin', 'platform_admin', 'operations_admin'],
-  '/dashboard':        ['business_owner', 'super_admin'],
-  '/workspaces':       ['business_owner', 'super_admin'],
-  '/rider':            ['courier', 'super_admin'],
-  '/account':          ['customer', 'business_owner', 'courier'],
+  '/admin':      ['super_admin', 'platform_admin', 'operations_admin'],
+  '/dashboard':  ['business_owner'],
+  '/workspaces': ['business_owner'],
+  '/rider':      ['courier'],
+  '/account':    ['customer', 'business_owner', 'courier',
+                  'super_admin', 'platform_admin', 'operations_admin'],
+  // NOTE: /, /cart, /wishlist, /product, /shop are PUBLIC
+  // so they are NOT in this map
 }
 
 export const ROLE_HOME: Record<string, string> = {
