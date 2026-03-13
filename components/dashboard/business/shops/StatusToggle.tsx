@@ -38,8 +38,8 @@ const STATUS_CONFIG = {
 
 export default function StatusToggle({ shopId, status, onChange }: Props) {
   const [loading, setLoading] = useState(false)
-  const config = STATUS_CONFIG[status]
-  const Icon   = config.icon
+  const config = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG] ?? STATUS_CONFIG.draft
+  const Icon = config.icon
 
   const handleToggle = async () => {
     const newStatus = status === 'live' ? 'paused' : 'live'

@@ -2,11 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import {
-  ShoppingBag, Clock, CheckCircle, Truck,
-  XCircle, ChevronRight, Loader2, Package,
-  AlertCircle,
-} from 'lucide-react'
+import { ShoppingBag, Clock, CheckCircle, Truck, XCircle, ChevronRight, Loader2, Package, AlertCircle } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import { useRouter } from 'next/navigation'
 import api from '@/lib/axios'
@@ -14,12 +10,13 @@ import { API } from '@/constants/api'
 import { cn } from '@/lib/utils'
 
 const STATUS_CONFIG: Record<string, { icon: any, color: string, bg: string, label: string }> = {
-  pending:   { icon: Clock,        color: 'text-yellow-400', bg: 'bg-yellow-500/10 border-yellow-500/30', label: 'Pending' },
-  confirmed: { icon: CheckCircle,  color: 'text-blue-400',   bg: 'bg-blue-500/10 border-blue-500/30',     label: 'Confirmed' },
-  shipped:   { icon: Truck,        color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/30', label: 'Shipped' },
-  delivered: { icon: CheckCircle,  color: 'text-green-400',  bg: 'bg-green-500/10 border-green-500/30',   label: 'Delivered' },
-  cancelled: { icon: XCircle,      color: 'text-red-400',    bg: 'bg-red-500/10 border-red-500/30',       label: 'Cancelled' },
-  rejected:  { icon: AlertCircle,  color: 'text-red-400',    bg: 'bg-red-500/10 border-red-500/30',       label: 'Rejected' },
+  pending:               { icon: Clock,        color: 'text-yellow-400', bg: 'bg-yellow-500/10 border-yellow-500/30',  label: 'Pending'              },
+  confirmed:             { icon: CheckCircle,  color: 'text-blue-400',   bg: 'bg-blue-500/10 border-blue-500/30',      label: 'Confirmed'            },
+  shipped:               { icon: Truck,        color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/30',  label: 'Shipped'              },
+  delivered:             { icon: CheckCircle,  color: 'text-green-400',  bg: 'bg-green-500/10 border-green-500/30',    label: 'Delivered'            },
+  cancelled_by_customer: { icon: XCircle,      color: 'text-orange-400', bg: 'bg-orange-500/10 border-orange-500/30', label: 'Cancelled by You'     },
+  cancelled_by_seller:   { icon: AlertCircle,  color: 'text-red-400',    bg: 'bg-red-500/10 border-red-500/30',        label: 'Cancelled by Seller'  },
+  cancelled:             { icon: XCircle,      color: 'text-red-400',    bg: 'bg-red-500/10 border-red-500/30',        label: 'Cancelled'            },
 }
 
 export default function OrderHistoryPage() {
@@ -28,6 +25,7 @@ export default function OrderHistoryPage() {
   const [orders,  setOrders]  = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [filter,  setFilter]  = useState('')
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     if (!isAuthenticated) { router.push('/login'); return }
@@ -36,6 +34,14 @@ export default function OrderHistoryPage() {
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [isAuthenticated])
+
+
+  // Re-fetch when page becomes visible again (coming back from detail page)
+  useEffect(() => {
+    const handleFocus = () => setRefreshKey(k => k + 1)
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [])
 
   const filtered = filter ? orders.filter(o => o.status === filter) : orders
 

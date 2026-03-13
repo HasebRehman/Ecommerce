@@ -5,9 +5,9 @@ import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 import { Loader2, Save, ArrowLeft, Store } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Button }   from '@/components/ui/button'
+import { Input }    from '@/components/ui/input'
+import { Label }    from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { shopService } from '@/lib/services/shop.service'
@@ -20,19 +20,27 @@ interface FormData {
 }
 
 interface Props {
-  initialData?: any
-  shopId?:      string
-  mode:         'create' | 'edit'
+  initialData?:  any
+  shopId?:       string
+  mode?:         'create' | 'edit'
+  onSubmit?:     (data: any) => Promise<void>
+  isSubmitting?: boolean
 }
 
-export default function ShopForm({ initialData, shopId, mode }: Props) {
+export default function ShopForm({
+  initialData,
+  shopId,
+  mode = 'create',
+  onSubmit: externalOnSubmit,
+  isSubmitting = false,
+}: Props) {
   const router = useRouter()
 
-  const [isLoading,  setLoading]  = useState(false)
-  const [logo,       setLogo]     = useState<string[]>(
-    initialData?.logo_url ? [initialData.logo_url] : []
+  const [isLoading, setLoading] = useState(false)
+  const [logo,      setLogo]    = useState<string[]>(
+    initialData?.logo_url   ? [initialData.logo_url]   : []
   )
-  const [banner,     setBanner]   = useState<string[]>(
+  const [banner,    setBanner]  = useState<string[]>(
     initialData?.banner_url ? [initialData.banner_url] : []
   )
 
@@ -47,29 +55,43 @@ export default function ShopForm({ initialData, shopId, mode }: Props) {
     },
   })
 
+  const loading = isLoading || isSubmitting
+
   const onSubmit = async (data: FormData) => {
+    const payload = {
+      name:        data.name,
+      description: data.description || null,
+      logo_url:    logo[0]   ?? null,
+      banner_url:  banner[0] ?? null,
+    }
+
+    // ── If external onSubmit provided (edit page) — use it ──
+    if (externalOnSubmit) {
+      try {
+        await externalOnSubmit(payload)
+      } catch (err: any) {
+        toast.error(err.message || 'Something went wrong')
+      }
+      return
+    }
+
+    // ── Otherwise handle internally (create / edit with shopId) ──
     setLoading(true)
     try {
-      const payload = {
-        name:        data.name,
-        description: data.description || null,
-        logo_url:    logo[0]   ?? null,
-        banner_url:  banner[0] ?? null,
-      }
-
       if (mode === 'create') {
         const result = await shopService.createShop(payload)
         toast.success('Shop created! Now add products to it.')
-        // Redirect to shop detail to assign products
         router.push(`/dashboard/shops/${result.shop.id}`)
       } else {
-        await shopService.updateShop(shopId!, payload)
+        if (!shopId) {
+          toast.error('Shop ID missing')
+          return
+        }
+        await shopService.updateShop(shopId, payload)
         toast.success('Shop updated successfully!')
         router.push(`/dashboard/shops/${shopId}`)
       }
-
       router.refresh()
-
     } catch (err: any) {
       toast.error(err.message || 'Something went wrong')
     } finally {
@@ -117,7 +139,6 @@ export default function ShopForm({ initialData, shopId, mode }: Props) {
             </CardHeader>
             <CardContent className="space-y-4">
 
-              {/* Name */}
               <div className="space-y-2">
                 <Label className="text-slate-200">
                   Shop Name <span className="text-red-400">*</span>
@@ -132,7 +153,6 @@ export default function ShopForm({ initialData, shopId, mode }: Props) {
                 )}
               </div>
 
-              {/* Description */}
               <div className="space-y-2">
                 <Label className="text-slate-200">Description</Label>
                 <Textarea
@@ -149,19 +169,13 @@ export default function ShopForm({ initialData, shopId, mode }: Props) {
           {/* Banner */}
           <Card className="bg-slate-900 border-slate-800">
             <CardHeader>
-              <CardTitle className="text-white text-base">
-                Shop Banner
-              </CardTitle>
+              <CardTitle className="text-white text-base">Shop Banner</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-slate-400 text-xs mb-3">
-                Recommended size: 1200×300px — shown at top of your shop
+                Recommended size: 1200×300px — shown at top of your shop page
               </p>
-              <MediaUpload
-                images={banner}
-                onChange={setBanner}
-                maxImages={1}
-              />
+              <MediaUpload images={banner} onChange={setBanner} maxImages={1} />
             </CardContent>
           </Card>
 
@@ -170,7 +184,6 @@ export default function ShopForm({ initialData, shopId, mode }: Props) {
         {/* Right — logo + submit */}
         <div className="space-y-6">
 
-          {/* Logo */}
           <Card className="bg-slate-900 border-slate-800">
             <CardHeader>
               <CardTitle className="text-white text-base">Shop Logo</CardTitle>
@@ -179,21 +192,16 @@ export default function ShopForm({ initialData, shopId, mode }: Props) {
               <p className="text-slate-400 text-xs mb-3">
                 Square image recommended — 300×300px
               </p>
-              <MediaUpload
-                images={logo}
-                onChange={setLogo}
-                maxImages={1}
-              />
+              <MediaUpload images={logo} onChange={setLogo} maxImages={1} />
             </CardContent>
           </Card>
 
-          {/* Submit */}
           <Button
             type="submit"
-            disabled={isLoading}
+            disabled={loading}
             className="w-full bg-blue-500 hover:bg-blue-600 text-white h-11"
           >
-            {isLoading ? (
+            {loading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                 {mode === 'create' ? 'Creating...' : 'Saving...'}

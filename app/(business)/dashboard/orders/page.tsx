@@ -11,22 +11,23 @@ import { businessOrderService } from '@/lib/services/business-order.service'
 import { cn } from '@/lib/utils'
 
 const STATUS_TABS = [
-  { value: '',           label: 'All Orders' },
-  { value: 'pending',    label: 'Pending' },
-  { value: 'confirmed',  label: 'Confirmed' },
-  { value: 'shipped',    label: 'Shipped' },
-  { value: 'delivered',  label: 'Delivered' },
-  { value: 'cancelled',  label: 'Cancelled' },
+  { value: '',                    label: 'All Orders'           },
+  { value: 'pending',             label: 'Pending'              },
+  { value: 'confirmed',           label: 'Confirmed'            },
+  { value: 'shipped',             label: 'Shipped'              },
+  { value: 'delivered',           label: 'Delivered'            },
+  { value: 'cancelled_by_seller', label: 'Cancelled by Me'      },
+  { value: 'cancelled_by_customer', label: 'Cancelled by Customer' },
 ]
 
-const STATUS_CONFIG: Record<string, {
-  icon: any, color: string, bg: string, label: string
-}> = {
-  pending:   { icon: Clock,        color: 'text-yellow-400', bg: 'bg-yellow-500/10 border-yellow-500/30', label: 'Pending' },
-  confirmed: { icon: CheckCircle,  color: 'text-blue-400',   bg: 'bg-blue-500/10 border-blue-500/30',     label: 'Confirmed' },
-  shipped:   { icon: Truck,        color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/30', label: 'Shipped' },
-  delivered: { icon: CheckCircle,  color: 'text-green-400',  bg: 'bg-green-500/10 border-green-500/30',   label: 'Delivered' },
-  cancelled: { icon: XCircle,      color: 'text-red-400',    bg: 'bg-red-500/10 border-red-500/30',       label: 'Cancelled' },
+const STATUS_CONFIG: Record<string, { icon: any, color: string, bg: string, label: string }> = {
+  pending:               { icon: Clock,       color: 'text-yellow-400', bg: 'bg-yellow-500/10 border-yellow-500/30',  label: 'Pending'               },
+  confirmed:             { icon: CheckCircle, color: 'text-blue-400',   bg: 'bg-blue-500/10 border-blue-500/30',      label: 'Confirmed'             },
+  shipped:               { icon: Truck,       color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/30',  label: 'Shipped'               },
+  delivered:             { icon: CheckCircle, color: 'text-green-400',  bg: 'bg-green-500/10 border-green-500/30',    label: 'Delivered'             },
+  cancelled_by_seller:   { icon: XCircle,     color: 'text-red-400',    bg: 'bg-red-500/10 border-red-500/30',        label: 'Cancelled by Seller'   },
+  cancelled_by_customer: { icon: XCircle,     color: 'text-orange-400', bg: 'bg-orange-500/10 border-orange-500/30',  label: 'Cancelled by Customer' },
+  cancelled:             { icon: XCircle,     color: 'text-red-400',    bg: 'bg-red-500/10 border-red-500/30',        label: 'Cancelled'             },
 }
 
 export default function OrdersPage() {

@@ -13,11 +13,13 @@ import { cn } from '@/lib/utils'
 const STATUS_FLOW = ['pending', 'confirmed', 'shipped', 'delivered']
 
 const STATUS_CONFIG: Record<string, { color: string, bg: string, label: string }> = {
-  pending:   { color: 'text-yellow-400', bg: 'bg-yellow-500/10 border-yellow-500/30', label: 'Pending'   },
-  confirmed: { color: 'text-blue-400',   bg: 'bg-blue-500/10 border-blue-500/30',     label: 'Confirmed' },
-  shipped:   { color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/30', label: 'Shipped'   },
-  delivered: { color: 'text-green-400',  bg: 'bg-green-500/10 border-green-500/30',   label: 'Delivered' },
-  cancelled: { color: 'text-red-400',    bg: 'bg-red-500/10 border-red-500/30',       label: 'Cancelled' },
+  pending:              { color: 'text-yellow-400', bg: 'bg-yellow-500/10 border-yellow-500/30', label: 'Pending'              },
+  confirmed:            { color: 'text-blue-400',   bg: 'bg-blue-500/10 border-blue-500/30',     label: 'Confirmed'            },
+  shipped:              { color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/30', label: 'Shipped'              },
+  delivered:            { color: 'text-green-400',  bg: 'bg-green-500/10 border-green-500/30',   label: 'Delivered'            },
+  cancelled_by_seller:  { color: 'text-red-400',    bg: 'bg-red-500/10 border-red-500/30',       label: 'Cancelled by Seller'  },
+  cancelled_by_customer:{ color: 'text-orange-400', bg: 'bg-orange-500/10 border-orange-500/30', label: 'Cancelled by Customer'},
+  cancelled:            { color: 'text-red-400',    bg: 'bg-red-500/10 border-red-500/30',       label: 'Cancelled'            },
 }
 
 const NEXT_STATUS: Record<string, string> = {
@@ -182,7 +184,10 @@ export default function BusinessOrderDetailPage() {
           </div>
 
           {/* Action Buttons */}
-          {order.status !== 'cancelled' && order.status !== 'delivered' && (
+          {order.status !== 'cancelled_by_seller' &&
+          order.status !== 'cancelled_by_customer' &&
+          order.status !== 'cancelled' &&
+          order.status !== 'delivered' && (
             <div className="flex gap-3">
               {nextStatus && (
                 <button
@@ -190,16 +195,22 @@ export default function BusinessOrderDetailPage() {
                   disabled={updating}
                   className="flex-1 h-11 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white font-medium rounded-xl flex items-center justify-center gap-2 transition-colors"
                 >
-                  {updating ? <Loader2 className="w-4 h-4 animate-spin" /> : NEXT_LABEL[order.status]}
+                  {updating
+                    ? <Loader2 className="w-4 h-4 animate-spin" />
+                    : NEXT_LABEL[order.status]
+                  }
                 </button>
               )}
-              <button
-                onClick={() => handleUpdateStatus('cancelled')}
-                disabled={updating}
-                className="h-11 px-6 bg-red-500/10 hover:bg-red-500/20 disabled:opacity-50 text-red-400 font-medium rounded-xl border border-red-500/30 transition-colors"
-              >
-                Cancel Order
-              </button>
+              {/* Seller can cancel only before shipped */}
+              {(order.status === 'pending' || order.status === 'confirmed') && (
+                <button
+                  onClick={() => handleUpdateStatus('cancelled_by_seller')}
+                  disabled={updating}
+                  className="h-11 px-6 bg-red-500/10 hover:bg-red-500/20 disabled:opacity-50 text-red-400 font-medium rounded-xl border border-red-500/30 transition-colors"
+                >
+                  Cancel Order
+                </button>
+              )}
             </div>
           )}
         </div>
