@@ -8,25 +8,18 @@ import StoreProductCard from '@/components/store/ProductCard'
 import QuickBuyModal from '@/components/store/QuickBuyModal'
 
 export default function ShopPage() {
-  const params              = useParams()
-  const [shop,    setShop]  = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+  const params                  = useParams()
+  const [shop,     setShop]     = useState<any>(null)
+  const [loading,  setLoading]  = useState(true)
   const [quickBuy, setQuickBuy] = useState<any>(null)
 
   useEffect(() => {
     const supabase = createClient()
     supabase
       .from('shops')
-      .select(`
-        *,
-        shop_products(
-          products(
-            id, name, price, discount_price,
-            images, stock, is_active,
-            categories(id, name)
-          )
-        )
-      `)
+      .select(`*, shop_products(
+        products(id, name, price, discount_price, images, stock, is_active, categories(id, name))
+      )`)
       .eq('id', params.id as string)
       .eq('status', 'live')
       .single()
@@ -52,20 +45,21 @@ export default function ShopPage() {
   }
 
   const products = shop.shop_products
-    ?.map((sp: any) => ({ ...sp.products, shop: { id: shop.id, name: shop.name, logo_url: shop.logo_url } }))
+    ?.map((sp: any) => ({
+      ...sp.products,
+      shop: { id: shop.id, name: shop.name, logo_url: shop.logo_url },
+    }))
     .filter((p: any) => p?.is_active) ?? []
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-6">
 
-      {/* Banner */}
       {shop.banner_url && (
         <div className="w-full h-48 rounded-2xl overflow-hidden bg-slate-800">
           <img src={shop.banner_url} alt={shop.name} className="w-full h-full object-cover" />
         </div>
       )}
 
-      {/* Shop info */}
       <div className="flex items-center gap-4">
         <div className="w-16 h-16 rounded-xl bg-slate-800 border border-slate-700 overflow-hidden shrink-0">
           {shop.logo_url
@@ -80,7 +74,6 @@ export default function ShopPage() {
         </div>
       </div>
 
-      {/* Products */}
       {products.length === 0 ? (
         <div className="text-center py-20">
           <Package className="w-12 h-12 text-slate-600 mx-auto mb-3" />
@@ -95,11 +88,7 @@ export default function ShopPage() {
       )}
 
       {quickBuy && (
-        <QuickBuyModal
-          product={quickBuy}
-          onClose={() => setQuickBuy(null)}
-          onSuccess={() => setQuickBuy(null)}
-        />
+        <QuickBuyModal product={quickBuy} onClose={() => setQuickBuy(null)} onSuccess={() => setQuickBuy(null)} />
       )}
     </div>
   )

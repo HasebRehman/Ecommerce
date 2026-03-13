@@ -13,9 +13,9 @@ import { cn } from '@/lib/utils'
 const STATUS_FLOW = ['pending', 'confirmed', 'shipped', 'delivered']
 
 const STATUS_CONFIG: Record<string, { color: string, bg: string, label: string }> = {
-  pending:   { color: 'text-yellow-400', bg: 'bg-yellow-500/10 border-yellow-500/30', label: 'Pending' },
+  pending:   { color: 'text-yellow-400', bg: 'bg-yellow-500/10 border-yellow-500/30', label: 'Pending'   },
   confirmed: { color: 'text-blue-400',   bg: 'bg-blue-500/10 border-blue-500/30',     label: 'Confirmed' },
-  shipped:   { color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/30', label: 'Shipped' },
+  shipped:   { color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/30', label: 'Shipped'   },
   delivered: { color: 'text-green-400',  bg: 'bg-green-500/10 border-green-500/30',   label: 'Delivered' },
   cancelled: { color: 'text-red-400',    bg: 'bg-red-500/10 border-red-500/30',       label: 'Cancelled' },
 }
@@ -32,11 +32,11 @@ const NEXT_LABEL: Record<string, string> = {
   shipped:   'Mark as Delivered',
 }
 
-export default function OrderDetailPage() {
-  const params              = useParams()
-  const router              = useRouter()
-  const [order,   setOrder] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+export default function BusinessOrderDetailPage() {
+  const params               = useParams()
+  const router               = useRouter()
+  const [order,    setOrder]   = useState<any>(null)
+  const [loading,  setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
 
   useEffect(() => {
@@ -68,17 +68,13 @@ export default function OrderDetailPage() {
   }
 
   if (!order) {
-    return (
-      <div className="text-center py-20">
-        <p className="text-slate-400">Order not found</p>
-      </div>
-    )
+    return <div className="text-center py-20"><p className="text-slate-400">Order not found</p></div>
   }
 
-  const cfg      = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.pending
-  const addr     = order.delivery_address ?? {}
-  const items    = order.order_items ?? []
-  const customer = order.profiles?.full_name ?? 'Customer'
+  const cfg        = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.pending
+  const addr       = order.delivery_address ?? {}
+  const items      = order.order_items ?? []
+  const customer   = order.profiles?.full_name ?? 'Customer'
   const nextStatus = NEXT_STATUS[order.status]
 
   return (
@@ -110,11 +106,11 @@ export default function OrderDetailPage() {
         </div>
       </div>
 
-      {/* Status Progress Bar */}
+      {/* Progress Bar */}
       {order.status !== 'cancelled' && (
         <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
           <p className="text-white font-medium mb-4">Order Progress</p>
-          <div className="flex items-center gap-0">
+          <div className="flex items-center">
             {STATUS_FLOW.map((s, i) => {
               const isCompleted = STATUS_FLOW.indexOf(order.status) >= i
               const isCurrent   = order.status === s
@@ -151,15 +147,11 @@ export default function OrderDetailPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        {/* Left — Items + Actions */}
+        {/* Items + Actions */}
         <div className="lg:col-span-2 space-y-4">
-
-          {/* Order Items */}
           <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-800">
-              <p className="text-white font-semibold">
-                Order Items ({items.length})
-              </p>
+              <p className="text-white font-semibold">Order Items ({items.length})</p>
             </div>
             <div className="divide-y divide-slate-800">
               {items.map((item: any) => (
@@ -167,20 +159,12 @@ export default function OrderDetailPage() {
                   <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-800 shrink-0">
                     {item.products?.images?.[0]
                       ? <img src={item.products.images[0]} alt={item.products.name} className="w-full h-full object-cover" />
-                      : <div className="w-full h-full flex items-center justify-center">
-                          <Package className="w-6 h-6 text-slate-600" />
-                        </div>
+                      : <div className="w-full h-full flex items-center justify-center"><Package className="w-6 h-6 text-slate-600" /></div>
                     }
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-white font-medium text-sm line-clamp-2">
-                      {item.products?.name}
-                    </p>
-                    {item.products?.sku && (
-                      <p className="text-slate-500 text-xs mt-0.5">
-                        SKU: {item.products.sku}
-                      </p>
-                    )}
+                    <p className="text-white font-medium text-sm line-clamp-2">{item.products?.name}</p>
+                    {item.products?.sku && <p className="text-slate-500 text-xs mt-0.5">SKU: {item.products.sku}</p>}
                     <p className="text-slate-400 text-sm mt-1">
                       Qty: {item.quantity} × Rs. {item.price?.toLocaleString()}
                     </p>
@@ -193,9 +177,7 @@ export default function OrderDetailPage() {
             </div>
             <div className="px-5 py-4 border-t border-slate-800 flex justify-between">
               <span className="text-slate-400">Total</span>
-              <span className="text-white font-bold text-lg">
-                Rs. {order.total_amount?.toLocaleString()}
-              </span>
+              <span className="text-white font-bold text-lg">Rs. {order.total_amount?.toLocaleString()}</span>
             </div>
           </div>
 
@@ -208,10 +190,7 @@ export default function OrderDetailPage() {
                   disabled={updating}
                   className="flex-1 h-11 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white font-medium rounded-xl flex items-center justify-center gap-2 transition-colors"
                 >
-                  {updating
-                    ? <Loader2 className="w-4 h-4 animate-spin" />
-                    : NEXT_LABEL[order.status]
-                  }
+                  {updating ? <Loader2 className="w-4 h-4 animate-spin" /> : NEXT_LABEL[order.status]}
                 </button>
               )}
               <button
@@ -223,63 +202,47 @@ export default function OrderDetailPage() {
               </button>
             </div>
           )}
-
         </div>
 
-        {/* Right — Customer Info */}
+        {/* Customer Info */}
         <div className="space-y-4">
-
-          {/* Customer */}
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
             <p className="text-white font-semibold flex items-center gap-2">
-              <User className="w-4 h-4 text-blue-400" />
-              Customer
+              <User className="w-4 h-4 text-blue-400" /> Customer
             </p>
             <p className="text-slate-300">{customer}</p>
           </div>
-
-          {/* Delivery Address */}
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
             <p className="text-white font-semibold flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-blue-400" />
-              Delivery Address
+              <MapPin className="w-4 h-4 text-blue-400" /> Delivery Address
             </p>
             <div className="space-y-1.5 text-sm text-slate-300">
               <p>{addr.full_name}</p>
               <p className="flex items-center gap-1.5 text-slate-400">
-                <Phone className="w-3.5 h-3.5" />
-                {addr.phone}
+                <Phone className="w-3.5 h-3.5" />{addr.phone}
               </p>
               <p>{addr.address}</p>
               <p>{addr.city}</p>
             </div>
           </div>
-
-          {/* Payment */}
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
             <p className="text-white font-semibold flex items-center gap-2">
-              <CreditCard className="w-4 h-4 text-blue-400" />
-              Payment
+              <CreditCard className="w-4 h-4 text-blue-400" /> Payment
             </p>
             <p className="text-slate-300 capitalize text-sm">
               {addr.payment_method?.replace(/_/g, ' ')}
             </p>
           </div>
-
-          {/* Notes */}
           {order.notes && (
-            <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-3">
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 space-y-2">
               <p className="text-white font-semibold flex items-center gap-2">
-                <Clock className="w-4 h-4 text-blue-400" />
-                Notes
+                <Clock className="w-4 h-4 text-blue-400" /> Notes
               </p>
               <p className="text-slate-300 text-sm">{order.notes}</p>
             </div>
           )}
-
         </div>
       </div>
-
     </div>
   )
 }

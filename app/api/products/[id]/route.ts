@@ -6,30 +6,16 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params
+    const { id }   = await params
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { data: product, error } = await supabase
-      .from('products')
-      .select(`*, categories(id, name)`)
-      .eq('id', id)
-      .single()
+      .from('products').select('*, categories(id, name)').eq('id', id).eq('owner_id', user.id).single()
 
-    if (error || !product) {
-      return NextResponse.json({ error: 'Product not found' }, { status: 404 })
-    }
-
-    if (product.owner_id !== user.id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
+    if (error || !product) return NextResponse.json({ error: 'Product not found' }, { status: 404 })
     return NextResponse.json({ product })
-
   } catch (err) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
@@ -40,46 +26,18 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params
+    const { id }   = await params
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const body = await request.json()
-
-    const { data: existing } = await supabase
-      .from('products')
-      .select('id, owner_id')
-      .eq('id', id)
-      .single()
-
-    if (!existing) {
-      return NextResponse.json({ error: 'Product not found' }, { status: 404 })
-    }
-
-    if (existing.owner_id !== user.id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
     const { data: product, error } = await supabase
-      .from('products')
-      .update({ ...body, updated_at: new Date().toISOString() })
-      .eq('id', id)
-      .select(`*, categories(id, name)`)
-      .single()
+      .from('products').update({ ...body, updated_at: new Date().toISOString() })
+      .eq('id', id).eq('owner_id', user.id).select().single()
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 })
-    }
-
-    return NextResponse.json({
-      product,
-      message: 'Product updated successfully!',
-    })
-
+    if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+    return NextResponse.json({ product, message: 'Product updated!' })
   } catch (err) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
@@ -90,39 +48,13 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params
+    const { id }   = await params
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: existing, error: fetchError } = await supabase
-      .from('products')
-      .select('id, owner_id')
-      .eq('id', id)
-      .single()
-
-    if (fetchError || !existing) {
-      return NextResponse.json({ error: 'Product not found' }, { status: 404 })
-    }
-
-    if (existing.owner_id !== user.id) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
-    const { error: deleteError } = await supabase
-      .from('products')
-      .delete()
-      .eq('id', id)
-
-    if (deleteError) {
-      return NextResponse.json({ error: deleteError.message }, { status: 400 })
-    }
-
-    return NextResponse.json({ message: 'Product deleted successfully!' })
-
+    await supabase.from('products').delete().eq('id', id).eq('owner_id', user.id)
+    return NextResponse.json({ message: 'Product deleted!' })
   } catch (err) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }

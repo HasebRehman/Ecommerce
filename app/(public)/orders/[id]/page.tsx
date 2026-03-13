@@ -3,30 +3,29 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import {
-  ArrowLeft, Package, MapPin, Phone,
-  CreditCard, Clock, Loader2, Store,
-  User, Mail, CheckCircle, Truck,
-  XCircle, AlertCircle, Calendar,
-  Hash, ShoppingBag,
+  ArrowLeft, Package, MapPin, Phone, CreditCard,
+  Clock, Loader2, Store, User, Mail,
+  CheckCircle, Truck, XCircle, AlertCircle,
+  Calendar, Hash, ShoppingBag,
 } from 'lucide-react'
 import { useAuthStore } from '@/store/authStore'
 import api from '@/lib/axios'
 import { cn } from '@/lib/utils'
 
-const STATUS_FLOW  = ['pending', 'confirmed', 'shipped', 'delivered']
+const STATUS_FLOW = ['pending', 'confirmed', 'shipped', 'delivered']
 
 const STATUS_CONFIG: Record<string, {
   icon: any, color: string, bg: string, label: string, desc: string
 }> = {
-  pending:   { icon: Clock,       color: 'text-yellow-400', bg: 'bg-yellow-500/10 border-yellow-500/30', label: 'Pending',   desc: 'Waiting for seller to confirm'   },
-  confirmed: { icon: CheckCircle, color: 'text-blue-400',   bg: 'bg-blue-500/10 border-blue-500/30',     label: 'Confirmed', desc: 'Seller confirmed your order'      },
-  shipped:   { icon: Truck,       color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/30', label: 'Shipped',   desc: 'Your order is on the way'         },
-  delivered: { icon: CheckCircle, color: 'text-green-400',  bg: 'bg-green-500/10 border-green-500/30',   label: 'Delivered', desc: 'Order delivered successfully'     },
-  cancelled: { icon: XCircle,     color: 'text-red-400',    bg: 'bg-red-500/10 border-red-500/30',       label: 'Cancelled', desc: 'Order was cancelled'              },
-  rejected:  { icon: AlertCircle, color: 'text-red-400',    bg: 'bg-red-500/10 border-red-500/30',       label: 'Rejected',  desc: 'Order was rejected by the seller' },
+  pending:   { icon: Clock,        color: 'text-yellow-400', bg: 'bg-yellow-500/10 border-yellow-500/30', label: 'Pending',   desc: 'Waiting for seller to confirm'    },
+  confirmed: { icon: CheckCircle,  color: 'text-blue-400',   bg: 'bg-blue-500/10 border-blue-500/30',     label: 'Confirmed', desc: 'Seller confirmed your order'       },
+  shipped:   { icon: Truck,        color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/30', label: 'Shipped',   desc: 'Your order is on the way'          },
+  delivered: { icon: CheckCircle,  color: 'text-green-400',  bg: 'bg-green-500/10 border-green-500/30',   label: 'Delivered', desc: 'Order delivered successfully'      },
+  cancelled: { icon: XCircle,      color: 'text-red-400',    bg: 'bg-red-500/10 border-red-500/30',       label: 'Cancelled', desc: 'Order was cancelled'               },
+  rejected:  { icon: AlertCircle,  color: 'text-red-400',    bg: 'bg-red-500/10 border-red-500/30',       label: 'Rejected',  desc: 'Order was rejected by the seller'  },
 }
 
-export default function OrderDetailPage() {
+export default function CustomerOrderDetailPage() {
   const params              = useParams()
   const router              = useRouter()
   const { isAuthenticated } = useAuthStore()
@@ -41,23 +40,20 @@ export default function OrderDetailPage() {
       .finally(() => setLoading(false))
   }, [params.id, isAuthenticated])
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
-      </div>
-    )
-  }
+  if (loading) return (
+    <div className="flex items-center justify-center py-20">
+      <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
+    </div>
+  )
 
   if (!order) return null
 
-  const cfg   = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.pending
-  const Icon  = cfg.icon
-  const addr  = order.delivery_address ?? {}
-  const items = order.order_items ?? []
-  const shop  = order.shops
-
-  const stepIndex = STATUS_FLOW.indexOf(order.status)
+  const cfg        = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.pending
+  const Icon       = cfg.icon
+  const addr       = order.delivery_address ?? {}
+  const items      = order.order_items ?? []
+  const shop       = order.shops
+  const stepIndex  = STATUS_FLOW.indexOf(order.status)
   const isTerminal = ['cancelled', 'rejected'].includes(order.status)
 
   return (
@@ -73,15 +69,9 @@ export default function OrderDetailPage() {
         </button>
         <div>
           <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-xl font-bold text-white">
-              Order Details
-            </h1>
-            <span className={cn(
-              'flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border',
-              cfg.bg, cfg.color
-            )}>
-              <Icon className="w-3 h-3" />
-              {cfg.label}
+            <h1 className="text-xl font-bold text-white">Order Details</h1>
+            <span className={cn('flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border', cfg.bg, cfg.color)}>
+              <Icon className="w-3 h-3" />{cfg.label}
             </span>
           </div>
           <p className="text-slate-500 text-sm mt-0.5">{cfg.desc}</p>
@@ -91,9 +81,9 @@ export default function OrderDetailPage() {
       {/* Order Meta */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { icon: Hash,      label: 'Order ID',   value: '#' + order.id.slice(0, 8).toUpperCase() },
-          { icon: Calendar,  label: 'Placed On',  value: new Date(order.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) },
-          { icon: Clock,     label: 'Time',        value: new Date(order.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) },
+          { icon: Hash,       label: 'Order ID',  value: '#' + order.id.slice(0, 8).toUpperCase() },
+          { icon: Calendar,   label: 'Placed On', value: new Date(order.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) },
+          { icon: Clock,      label: 'Time',      value: new Date(order.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) },
           { icon: CreditCard, label: 'Payment',   value: addr.payment_method?.replace(/_/g, ' ') ?? '—' },
         ].map(m => (
           <div key={m.label} className="bg-slate-900 border border-slate-800 rounded-xl p-4">
@@ -106,7 +96,7 @@ export default function OrderDetailPage() {
         ))}
       </div>
 
-      {/* Progress Tracker */}
+      {/* Progress */}
       {!isTerminal && (
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
           <p className="text-white font-semibold mb-5">Order Progress</p>
@@ -119,25 +109,18 @@ export default function OrderDetailPage() {
                   <div className="flex flex-col items-center">
                     <div className={cn(
                       'w-9 h-9 rounded-full flex items-center justify-center border-2 transition-all',
-                      done
-                        ? 'bg-blue-500 border-blue-500 text-white'
-                        : 'bg-slate-800 border-slate-700 text-slate-600'
+                      done ? 'bg-blue-500 border-blue-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-600'
                     )}>
-                      {done
-                        ? <CheckCircle className="w-4 h-4" />
-                        : <span className="text-xs font-bold">{i + 1}</span>
-                      }
+                      {done ? <CheckCircle className="w-4 h-4" /> : <span className="text-xs font-bold">{i + 1}</span>}
                     </div>
-                    <p className={cn(
-                      'text-xs mt-2 capitalize font-medium whitespace-nowrap',
+                    <p className={cn('text-xs mt-2 capitalize font-medium whitespace-nowrap',
                       current ? 'text-blue-400' : done ? 'text-slate-300' : 'text-slate-600'
                     )}>
                       {s}
                     </p>
                   </div>
                   {i < STATUS_FLOW.length - 1 && (
-                    <div className={cn(
-                      'flex-1 h-0.5 mx-2 mb-5 rounded-full transition-all',
+                    <div className={cn('flex-1 h-0.5 mx-2 mb-5 rounded-full transition-all',
                       stepIndex > i ? 'bg-blue-500' : 'bg-slate-700'
                     )} />
                   )}
@@ -148,12 +131,9 @@ export default function OrderDetailPage() {
         </div>
       )}
 
-      {/* Cancelled / Rejected Banner */}
+      {/* Cancelled Banner */}
       {isTerminal && (
-        <div className={cn(
-          'flex items-center gap-3 p-4 rounded-2xl border',
-          cfg.bg, cfg.color
-        )}>
+        <div className={cn('flex items-center gap-3 p-4 rounded-2xl border', cfg.bg, cfg.color)}>
           <Icon className="w-5 h-5 shrink-0" />
           <div>
             <p className="font-semibold">{cfg.label}</p>
@@ -166,8 +146,6 @@ export default function OrderDetailPage() {
 
         {/* Left — Items */}
         <div className="lg:col-span-3 space-y-4">
-
-          {/* Shop */}
           {shop && (
             <div className="flex items-center gap-3 p-4 bg-slate-900 border border-slate-800 rounded-2xl">
               <div className="w-10 h-10 rounded-xl overflow-hidden bg-slate-800 shrink-0">
@@ -183,46 +161,33 @@ export default function OrderDetailPage() {
             </div>
           )}
 
-          {/* Order Items */}
           <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-800 flex items-center gap-2">
               <ShoppingBag className="w-4 h-4 text-blue-400" />
               <p className="text-white font-semibold">Items Ordered ({items.length})</p>
             </div>
             <div className="divide-y divide-slate-800">
-              {items.map((item: any) => {
-                const product      = item.products
-                const itemTotal    = (item.price ?? 0) * (item.quantity ?? 1)
-                return (
-                  <div key={item.id} className="flex items-center gap-4 p-4">
-                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-800 shrink-0">
-                      {product?.images?.[0]
-                        ? <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
-                        : <div className="w-full h-full flex items-center justify-center"><Package className="w-6 h-6 text-slate-600" /></div>
-                      }
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white font-medium text-sm line-clamp-2">
-                        {product?.name ?? 'Product'}
-                      </p>
-                      {product?.sku && (
-                        <p className="text-slate-500 text-xs mt-0.5">SKU: {product.sku}</p>
-                      )}
-                      <div className="flex items-center gap-3 mt-1.5">
-                        <span className="text-slate-400 text-xs">
-                          Rs. {item.price?.toLocaleString()} × {item.quantity}
-                        </span>
-                      </div>
-                    </div>
-                    <p className="text-white font-bold text-sm shrink-0">
-                      Rs. {itemTotal.toLocaleString()}
+              {items.map((item: any) => (
+                <div key={item.id} className="flex items-center gap-4 p-4">
+                  <div className="w-16 h-16 rounded-xl overflow-hidden bg-slate-800 shrink-0">
+                    {item.products?.images?.[0]
+                      ? <img src={item.products.images[0]} alt={item.products.name} className="w-full h-full object-cover" />
+                      : <div className="w-full h-full flex items-center justify-center"><Package className="w-6 h-6 text-slate-600" /></div>
+                    }
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-medium text-sm line-clamp-2">{item.products?.name ?? 'Product'}</p>
+                    {item.products?.sku && <p className="text-slate-500 text-xs mt-0.5">SKU: {item.products.sku}</p>}
+                    <p className="text-slate-400 text-xs mt-1">
+                      Rs. {item.price?.toLocaleString()} × {item.quantity}
                     </p>
                   </div>
-                )
-              })}
+                  <p className="text-white font-bold text-sm shrink-0">
+                    Rs. {(item.price * item.quantity)?.toLocaleString()}
+                  </p>
+                </div>
+              ))}
             </div>
-
-            {/* Price breakdown */}
             <div className="px-5 py-4 border-t border-slate-800 space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-slate-400">Subtotal</span>
@@ -232,11 +197,9 @@ export default function OrderDetailPage() {
                 <span className="text-slate-400">Delivery</span>
                 <span className="text-green-400 font-medium">Free</span>
               </div>
-              <div className="flex justify-between border-t border-slate-800 pt-2 mt-2">
+              <div className="flex justify-between border-t border-slate-800 pt-2">
                 <span className="text-white font-semibold">Total Paid</span>
-                <span className="text-white font-bold text-lg">
-                  Rs. {order.total_amount?.toLocaleString()}
-                </span>
+                <span className="text-white font-bold text-lg">Rs. {order.total_amount?.toLocaleString()}</span>
               </div>
             </div>
           </div>
@@ -244,8 +207,6 @@ export default function OrderDetailPage() {
 
         {/* Right — Customer + Delivery */}
         <div className="lg:col-span-2 space-y-4">
-
-          {/* Customer Info */}
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
             <div className="flex items-center gap-2">
               <User className="w-4 h-4 text-blue-400" />
@@ -275,7 +236,6 @@ export default function OrderDetailPage() {
             </div>
           </div>
 
-          {/* Delivery Address */}
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-blue-400" />
@@ -293,36 +253,27 @@ export default function OrderDetailPage() {
             </div>
           </div>
 
-          {/* Payment */}
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
             <div className="flex items-center gap-2">
               <CreditCard className="w-4 h-4 text-blue-400" />
               <p className="text-white font-semibold">Payment Method</p>
             </div>
-            <div className={cn(
-              'flex items-center gap-3 p-3 rounded-xl border',
-              addr.payment_method === 'cod'
-                ? 'bg-green-500/10 border-green-500/20'
-                : 'bg-blue-500/10 border-blue-500/20'
+            <div className={cn('flex items-center gap-3 p-3 rounded-xl border',
+              addr.payment_method === 'cod' ? 'bg-green-500/10 border-green-500/20' : 'bg-blue-500/10 border-blue-500/20'
             )}>
-              <CreditCard className={cn(
-                'w-5 h-5',
-                addr.payment_method === 'cod' ? 'text-green-400' : 'text-blue-400'
-              )} />
+              <CreditCard className={cn('w-5 h-5', addr.payment_method === 'cod' ? 'text-green-400' : 'text-blue-400')} />
               <p className="text-white text-sm font-medium capitalize">
                 {addr.payment_method?.replace(/_/g, ' ') ?? '—'}
               </p>
             </div>
           </div>
 
-          {/* Order Notes */}
           {order.notes && (
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-2">
               <p className="text-white font-semibold text-sm">Order Notes</p>
               <p className="text-slate-400 text-sm leading-relaxed">{order.notes}</p>
             </div>
           )}
-
         </div>
       </div>
     </div>

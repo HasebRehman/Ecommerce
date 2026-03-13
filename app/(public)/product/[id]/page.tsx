@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import { ShoppingCart, Zap, Heart, Loader2, Store } from 'lucide-react'
 import { toast } from 'sonner'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { useAuthStore } from '@/store/authStore'
 import { useWishlistStore } from '@/store/wishlistStore'
@@ -13,19 +14,18 @@ import { cartService } from '@/lib/services/cart.service'
 import QuickBuyModal from '@/components/store/QuickBuyModal'
 import DiscountBadge from '@/components/dashboard/business/inventory/DiscountBadge'
 import { cn } from '@/lib/utils'
-import Link from 'next/link'
 
 export default function ProductPage() {
-  const params   = useParams()
+  const params              = useParams()
   const { isAuthenticated } = useAuthStore()
   const { productIds, addItem, removeItem } = useWishlistStore()
-  const { setCart } = useCartStore()
+  const { setCart }         = useCartStore()
 
-  const [product,    setProduct]    = useState<any>(null)
-  const [loading,    setLoading]    = useState(true)
-  const [mainImage,  setMainImage]  = useState(0)
-  const [quickBuy,   setQuickBuy]   = useState(false)
-  const [addingCart, setAddingCart] = useState(false)
+  const [product,      setProduct]      = useState<any>(null)
+  const [loading,      setLoading]      = useState(true)
+  const [mainImage,    setMainImage]    = useState(0)
+  const [quickBuy,     setQuickBuy]     = useState(false)
+  const [addingCart,   setAddingCart]   = useState(false)
   const [togglingWish, setTogglingWish] = useState(false)
 
   useEffect(() => {
@@ -39,17 +39,21 @@ export default function ProductPage() {
       .finally(() => setLoading(false))
   }, [params.id])
 
-  if (loading) {
-    return <div className="flex items-center justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-blue-400" /></div>
-  }
+  if (loading) return (
+    <div className="flex items-center justify-center py-20">
+      <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
+    </div>
+  )
 
-  if (!product) {
-    return <div className="text-center py-20"><p className="text-slate-400">Product not found</p></div>
-  }
+  if (!product) return (
+    <div className="text-center py-20">
+      <p className="text-slate-400">Product not found</p>
+    </div>
+  )
 
-  const isWishlisted  = productIds.has(product.id)
-  const displayPrice  = product.discount_price ?? product.price
-  const shop          = product.shop_products?.[0]?.shops
+  const isWishlisted = productIds.has(product.id)
+  const displayPrice = product.discount_price ?? product.price
+  const shop         = product.shop_products?.[0]?.shops
 
   const handleWishlist = async () => {
     if (!isAuthenticated) { toast.error('Login to add to wishlist'); return }
@@ -64,11 +68,8 @@ export default function ProductPage() {
         addItem(product.id)
         toast.success('Added to wishlist ❤️')
       }
-    } catch (err: any) {
-      toast.error(err.message)
-    } finally {
-      setTogglingWish(false)
-    }
+    } catch (err: any) { toast.error(err.message) }
+    finally { setTogglingWish(false) }
   }
 
   const handleAddToCart = async () => {
@@ -79,11 +80,8 @@ export default function ProductPage() {
       const data = await cartService.getCart()
       setCart(data.cart)
       toast.success('Added to cart 🛒')
-    } catch (err: any) {
-      toast.error(err.message)
-    } finally {
-      setAddingCart(false)
-    }
+    } catch (err: any) { toast.error(err.message) }
+    finally { setAddingCart(false) }
   }
 
   return (
@@ -104,7 +102,9 @@ export default function ProductPage() {
                 <button
                   key={i}
                   onClick={() => setMainImage(i)}
-                  className={cn('w-16 h-16 rounded-lg overflow-hidden shrink-0 border-2 transition-colors', i === mainImage ? 'border-blue-500' : 'border-slate-700')}
+                  className={cn('w-16 h-16 rounded-lg overflow-hidden shrink-0 border-2 transition-colors',
+                    i === mainImage ? 'border-blue-500' : 'border-slate-700'
+                  )}
                 >
                   <img src={img} alt="" className="w-full h-full object-cover" />
                 </button>
@@ -115,8 +115,6 @@ export default function ProductPage() {
 
         {/* Info */}
         <div className="space-y-5">
-
-          {/* Shop */}
           {shop && (
             <Link href={`/shop/${shop.id}`}>
               <div className="flex items-center gap-2 hover:opacity-80 transition-opacity">
@@ -131,7 +129,6 @@ export default function ProductPage() {
 
           <h1 className="text-2xl font-bold text-white">{product.name}</h1>
 
-          {/* Price */}
           <div className="flex items-center gap-3">
             <span className="text-3xl font-bold text-white">Rs. {displayPrice.toLocaleString()}</span>
             {product.discount_price && (
@@ -146,7 +143,6 @@ export default function ProductPage() {
             <p className="text-slate-400 leading-relaxed">{product.description}</p>
           )}
 
-          {/* Stock */}
           <p className="text-sm">
             <span className="text-slate-400">Stock: </span>
             <span className={product.stock > 0 ? 'text-green-400' : 'text-red-400'}>
@@ -154,7 +150,6 @@ export default function ProductPage() {
             </span>
           </p>
 
-          {/* Actions */}
           <div className="flex gap-3">
             <button
               onClick={handleAddToCart}
@@ -173,12 +168,15 @@ export default function ProductPage() {
             <button
               onClick={handleWishlist}
               disabled={togglingWish}
-              className={cn('w-12 h-12 rounded-xl flex items-center justify-center transition-colors border', isWishlisted ? 'bg-red-500 border-red-500 text-white' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-red-400')}
+              className={cn('w-12 h-12 rounded-xl flex items-center justify-center transition-colors border',
+                isWishlisted
+                  ? 'bg-red-500 border-red-500 text-white'
+                  : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-red-400'
+              )}
             >
               <Heart className={cn('w-5 h-5', isWishlisted && 'fill-current')} />
             </button>
           </div>
-
         </div>
       </div>
 

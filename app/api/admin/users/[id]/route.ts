@@ -1,49 +1,63 @@
-import { createClient, createAdminSupabaseClient } from '@/lib/supabase/server'
+import { createAdminSupabaseClient, createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
 const ADMIN_ROLES = ['super_admin', 'platform_admin', 'operations_admin']
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const supabase = await createClient()
+    const { id }        = await params
+    const supabase      = await createClient()
+    const adminSupabase = createAdminSupabaseClient()
+
     const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    const { data: roleRecord } = await supabase.from('user_roles').select('role').eq('user_id', user.id).single()
+    if (!ADMIN_ROLES.includes(roleRecord?.role)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-    const { data: roleRecord } = await supabase
-      .from('user_roles')
-      .select('role')
-      .eq('user_id', user.id)
-      .single()
+    const { data: profile } = await adminSupabase.from('profiles').select('*').eq('id', id).single()
+    const { data: role }    = await adminSupabase.from('user_roles').select('*').eq('user_id', id).single()
+    const { data: authUser } = await adminSupabase.auth.admin.getUserById(id)
 
-    if (!ADMIN_ROLES.includes(roleRecord?.role)) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
-    }
-
-    const adminClient = createAdminSupabaseClient()
-
-    const { data: profile, error } = await adminClient
-      .from('profiles')
-      .select('*, user_roles(role, sub_roles, is_active)')
-      .eq('id', params.id)
-      .single()
-
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 })
-    }
-
-    return NextResponse.json({ user: profile })
-
+    return NextResponse.json({
+      profile,
+      role,
+      email: authUser?.user?.email ?? '',
+    })
   } catch (err) {
-    console.error('Admin user detail error:', err)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  }
+}
+
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id }        = await params
+    const supabase      = await createClient()
+    const adminSupabase = createAdminSupabaseClient()
+
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const { data: roleRecord } = await supabase.from('user_roles').select('role').eq('user_id', user.id).single()
+    if (!ADMIN_ROLES.includes(roleRecord?.role)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+
+    const body = await request.json()
+
+    if (body.role) {
+      await adminSupabase.from('user_roles').update({ role: body.role }).eq('user_id', id)
+    }
+    if (body.is_active !== undefined) {
+      await adminSupabase.from('user_roles').update({ is_active: body.is_active }).eq('user_id', id)
+    }
+
+    return NextResponse.json({ message: 'User updated successfully' })
+  } catch (err) {
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
