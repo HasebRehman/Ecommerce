@@ -1,62 +1,71 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
-// GET — fetch current user profile
 export async function GET() {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    const { data: profile, error } = await supabase
+    const { data: profile } = await supabase
       .from('profiles')
       .select('*')
       .eq('id', user.id)
       .single()
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 })
-    }
+    const { data: roleRecord } = await supabase
+      .from('user_roles')
+      .select('role, sub_roles')
+      .eq('user_id', user.id)
+      .single()
 
-    return NextResponse.json({ profile })
+    return NextResponse.json({
+      profile,
+      email:    user.email,
+      role:     roleRecord?.role,
+      subRoles: roleRecord?.sub_roles ?? [],
+    })
 
   } catch (err) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
-// PUT — update current user profile
 export async function PUT(request: Request) {
   try {
     const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    const { full_name, username, phone, bio, avatar_url } = await request.json()
+
+    // Check username uniqueness if changed
+    if (username) {
+      const { data: existing } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('username', username)
+        .neq('id', user.id)
+        .single()
+
+      if (existing) {
+        return NextResponse.json(
+          { error: 'Username already taken' },
+          { status: 400 }
+        )
+      }
     }
-
-    const body = await request.json()
-
-    // Only allow these fields to be updated
-    const allowedFields = {
-      full_name: body.full_name,
-      username:  body.username,
-      phone:     body.phone,
-      bio:       body.bio,
-      updated_at: new Date().toISOString(),
-    }
-
-    // Remove undefined fields
-    const updateData = Object.fromEntries(
-      Object.entries(allowedFields).filter(([_, v]) => v !== undefined)
-    )
 
     const { data: profile, error } = await supabase
       .from('profiles')
-      .update(updateData)
+      .update({
+        full_name:  full_name  ?? null,
+        username:   username   ?? null,
+        phone:      phone      ?? null,
+        bio:        bio        ?? null,
+        avatar_url: avatar_url ?? null,
+        updated_at: new Date().toISOString(),
+      })
       .eq('id', user.id)
       .select()
       .single()
@@ -65,7 +74,10 @@ export async function PUT(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
-    return NextResponse.json({ profile, message: 'Profile updated successfully' })
+    return NextResponse.json({
+      profile,
+      message: 'Profile updated successfully!',
+    })
 
   } catch (err) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

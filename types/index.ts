@@ -25,14 +25,15 @@ export type ConnectionStatus =
   | 'terminated'
 
 export interface Profile {
-  id: string
-  full_name: string | null
-  username: string | null
-  avatar_url: string | null
-  phone: string | null
-  bio: string | null
-  created_at: string
-  updated_at: string
+  id:          string
+  full_name:   string | null
+  username:    string | null
+  phone:       string | null
+  bio:         string | null
+  avatar_url:  string | null   
+  banner_url:  string | null   
+  created_at:  string
+  updated_at:  string
 }
 
 export interface UserRoleRecord {

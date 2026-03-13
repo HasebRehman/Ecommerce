@@ -14,6 +14,7 @@ import { useAuthStore } from '@/store/authStore'
 import { useCartStore } from '@/store/cartStore'
 import { useWishlistStore } from '@/store/wishlistStore'
 import { authService } from '@/lib/services/auth.service'
+import { ShoppingBag } from 'lucide-react'
 
 const ADMIN_ROLES = ['super_admin', 'platform_admin', 'operations_admin']
 
@@ -111,12 +112,21 @@ export default function Topbar() {
           {/* Logged in — user menu */}
           {isAuthenticated && (
             <div className="relative">
+              
               <button
                 onClick={() => setUserMenuOpen(p => !p)}
                 className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
               >
-                <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-semibold">
-                  {user?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
+                <div className="w-8 h-8 rounded-full overflow-hidden bg-blue-500 flex items-center justify-center text-white text-sm font-semibold shrink-0">
+                  {user?.avatar_url ? (
+                    <img
+                      src={user.avatar_url}
+                      alt={user.full_name ?? 'Avatar'}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    user?.full_name?.charAt(0)?.toUpperCase() ?? 'U'
+                  )}
                 </div>
               </button>
 
@@ -140,6 +150,22 @@ export default function Topbar() {
 
                     <div className="p-1.5 space-y-0.5">
 
+                      {/* My Profile — shows for ALL logged in users */}
+                          <Link href="/profile" onClick={() => setUserMenuOpen(false)}>
+                            <button className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 text-sm transition-colors">
+                              <User className="w-4 h-4 text-blue-400" />
+                              My Profile
+                            </button>
+                          </Link>
+
+
+                          <Link href="/orders" onClick={() => setUserMenuOpen(false)}>
+                          <button className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 text-sm transition-colors">
+                            <ShoppingBag className="w-4 h-4 text-purple-400" />
+                            Order History
+                          </button>
+                        </Link>
+
                       {isAdmin && (
                         <Link href="/admin/dashboard" onClick={() => setUserMenuOpen(false)}>
                           <button className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 text-sm transition-colors">
@@ -160,12 +186,6 @@ export default function Topbar() {
 
                       {isCustomer && isAuthenticated && (
                         <>
-                          {/* <Link href="/account" onClick={() => setUserMenuOpen(false)}>
-                            <button className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 text-sm transition-colors">
-                              <User className="w-4 h-4 text-blue-400" />
-                              My Account
-                            </button>
-                          </Link> */}
                           <Link href="/request-seller" onClick={() => setUserMenuOpen(false)}>
                             <button className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 text-sm transition-colors">
                               <TrendingUp className="w-4 h-4 text-green-400" />

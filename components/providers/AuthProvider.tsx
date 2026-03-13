@@ -10,6 +10,8 @@ import LoadingScreen from '@/components/common/LoadingScreen'
 // Pages anyone can visit without login
 const PUBLIC_ROUTES = ['/', '/login', '/signup', '/forgot-password']
 
+const PUBLIC_PREFIXES = ['/product', '/shop', '/products', '/profile', '/request-seller', '/orders']
+
 // Auth pages — logged-in users should NOT see these
 const AUTH_ROUTES = ['/login', '/signup', '/forgot-password']
 
@@ -25,12 +27,12 @@ const ROLE_HOME: Record<string, string> = {
 
 // Which route prefixes each role is allowed to access
 const ROLE_ALLOWED_PREFIXES: Record<string, string[]> = {
-  super_admin:       ['/admin'],
-  platform_admin:    ['/admin'],
-  operations_admin:  ['/admin'],
-  business_owner:    ['/dashboard', '/workspaces'],
-  courier:           ['/rider'],
-  customer:          ['/account', '/cart', '/wishlist'],
+  super_admin:      ['/admin', '/', '/cart', '/wishlist', '/product', '/shop', '/profile', '/orders'],
+  platform_admin:   ['/admin', '/', '/cart', '/wishlist', '/product', '/shop', '/profile', '/orders'],
+  operations_admin: ['/admin', '/', '/cart', '/wishlist', '/product', '/shop', '/profile', '/orders'],
+  business_owner:   ['/dashboard', '/workspaces', '/', '/cart', '/wishlist', '/product', '/shop', '/profile', '/orders'],
+  courier:          ['/rider', '/', '/cart', '/wishlist', '/profile', '/orders'],
+  customer:         ['/cart', '/wishlist', '/', '/product', '/shop', '/request-seller', '/profile', '/orders'],
 }
 
 export default function AuthProvider({
@@ -94,14 +96,16 @@ export default function AuthProvider({
           }
 
         } else {
-          // ── Not logged in ──
-          clearAuth()
+        // Not logged in
+        clearAuth()
 
-          const isPublic = PUBLIC_ROUTES.some(r => pathname.startsWith(r))
-          if (!isPublic) {
-            routerNav.replace('/login')
-          }
+        const isPublic = PUBLIC_ROUTES.includes(pathname) ||
+                 PUBLIC_PREFIXES.some(p => pathname.startsWith(p))
+
+        if (!isPublic) {
+          routerNav.replace('/login')
         }
+      }
       } catch {
         clearAuth()
       } finally {

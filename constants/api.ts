@@ -127,6 +127,7 @@ STORE: {
   CART_ITEM:      (id: string) => `${BASE}/store/cart/${id}`,
   ORDERS:         `${BASE}/store/orders`,
   ROLE_REQUEST:   `${BASE}/store/role-request`,
+  ORDER:       (id: string) => `${BASE}/store/orders/${id}`,
 },
 
 } as const
