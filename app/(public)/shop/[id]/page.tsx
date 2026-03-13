@@ -14,18 +14,31 @@ export default function ShopPage() {
   const [quickBuy, setQuickBuy] = useState<any>(null)
 
   useEffect(() => {
-    const supabase = createClient()
-    supabase
-      .from('shops')
-      .select(`*, shop_products(
-        products(id, name, price, discount_price, images, stock, is_active, categories(id, name))
-      )`)
-      .eq('id', params.id as string)
-      .eq('status', 'live')
-      .single()
-      .then(({ data }) => setShop(data))
-      .finally(() => setLoading(false))
-  }, [params.id])
+  const fetchShop = async () => {
+    setLoading(true)
+    try {
+      const supabase = createClient()
+      const { data, error } = await supabase
+        .from('shops')
+        .select(`*, shop_products(
+          products(id, name, price, discount_price, images, stock, is_active, categories(id, name))
+        )`)
+        .eq('id', params.id as string)
+        .eq('status', 'live')
+        .single()
+
+      if (error) throw error
+      setShop(data)
+    } catch (err: any) {
+      console.error(err)
+      // optional: toast.error('Failed to fetch shop')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  fetchShop()
+}, [params.id])
 
   if (loading) {
     return (

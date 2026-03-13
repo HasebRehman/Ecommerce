@@ -10,8 +10,8 @@ import DiscountBadge from '@/components/dashboard/business/inventory/DiscountBad
 import { cn } from '@/lib/utils'
 
 interface Props {
-  shopId:           string
-  initialProductIds: string[]
+  shopId: string
+  initialProductIds?: string[]
 }
 
 export default function ShopProductsManager({
@@ -19,8 +19,8 @@ export default function ShopProductsManager({
   initialProductIds,
 }: Props) {
   const [allProducts,      setAllProducts]      = useState<any[]>([])
-  const [selectedIds,      setSelectedIds]      = useState<Set<string>>(
-    new Set(initialProductIds)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(
+    new Set(initialProductIds ?? [])
   )
   const [loading,          setLoading]          = useState(true)
   const [saving,           setSaving]           = useState(false)

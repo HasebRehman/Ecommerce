@@ -41,7 +41,11 @@ export default function ShopDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <StatusToggle shopId={shop.id} currentStatus={shop.status} onStatusChange={s => setShop((p: any) => ({ ...p, status: s }))} />
+          <StatusToggle
+            shopId={shop.id}
+            status={shop.status}
+            onChange={(s) => setShop((p: any) => ({ ...p, status: s }))}
+          />
           <Link href={`/dashboard/shops/${params.id}/edit`}>
             <button className="flex items-center gap-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded-xl transition-colors">
               <Edit className="w-3.5 h-3.5" /> Edit

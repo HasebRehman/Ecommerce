@@ -28,16 +28,29 @@ export default function ProductPage() {
   const [addingCart,   setAddingCart]   = useState(false)
   const [togglingWish, setTogglingWish] = useState(false)
 
-  useEffect(() => {
+  const fetchProduct = async () => {
+  setLoading(true)
+  try {
     const supabase = createClient()
-    supabase
+    const { data, error } = await supabase
       .from('products')
       .select(`*, categories(id, name), shop_products(shops(id, name, logo_url))`)
       .eq('id', params.id as string)
       .single()
-      .then(({ data }) => setProduct(data))
-      .finally(() => setLoading(false))
-  }, [params.id])
+
+    if (error) throw error
+    setProduct(data)   // ✅ Correct state setter
+  } catch (err: any) {
+    console.error(err)
+    toast.error('Failed to fetch product')
+  } finally {
+    setLoading(false)
+  }
+}
+
+useEffect(() => {
+  fetchProduct()
+}, [params.id])
 
   if (loading) return (
     <div className="flex items-center justify-center py-20">

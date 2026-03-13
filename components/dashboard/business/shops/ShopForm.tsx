@@ -60,9 +60,9 @@ export default function ShopForm({
   const onSubmit = async (data: FormData) => {
     const payload = {
       name:        data.name,
-      description: data.description || null,
-      logo_url:    logo[0]   ?? null,
-      banner_url:  banner[0] ?? null,
+      description: data.description || undefined,
+      logo_url:    logo[0]   ?? undefined,
+      banner_url:  banner[0] ?? undefined,
     }
 
     // ── If external onSubmit provided (edit page) — use it ──

@@ -78,13 +78,13 @@ export default function ProductForm({
 
     const payload = {
       name:           data.name,
-      description:    data.description   || null,
+      description:    data.description   || undefined,
       price:          parseFloat(data.price),
-      discount_price: data.discount_price ? parseFloat(data.discount_price) : null,
+      discount_price: data.discount_price ? parseFloat(data.discount_price) : undefined,
       stock:          parseInt(data.stock) || 0,
-      sku:            data.sku            || null,
+      sku:            data.sku            || undefined,
       images,
-      category_id:    categoryId          || null,
+      category_id:    categoryId          || undefined,
       sizes,
       colors,
     }
