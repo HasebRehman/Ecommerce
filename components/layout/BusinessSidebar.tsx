@@ -2,69 +2,108 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { useEffect, useRef } from 'react'
 import {
   LayoutDashboard, ShoppingBag, Package,
-  Building2, BarChart3, Settings,
-  LogOut, ChevronRight, Store,
+  BarChart3, Settings, LogOut, ChevronRight, Store,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { authService } from '@/lib/services/auth.service'
 import { useAuthStore } from '@/store/authStore'
+import { useNewOrdersStore } from '@/store/newOrdersStore'
 import { Badge } from '@/components/ui/badge'
-
-const MENU_ITEMS = [
-  {
-    label: 'Dashboard',
-    href:  '/dashboard',
-    icon:  LayoutDashboard,
-  },
-  {
-    label: 'My Shops',
-    href:  '/dashboard/shops',
-    icon:  Store,
-  },
-  {
-     href: '/dashboard/orders', 
-     icon: ShoppingBag, 
-     label: 'Orders' 
-  },
-  {
-    label: 'Inventory',
-    href:  '/dashboard/inventory',
-    icon:  Package,
-  },
-  {
-    label: 'Analytics',
-    href:  '/dashboard/analytics',
-    icon:  BarChart3,
-  },
-  {
-    label: 'Settings',
-    href:  '/dashboard/settings',
-    icon:  Settings,
-  },
-]
 
 interface Props {
   subRoles: string[]
 }
 
 export default function BusinessSidebar({ subRoles }: Props) {
-  const pathname = usePathname()
-  const router   = useRouter()
+  const pathname            = usePathname()
+  const router              = useRouter()
   const { clearAuth, user } = useAuthStore()
+  const { count, increment, clearNewOrders } = useNewOrdersStore()
+  const channelRef = useRef<any>(null)
+  const userIdRef  = useRef<string | null>(null)
+
+  // ── Replace the realtime useEffect in BusinessSidebar with this ──
+  useEffect(() => {
+    if (!user?.id) return
+
+    let lastKnownCount = 0
+    let isFirst = true
+
+    const checkNewOrders = async () => {
+      try {
+        const res = await fetch(`/api/business/orders?status=pending`)
+        const data = await res.json()
+        const orders: any[] = data.orders ?? []
+
+        if (isFirst) {
+          lastKnownCount = orders.length
+          isFirst = false
+          return
+        }
+
+        if (orders.length > lastKnownCount) {
+          const newCount   = orders.length - lastKnownCount
+          const newest     = orders[0]
+          const name       = newest?.profiles?.full_name ?? 'A customer'
+
+          // Only notify if not on orders page
+          if (!window.location.pathname.startsWith('/dashboard/orders')) {
+            for (let i = 0; i < newCount; i++) {
+              increment()
+            }
+            toast.success(`🛍️ New Order!`, {
+              description: `${name} placed an order · Rs. ${newest?.total_amount?.toLocaleString()}`,
+              duration: 8000,
+              action: {
+                label: 'View Orders',
+                onClick: () => router.push('/dashboard/orders'),
+              },
+            })
+          }
+
+          lastKnownCount = orders.length
+        }
+      } catch { /* silent */ }
+    }
+
+    // Check every 8 seconds
+    const timer = setInterval(checkNewOrders, 8000)
+    checkNewOrders() // initial check
+
+    return () => clearInterval(timer)
+  }, [user?.id])
+
+  // ── Clear badge when visiting orders page ──
+  useEffect(() => {
+    if (pathname.startsWith('/dashboard/orders')) {
+      clearNewOrders()
+    }
+  }, [pathname])
 
   const handleLogout = async () => {
     try {
       await authService.logout()
       clearAuth()
+      clearNewOrders()
       toast.success('Logged out successfully')
       router.push('/login')
     } catch {
       toast.error('Failed to logout')
     }
   }
+
+  const MENU_ITEMS = [
+    { label: 'Dashboard', href: '/dashboard',           icon: LayoutDashboard },
+    { label: 'My Shops',  href: '/dashboard/shops',     icon: Store           },
+    { label: 'Orders',    href: '/dashboard/orders',    icon: ShoppingBag     },
+    { label: 'Inventory', href: '/dashboard/inventory', icon: Package         },
+    { label: 'Analytics', href: '/dashboard/analytics', icon: BarChart3       },
+    { label: 'Settings',  href: '/dashboard/settings',  icon: Settings        },
+  ]
 
   return (
     <aside className="fixed left-0 top-0 h-full w-64 bg-slate-900 border-r border-slate-800 flex flex-col z-40">
@@ -100,7 +139,6 @@ export default function BusinessSidebar({ subRoles }: Props) {
 
       {/* Navigation */}
       <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-
         <p className="text-slate-500 text-xs uppercase tracking-wider font-medium px-3 mb-3">
           Main Menu
         </p>
@@ -109,6 +147,7 @@ export default function BusinessSidebar({ subRoles }: Props) {
           const Icon     = item.icon
           const isActive = pathname === item.href ||
             (item.href !== '/dashboard' && pathname.startsWith(item.href))
+          const isOrders = item.href === '/dashboard/orders'
 
           return (
             <Link
@@ -123,11 +162,20 @@ export default function BusinessSidebar({ subRoles }: Props) {
             >
               <Icon className="w-4 h-4 shrink-0" />
               <span className="flex-1">{item.label}</span>
-              {isActive && <ChevronRight className="w-3 h-3 opacity-60" />}
+
+              {/* New orders badge */}
+              {isOrders && count > 0 && (
+                <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">
+                  {count > 99 ? '99+' : count}
+                </span>
+              )}
+
+              {isActive && count === 0 && (
+                <ChevronRight className="w-3 h-3 opacity-60" />
+              )}
             </Link>
           )
         })}
-
       </nav>
 
       {/* Logout */}
