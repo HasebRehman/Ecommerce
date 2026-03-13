@@ -36,6 +36,7 @@ export default function CustomerOrderDetailPage() {
   const [loading,    setLoading]    = useState(true)
   const [cancelling, setCancelling] = useState(false)
 
+  // ── Fetch order ──
   useEffect(() => {
     if (!isAuthenticated) { router.push('/login'); return }
     api.get(`/api/store/orders/${params.id}`)
@@ -44,6 +45,40 @@ export default function CustomerOrderDetailPage() {
       .finally(() => setLoading(false))
   }, [params.id, isAuthenticated])
 
+  // ── Supabase Realtime — live status updates for customer ──
+  useEffect(() => {
+    if (!order?.id) return
+
+    let channel: any
+
+    const setupRealtime = async () => {
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
+
+      channel = supabase
+        .channel(`order-customer-${order.id}`)
+        .on(
+          'postgres_changes',
+          {
+            event:  'UPDATE',
+            schema: 'public',
+            table:  'orders',
+            filter: `id=eq.${order.id}`,
+          },
+          (payload) => {
+            setOrder((prev: any) => ({ ...prev, ...payload.new }))
+            const newLabel = STATUS_CONFIG[payload.new.status]?.label ?? payload.new.status
+            toast.success(`Order status updated: ${newLabel}`)
+          }
+        )
+        .subscribe()
+    }
+
+    setupRealtime()
+    return () => { channel?.unsubscribe() }
+  }, [order?.id])
+
+  // ── Cancel handler ──
   const handleCancelOrder = async () => {
     if (!confirm('Are you sure you want to cancel this order?')) return
     setCancelling(true)
@@ -165,7 +200,7 @@ export default function CustomerOrderDetailPage() {
         </div>
       )}
 
-      {/* Cancelled / Delivered Terminal Banner */}
+      {/* Terminal Banner */}
       {isTerminal && (
         <div className={cn(
           'flex items-center gap-3 p-4 rounded-2xl border',
