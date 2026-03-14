@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef } from 'react'
 import {
   LayoutDashboard, ShoppingBag, Package,
-  BarChart3, Settings, LogOut, ChevronRight, Store,
+  BarChart3, Settings, LogOut, ChevronRight, Store, Star 
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -101,6 +101,7 @@ export default function BusinessSidebar({ subRoles }: Props) {
     { label: 'My Shops',  href: '/dashboard/shops',     icon: Store           },
     { label: 'Orders',    href: '/dashboard/orders',    icon: ShoppingBag     },
     { label: 'Inventory', href: '/dashboard/inventory', icon: Package         },
+    { label: 'Reviews',   href: '/dashboard/reviews',   icon: Star            },
     { label: 'Analytics', href: '/dashboard/analytics', icon: BarChart3       },
     { label: 'Settings',  href: '/dashboard/settings',  icon: Settings        },
   ]

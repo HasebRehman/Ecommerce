@@ -80,16 +80,17 @@ export async function GET() {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { data: orders } = await supabase
-      .from('orders')
-      .select(`
-        *,
-        order_items(
-          id, quantity, price,
-          products(id, name, images)
-        )
-      `)
-      .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
+    .from('orders')
+    .select(`
+      *,
+      shops(id, name, logo_url),
+      order_items(
+        id, quantity, price, product_id,
+        products(id, name, images)
+      )
+    `)
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false })
 
     return NextResponse.json({ orders: orders ?? [] })
 
