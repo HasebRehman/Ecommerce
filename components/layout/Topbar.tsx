@@ -6,7 +6,7 @@ import { useState } from 'react'
 import {
   ShoppingCart, Heart, LogOut,
   User, LayoutDashboard, Shield,
-  TrendingUp, Search,
+  TrendingUp, Search, Bell,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -15,6 +15,7 @@ import { useCartStore } from '@/store/cartStore'
 import { useWishlistStore } from '@/store/wishlistStore'
 import { authService } from '@/lib/services/auth.service'
 import { ShoppingBag } from 'lucide-react'
+import NotificationBell from '@/components/store/NotificationBell'
 
 const ADMIN_ROLES = ['super_admin', 'platform_admin', 'operations_admin']
 
@@ -52,18 +53,6 @@ export default function Topbar() {
           </h1>
         </Link>
 
-        {/* Search */}
-        {/* <div className="flex-1 max-w-xl hidden md:flex items-center">
-          <div className="relative w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search products..."
-              className="w-full h-10 pl-10 pr-4 bg-slate-900 border border-slate-700 rounded-xl text-white placeholder:text-slate-500 text-sm focus:outline-none focus:border-blue-500 transition-colors"
-            />
-          </div>
-        </div> */}
-
         {/* Right side */}
         <div className="flex items-center gap-2 ml-auto">
 
@@ -79,7 +68,7 @@ export default function Topbar() {
             </button>
           </Link>
 
-          {/* Wishlist — only if logged in */}
+          {/* Wishlist */}
           {isAuthenticated && (
             <Link href="/wishlist">
               <button className="relative p-2 text-slate-400 hover:text-white transition-colors">
@@ -92,6 +81,9 @@ export default function Topbar() {
               </button>
             </Link>
           )}
+
+          {/* ── Notification Bell ── */}
+          <NotificationBell />
 
           {/* NOT logged in */}
           {!isAuthenticated && (
@@ -112,18 +104,13 @@ export default function Topbar() {
           {/* Logged in — user menu */}
           {isAuthenticated && (
             <div className="relative">
-              
               <button
                 onClick={() => setUserMenuOpen(p => !p)}
                 className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
               >
                 <div className="w-8 h-8 rounded-full overflow-hidden bg-blue-500 flex items-center justify-center text-white text-sm font-semibold shrink-0">
                   {user?.avatar_url ? (
-                    <img
-                      src={user.avatar_url}
-                      alt={user.full_name ?? 'Avatar'}
-                      className="w-full h-full object-cover"
-                    />
+                    <img src={user.avatar_url} alt={user.full_name ?? 'Avatar'} className="w-full h-full object-cover" />
                   ) : (
                     user?.full_name?.charAt(0)?.toUpperCase() ?? 'U'
                   )}
@@ -132,17 +119,11 @@ export default function Topbar() {
 
               {userMenuOpen && (
                 <>
-                  <div
-                    className="fixed inset-0 z-10"
-                    onClick={() => setUserMenuOpen(false)}
-                  />
+                  <div className="fixed inset-0 z-10" onClick={() => setUserMenuOpen(false)} />
                   <div className="absolute right-0 top-full mt-2 w-52 bg-slate-900 border border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden">
 
-                    {/* User info */}
                     <div className="px-4 py-3 border-b border-slate-800">
-                      <p className="text-white text-sm font-medium truncate">
-                        {user?.full_name}
-                      </p>
+                      <p className="text-white text-sm font-medium truncate">{user?.full_name}</p>
                       <p className="text-slate-400 text-xs capitalize mt-0.5">
                         {isAdmin ? role?.replace(/_/g, ' ') : isRetailer ? 'Retailer' : 'Customer'}
                       </p>
@@ -150,21 +131,19 @@ export default function Topbar() {
 
                     <div className="p-1.5 space-y-0.5">
 
-                      {/* My Profile — shows for ALL logged in users */}
-                          <Link href="/profile" onClick={() => setUserMenuOpen(false)}>
-                            <button className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 text-sm transition-colors">
-                              <User className="w-4 h-4 text-blue-400" />
-                              My Profile
-                            </button>
-                          </Link>
+                      <Link href="/profile" onClick={() => setUserMenuOpen(false)}>
+                        <button className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 text-sm transition-colors">
+                          <User className="w-4 h-4 text-blue-400" />
+                          My Profile
+                        </button>
+                      </Link>
 
-
-                          <Link href="/orders" onClick={() => setUserMenuOpen(false)}>
-                          <button className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 text-sm transition-colors">
-                            <ShoppingBag className="w-4 h-4 text-purple-400" />
-                            Order History
-                          </button>
-                        </Link>
+                      <Link href="/orders" onClick={() => setUserMenuOpen(false)}>
+                        <button className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 text-sm transition-colors">
+                          <ShoppingBag className="w-4 h-4 text-purple-400" />
+                          Order History
+                        </button>
+                      </Link>
 
                       {isAdmin && (
                         <Link href="/admin/dashboard" onClick={() => setUserMenuOpen(false)}>
@@ -185,14 +164,12 @@ export default function Topbar() {
                       )}
 
                       {isCustomer && isAuthenticated && (
-                        <>
-                          <Link href="/request-seller" onClick={() => setUserMenuOpen(false)}>
-                            <button className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 text-sm transition-colors">
-                              <TrendingUp className="w-4 h-4 text-green-400" />
-                              Request to Seller
-                            </button>
-                          </Link>
-                        </>
+                        <Link href="/request-seller" onClick={() => setUserMenuOpen(false)}>
+                          <button className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 text-sm transition-colors">
+                            <TrendingUp className="w-4 h-4 text-green-400" />
+                            Request to Seller
+                          </button>
+                        </Link>
                       )}
 
                       <div className="border-t border-slate-800 mt-1 pt-1">

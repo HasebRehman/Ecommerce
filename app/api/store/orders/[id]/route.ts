@@ -28,8 +28,8 @@ export async function GET(
     if (error || !order) return NextResponse.json({ error: 'Order not found' }, { status: 404 })
     return NextResponse.json({ order })
 
-  } catch (err) {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
 
@@ -44,15 +44,17 @@ export async function PUT(
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { action } = await request.json()
-
     if (action !== 'cancel') {
       return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     }
 
-    // Only allow cancel if status is pending
+    // Get existing order with shop info
     const { data: existing } = await supabase
       .from('orders')
-      .select('id, status, user_id')
+      .select(`
+        id, status, user_id, total_amount,
+        shops(name)
+      `)
       .eq('id', id)
       .eq('user_id', user.id)
       .single()
@@ -69,18 +71,37 @@ export async function PUT(
     const { data: order, error } = await supabase
       .from('orders')
       .update({
-        status:        'cancelled_by_customer',
-        cancelled_by:  'customer',
-        updated_at:    new Date().toISOString(),
+        status:       'cancelled_by_customer',
+        cancelled_by: 'customer',
+        updated_at:   new Date().toISOString(),
       })
       .eq('id', id)
       .select()
       .single()
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
+
+    // ── Create notification for customer ──
+    const shopName = (existing.shops as any)?.name ?? ''
+    const now      = new Date()
+    const dateStr  = now.toLocaleDateString('en-US', {
+      weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'
+    })
+    const timeStr  = now.toLocaleTimeString('en-US', {
+      hour: '2-digit', minute: '2-digit'
+    })
+
+    await supabase.from('notifications').insert({
+      user_id:  user.id,
+      title:    '🚫 Order Cancelled',
+      message:  `You cancelled your order${shopName ? ` from ${shopName}` : ''}. Total: Rs. ${existing.total_amount?.toLocaleString()}. ${dateStr} at ${timeStr}`,
+      type:     'cancelled_by_customer',
+      order_id: id,
+    })
+
     return NextResponse.json({ order, message: 'Order cancelled successfully' })
 
-  } catch (err) {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
