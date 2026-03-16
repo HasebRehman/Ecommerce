@@ -2,7 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
-import { ShoppingCart, Zap, Heart, Loader2, Store } from 'lucide-react'
+import {
+  ShoppingCart, Zap, Heart, Loader2, Store,
+  Package, ChevronLeft, Star, CheckCircle,
+  Truck, Shield, RotateCcw, Tag,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -19,10 +23,10 @@ import ReviewForm from '@/components/store/ReviewForm'
 import { cn } from '@/lib/utils'
 
 export default function ProductPage() {
-  const params                    = useParams()
-  const { isAuthenticated, user } = useAuthStore()
+  const params                              = useParams()
+  const { isAuthenticated, user }           = useAuthStore()
   const { productIds, addItem, removeItem } = useWishlistStore()
-  const { setCart }               = useCartStore()
+  const { setCart }                         = useCartStore()
 
   const [product,        setProduct]        = useState<any>(null)
   const [loading,        setLoading]        = useState(true)
@@ -37,7 +41,7 @@ export default function ProductPage() {
   const [userReview,     setUserReview]     = useState<any>(null)
   const [deliveredOrder, setDeliveredOrder] = useState<any>(null)
 
-  // ── Fetch product ──
+  /* ── all logic completely unchanged ── */
   const fetchProduct = async () => {
     setLoading(true)
     try {
@@ -49,48 +53,32 @@ export default function ProductPage() {
         .single()
       if (error) throw error
       setProduct(data)
-    } catch (err: any) {
-      toast.error('Failed to fetch product')
-    } finally {
-      setLoading(false)
-    }
+    } catch { toast.error('Failed to fetch product') }
+    finally { setLoading(false) }
   }
 
-  // ── Fetch reviews ──
   const fetchReviews = async (pid: string) => {
-  try {
-    const res = await api.get(`/api/store/reviews/${pid}`)
-    setReviews(res.data.reviews          ?? [])
-    setAvgRating(res.data.average_rating  ?? 0)
-    setTotalReviews(res.data.total_reviews ?? 0)
+    try {
+      const res = await api.get(`/api/store/reviews/${pid}`)
+      setReviews(res.data.reviews ?? [])
+      setAvgRating(res.data.average_rating ?? 0)
+      setTotalReviews(res.data.total_reviews ?? 0)
+      if (isAuthenticated && user?.id) {
+        const mine = res.data.reviews?.find((r: any) => r.user_id === user.id)
+        if (mine) setUserReview(mine)
+        try {
+          const ordersRes = await api.get('/api/store/orders')
+          const orders    = ordersRes.data.orders ?? []
+          const matched   = orders.find((o: any) => {
+            if (o.status !== 'delivered') return false
+            return (o.order_items ?? []).some((i: any) => i.product_id === pid || i.products?.id === pid)
+          })
+          if (matched) setDeliveredOrder(matched)
+        } catch { /* silent */ }
+      }
+    } catch { /* silent */ }
+  }
 
-    if (isAuthenticated && user?.id) {
-      // Check if already reviewed
-      const mine = res.data.reviews?.find((r: any) => r.user_id === user.id)
-      if (mine) setUserReview(mine)
-
-      // Check delivered orders containing this product
-      try {
-        const ordersRes = await api.get('/api/store/orders')
-        const orders    = ordersRes.data.orders ?? []
-
-        const matched = orders.find((o: any) => {
-          if (o.status !== 'delivered') return false
-          const items = o.order_items ?? []
-          return items.some((i: any) =>
-            i.product_id === pid || i.products?.id === pid
-          )
-        })
-
-        if (matched) {
-          setDeliveredOrder(matched)
-        }
-      } catch { /* silent */ }
-    }
-  } catch { /* silent */ }
-}
-
-  // ── Run on mount ──
   useEffect(() => {
     const pid = params.id as string
     if (!pid) return
@@ -98,19 +86,16 @@ export default function ProductPage() {
     fetchReviews(pid)
   }, [params.id, isAuthenticated])
 
-  // ── Handlers ──
   const handleWishlist = async () => {
     if (!isAuthenticated) { toast.error('Login to add to wishlist'); return }
     setTogglingWish(true)
     try {
       if (isWishlisted) {
         await wishlistService.removeFromWishlist(product.id)
-        removeItem(product.id)
-        toast.success('Removed from wishlist')
+        removeItem(product.id); toast.success('Removed from wishlist')
       } else {
         await wishlistService.addToWishlist(product.id)
-        addItem(product.id)
-        toast.success('Added to wishlist ❤️')
+        addItem(product.id); toast.success('Added to wishlist ❤️')
       }
     } catch (err: any) { toast.error(err.message) }
     finally { setTogglingWish(false) }
@@ -122,291 +107,616 @@ export default function ProductPage() {
     try {
       await cartService.addToCart(product.id)
       const data = await cartService.getCart()
-      setCart(data.cart)
-      toast.success('Added to cart 🛒')
+      setCart(data.cart); toast.success('Added to cart 🛒')
     } catch (err: any) { toast.error(err.message) }
     finally { setAddingCart(false) }
   }
 
-  // ── Guards ──
+  /* ── Loading ── */
   if (loading) return (
-    <div className="flex items-center justify-center py-20">
-      <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
-    </div>
+    <>
+      <style>{styles}</style>
+      <div className="pp-root pp-loader">
+        <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#408A71' }} />
+        <span style={{ color: 'rgba(176,228,204,0.40)', fontSize: '0.85rem', fontWeight: 500 }}>
+          Loading product…
+        </span>
+      </div>
+    </>
   )
 
   if (!product) return (
-    <div className="text-center py-20">
-      <p className="text-slate-400">Product not found</p>
-    </div>
+    <>
+      <style>{styles}</style>
+      <div className="pp-root pp-loader">
+        <Package className="w-12 h-12" style={{ color: '#285A48' }} />
+        <p style={{ color: 'rgba(176,228,204,0.40)', fontWeight: 600 }}>Product not found</p>
+      </div>
+    </>
   )
 
   const isWishlisted = productIds.has(product.id)
   const displayPrice = product.discount_price ?? product.price
   const shop         = product.shop_products?.[0]?.shops
+  const inStock      = product.stock > 0
+  const lowStock     = inStock && product.stock <= 5
+
+  // const ratingLabel = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent']
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-8">
+    <>
+      <style>{styles}</style>
 
-      {/* ── Product Grid ── */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="pp-root max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
 
-        {/* Images */}
-        <div className="space-y-3">
-          <div className="aspect-square rounded-2xl overflow-hidden bg-slate-900 border border-slate-800">
-            {product.images?.[mainImage]
-              ? <img src={product.images[mainImage]} alt={product.name} className="w-full h-full object-cover" />
-              : <div className="w-full h-full flex items-center justify-center">
-                  <ShoppingCart className="w-16 h-16 text-slate-600" />
+        {/* ── Breadcrumb ───────────────────────────── */}
+        <div className="pp-fade-up flex items-center gap-2 mb-7 text-xs font-medium" style={{ color: 'rgba(176,228,204,0.38)' }}>
+          <Link href="/" className="pp-crumb-link">Home</Link>
+          <span>/</span>
+          <Link href="/products" className="pp-crumb-link">Products</Link>
+          {product.categories?.name && (
+            <>
+              <span>/</span>
+              <span style={{ color: 'rgba(176,228,204,0.55)' }}>{product.categories.name}</span>
+            </>
+          )}
+          <span>/</span>
+          <span className="truncate max-w-[140px]" style={{ color: '#B0E4CC' }}>{product.name}</span>
+        </div>
+
+        {/* ── Product grid ─────────────────────────── */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-10">
+
+          {/* ── Images ── */}
+          <div className="pp-fade-up space-y-3" style={{ animationDelay: '40ms' }}>
+
+            {/* Main image */}
+            <div className="pp-main-img-wrap">
+              {product.images?.[mainImage] ? (
+                <img
+                  src={product.images[mainImage]}
+                  alt={product.name}
+                  className="pp-main-img w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center gap-3"
+                  style={{ background: '#162420' }}>
+                  <Package className="w-14 h-14" style={{ color: '#285A48' }} />
+                  <span className="text-xs font-bold uppercase tracking-widest" style={{ color: 'rgba(176,228,204,0.25)' }}>
+                    No image
+                  </span>
                 </div>
-            }
+              )}
+
+              {/* Discount badge overlay */}
+              {product.discount_price && (
+                <div className="absolute top-3 left-3 pointer-events-none">
+                  <DiscountBadge price={product.price} discountPrice={product.discount_price} />
+                </div>
+              )}
+
+              {/* Out of stock overlay */}
+              {!inStock && (
+                <div className="absolute inset-0 flex items-center justify-center"
+                  style={{ background: 'rgba(9,20,19,0.65)', backdropFilter: 'blur(2px)' }}>
+                  <span className="px-4 py-2 rounded-xl text-sm font-black uppercase tracking-wide"
+                    style={{
+                      background: 'rgba(248,113,113,0.15)',
+                      border: '1px solid rgba(248,113,113,0.35)',
+                      color: '#f87171',
+                    }}>
+                    Out of Stock
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Thumbnails */}
+            {product.images?.length > 1 && (
+              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                {product.images.map((img: string, i: number) => (
+                  <button
+                    key={i}
+                    onClick={() => setMainImage(i)}
+                    className="pp-thumb shrink-0"
+                    style={{
+                      border: i === mainImage
+                        ? '2px solid #408A71'
+                        : '2px solid rgba(40,90,72,0.25)',
+                      boxShadow: i === mainImage ? '0 0 10px rgba(64,138,113,0.3)' : 'none',
+                    }}
+                  >
+                    <img src={img} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-          {product.images?.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto">
-              {product.images.map((img: string, i: number) => (
+
+          {/* ── Info panel ── */}
+          <div className="pp-fade-up space-y-5" style={{ animationDelay: '80ms' }}>
+
+            {/* Shop link */}
+            {shop && (
+              <Link href={`/shop/${shop.id}`}>
+                <div className="pp-shop-row">
+                  {shop.logo_url
+                    ? <img src={shop.logo_url} alt={shop.name}
+                        className="w-6 h-6 rounded-full object-cover"
+                        style={{ border: '1px solid rgba(64,138,113,0.35)' }} />
+                    : <div className="w-6 h-6 rounded-full flex items-center justify-center"
+                        style={{ background: 'rgba(40,90,72,0.3)', border: '1px solid rgba(64,138,113,0.25)' }}>
+                        <Store className="w-3.5 h-3.5" style={{ color: '#408A71' }} />
+                      </div>
+                  }
+                  <span className="pp-shop-name">{shop.name}</span>
+                </div>
+              </Link>
+            )}
+
+            {/* Product name */}
+            <h1 className="pp-product-title">{product.name}</h1>
+
+            {/* Rating bar */}
+            {avgRating > 0 && (
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <StarRating value={Math.round(avgRating)} readonly size="sm" />
+                <span className="font-black text-sm" style={{ color: '#facc15' }}>{avgRating}</span>
+                <span className="text-xs" style={{ color: 'rgba(176,228,204,0.38)' }}>
+                  ({totalReviews} review{totalReviews !== 1 ? 's' : ''})
+                </span>
+              </div>
+            )}
+
+            {/* Price block */}
+            <div className="pp-price-block">
+              <span className="pp-price">Rs. {displayPrice.toLocaleString()}</span>
+              {product.discount_price && (
+                <span className="pp-price-original">
+                  Rs. {product.price.toLocaleString()}
+                </span>
+              )}
+            </div>
+
+            {/* Description */}
+            {product.description && (
+              <p className="pp-description">{product.description}</p>
+            )}
+
+            {/* Stock status */}
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full shrink-0"
+                style={{ background: inStock ? '#4ade80' : '#f87171',
+                  boxShadow: inStock ? '0 0 6px rgba(74,222,128,0.5)' : '0 0 6px rgba(248,113,113,0.5)' }} />
+              <span className="text-sm font-semibold"
+                style={{ color: inStock ? '#4ade80' : '#f87171' }}>
+                {inStock ? `${product.stock} in stock` : 'Out of stock'}
+              </span>
+              {lowStock && (
+                <span className="pp-low-stock">Only {product.stock} left!</span>
+              )}
+            </div>
+
+            {/* Action buttons */}
+            <div className="flex gap-2.5">
+              <button
+                onClick={handleAddToCart}
+                disabled={addingCart || !inStock}
+                className="pp-btn-cart flex-1"
+              >
+                {addingCart
+                  ? <Loader2 className="w-4 h-4 animate-spin" />
+                  : <><ShoppingCart className="w-4 h-4 shrink-0" /> Add to Cart</>
+                }
+              </button>
+              <button
+                onClick={() => {
+                  if (!isAuthenticated) { toast.error('Login to buy'); return }
+                  setQuickBuy(true)
+                }}
+                disabled={!inStock}
+                className="pp-btn-buy flex-1"
+              >
+                <Zap className="w-4 h-4 shrink-0" /> Quick Buy
+              </button>
+              <button
+                onClick={handleWishlist}
+                disabled={togglingWish}
+                className="pp-btn-wish"
+                style={{
+                  background:   isWishlisted ? 'rgba(239,68,68,0.15)' : 'rgba(13,28,25,0.9)',
+                  borderColor:  isWishlisted ? 'rgba(248,113,113,0.5)' : 'rgba(40,90,72,0.4)',
+                  color:        isWishlisted ? '#f87171'                : 'rgba(176,228,204,0.50)',
+                }}
+              >
+                <Heart className={cn('w-5 h-5', isWishlisted && 'fill-current')} />
+              </button>
+            </div>
+
+            {/* Trust strip — safe visual addition */}
+            <div className="grid grid-cols-3 gap-2 pt-1">
+              {[
+                { icon: Truck,    label: 'Free Delivery' },
+                { icon: Shield,   label: 'Secure Buy' },
+                { icon: RotateCcw,label: 'Easy Return' },
+              ].map(t => (
+                <div key={t.label} className="pp-trust-tile">
+                  <t.icon className="w-3.5 h-3.5" style={{ color: '#408A71' }} />
+                  <span>{t.label}</span>
+                </div>
+              ))}
+            </div>
+
+          </div>
+        </div>
+
+        {/* Quick Buy Modal */}
+        {quickBuy && (
+          <QuickBuyModal
+            product={{ ...product, shop }}
+            onClose={() => setQuickBuy(false)}
+            onSuccess={() => setQuickBuy(false)}
+          />
+        )}
+
+        {/* ── Reviews section ───────────────────────── */}
+        <div className="mt-14 space-y-6">
+
+          {/* Section header */}
+          <div className="flex items-start justify-between gap-4 flex-wrap">
+            <div>
+              <div className="flex items-center gap-2.5 mb-1">
+                <div className="pp-icon-tile">
+                  <Star className="w-3.5 h-3.5" style={{ color: '#B0E4CC' }} />
+                </div>
+                <h2 className="pp-section-title">Customer Reviews</h2>
+              </div>
+              {avgRating > 0 ? (
+                <div className="flex items-center gap-2.5 pl-10 flex-wrap">
+                  <StarRating value={Math.round(avgRating)} readonly size="sm" />
+                  <span className="font-black text-sm" style={{ color: '#facc15' }}>{avgRating}</span>
+                  <span className="text-xs" style={{ color: 'rgba(176,228,204,0.38)' }}>
+                    ({totalReviews} review{totalReviews !== 1 ? 's' : ''})
+                  </span>
+                </div>
+              ) : (
+                <p className="text-xs pl-10" style={{ color: 'rgba(176,228,204,0.35)' }}>
+                  No reviews yet — be the first!
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center gap-3">
+              {isAuthenticated && deliveredOrder && !userReview && !showReviewForm && (
                 <button
-                  key={i}
-                  onClick={() => setMainImage(i)}
-                  className={cn(
-                    'w-16 h-16 rounded-lg overflow-hidden shrink-0 border-2 transition-colors',
-                    i === mainImage ? 'border-blue-500' : 'border-slate-700'
-                  )}
+                  onClick={() => setShowReviewForm(true)}
+                  className="pp-btn-review"
                 >
-                  <img src={img} alt="" className="w-full h-full object-cover" />
+                  ⭐ Write a Review
                 </button>
+              )}
+              {userReview && (
+                <span className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full"
+                  style={{
+                    background: 'rgba(74,222,128,0.10)',
+                    border: '1px solid rgba(74,222,128,0.28)',
+                    color: '#4ade80',
+                  }}>
+                  <CheckCircle className="w-3.5 h-3.5" />
+                  You reviewed this
+                </span>
+              )}
+              {isAuthenticated && !deliveredOrder && !userReview && (
+                <span className="text-xs" style={{ color: 'rgba(176,228,204,0.28)' }}>
+                  Purchase &amp; receive to review
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Review Form */}
+          {showReviewForm && deliveredOrder && (
+            <ReviewForm
+              productId={product.id}
+              orderId={deliveredOrder.id}
+              productName={product.name}
+              onSubmitted={() => { setShowReviewForm(false); fetchReviews(product.id) }}
+              onCancel={() => setShowReviewForm(false)}
+            />
+          )}
+
+          {/* Reviews list */}
+          {reviews.length === 0 ? (
+            <div className="pp-empty-reviews">
+              <p className="text-3xl">⭐</p>
+              <p className="text-sm font-semibold" style={{ color: 'rgba(176,228,204,0.40)' }}>
+                No reviews yet for this product
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {reviews.map((review, idx) => (
+                <div
+                  key={review.id}
+                  className="pp-review-card"
+                  style={{ animationDelay: `${idx * 50}ms` }}
+                >
+                  <div className="flex items-start justify-between gap-3 flex-wrap">
+
+                    {/* Avatar + name */}
+                    <div className="flex items-center gap-3">
+                      <div className="pp-avatar">
+                        {review.profiles?.avatar_url
+                          ? <img src={review.profiles.avatar_url} alt="" className="w-full h-full object-cover" />
+                          : <span className="text-white text-sm font-black">
+                              {review.profiles?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
+                            </span>
+                        }
+                      </div>
+                      <div>
+                        <p className="text-white font-bold text-sm leading-tight">
+                          {review.profiles?.full_name ?? 'Customer'}
+                        </p>
+                        <p className="text-xs" style={{ color: '#408A71' }}>
+                          @{review.profiles?.username ?? '—'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Stars + date */}
+                    <div className="text-right shrink-0">
+                      <StarRating value={review.rating} readonly size="sm" />
+                      <p className="text-[10px] mt-1" style={{ color: 'rgba(176,228,204,0.28)' }}>
+                        {new Date(review.created_at).toLocaleDateString('en-US', {
+                          day: 'numeric', month: 'short', year: 'numeric',
+                        })}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Review text */}
+                  {review.review_text && (
+                    <p className="text-sm leading-relaxed mt-3"
+                      style={{ color: 'rgba(176,228,204,0.60)' }}>
+                      {review.review_text}
+                    </p>
+                  )}
+
+                  {/* Rating label pill */}
+                  {/* <div className="mt-3">
+                    <span className="pp-rating-pill"
+                      style={{
+                        background: review.rating >= 4 ? 'rgba(74,222,128,0.10)'
+                          : review.rating === 3 ? 'rgba(250,204,21,0.10)'
+                          : 'rgba(248,113,113,0.10)',
+                        border: review.rating >= 4 ? '1px solid rgba(74,222,128,0.28)'
+                          : review.rating === 3 ? '1px solid rgba(250,204,21,0.28)'
+                          : '1px solid rgba(248,113,113,0.28)',
+                        color: review.rating >= 4 ? '#4ade80'
+                          : review.rating === 3 ? '#facc15'
+                          : '#f87171',
+                      }}>
+                      {ratingLabel[review.rating]}
+                    </span>
+                  </div> */}
+                </div>
               ))}
             </div>
           )}
         </div>
-
-        {/* Info */}
-        <div className="space-y-5">
-
-          {/* Shop */}
-          {shop && (
-            <Link href={`/shop/${shop.id}`}>
-              <div className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-                {shop.logo_url
-                  ? <img src={shop.logo_url} alt={shop.name} className="w-6 h-6 rounded-full object-cover" />
-                  : <Store className="w-4 h-4 text-slate-500" />
-                }
-                <span className="text-slate-400 text-sm">{shop.name}</span>
-              </div>
-            </Link>
-          )}
-
-          <h1 className="text-2xl font-bold text-white">{product.name}</h1>
-
-          {/* Avg rating inline */}
-          {avgRating > 0 && (
-            <div className="flex items-center gap-2">
-              <StarRating value={Math.round(avgRating)} readonly size="sm" />
-              <span className="text-yellow-400 text-sm font-medium">{avgRating}</span>
-              <span className="text-slate-500 text-xs">
-                ({totalReviews} review{totalReviews !== 1 ? 's' : ''})
-              </span>
-            </div>
-          )}
-
-          {/* Price */}
-          <div className="flex items-center gap-3">
-            <span className="text-3xl font-bold text-white">
-              Rs. {displayPrice.toLocaleString()}
-            </span>
-            {product.discount_price && (
-              <>
-                <span className="text-slate-500 text-lg line-through">
-                  Rs. {product.price.toLocaleString()}
-                </span>
-                <DiscountBadge price={product.price} discountPrice={product.discount_price} />
-              </>
-            )}
-          </div>
-
-          {product.description && (
-            <p className="text-slate-400 leading-relaxed">{product.description}</p>
-          )}
-
-          {/* Stock */}
-          <p className="text-sm">
-            <span className="text-slate-400">Stock: </span>
-            <span className={product.stock > 0 ? 'text-green-400' : 'text-red-400'}>
-              {product.stock > 0 ? `${product.stock} available` : 'Out of stock'}
-            </span>
-          </p>
-
-          {/* Action Buttons */}
-          <div className="flex gap-3">
-            <button
-              onClick={handleAddToCart}
-              disabled={addingCart || product.stock === 0}
-              className="flex-1 h-12 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 text-white font-medium rounded-xl flex items-center justify-center gap-2 transition-colors border border-slate-700"
-            >
-              {addingCart
-                ? <Loader2 className="w-4 h-4 animate-spin" />
-                : <><ShoppingCart className="w-4 h-4" /> Add to Cart</>
-              }
-            </button>
-            <button
-              onClick={() => {
-                if (!isAuthenticated) { toast.error('Login to buy'); return }
-                setQuickBuy(true)
-              }}
-              disabled={product.stock === 0}
-              className="flex-1 h-12 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white font-medium rounded-xl flex items-center justify-center gap-2 transition-colors"
-            >
-              <Zap className="w-4 h-4" /> Quick Buy
-            </button>
-            <button
-              onClick={handleWishlist}
-              disabled={togglingWish}
-              className={cn(
-                'w-12 h-12 rounded-xl flex items-center justify-center transition-colors border',
-                isWishlisted
-                  ? 'bg-red-500 border-red-500 text-white'
-                  : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-red-400'
-              )}
-            >
-              <Heart className={cn('w-5 h-5', isWishlisted && 'fill-current')} />
-            </button>
-          </div>
-        </div>
       </div>
-
-      {/* Quick Buy Modal */}
-      {quickBuy && (
-        <QuickBuyModal
-          product={{ ...product, shop }}
-          onClose={() => setQuickBuy(false)}
-          onSuccess={() => setQuickBuy(false)}
-        />
-      )}
-
-      {/* ── Reviews Section ── */}
-      <div className="mt-12 space-y-6">
-
-        {/* Reviews Header */}
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <h2 className="text-xl font-bold text-white">Customer Reviews</h2>
-            <div className="flex items-center gap-3 mt-1">
-              {avgRating > 0 ? (
-                <>
-                  <StarRating value={Math.round(avgRating)} readonly size="sm" />
-                  <span className="text-yellow-400 font-bold">{avgRating}</span>
-                  <span className="text-slate-500 text-sm">
-                    ({totalReviews} review{totalReviews !== 1 ? 's' : ''})
-                  </span>
-                </>
-              ) : (
-                <span className="text-slate-500 text-sm">
-                  No reviews yet — be the first!
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* Write review button */}
-          {isAuthenticated && deliveredOrder && !userReview && !showReviewForm && (
-          <button
-            onClick={() => setShowReviewForm(true)}
-            className="flex items-center gap-2 px-4 py-2.5 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 text-sm font-medium rounded-xl border border-yellow-500/30 transition-colors"
-          >
-            ⭐ Write a Review
-          </button>
-        )}
-        {userReview && (
-          <span className="text-green-400 text-sm font-medium">
-            ✅ You reviewed this product
-          </span>
-        )}
-        {isAuthenticated && !deliveredOrder && !userReview && (
-          <span className="text-slate-500 text-xs">
-            Purchase & receive this product to leave a review
-          </span>
-        )}
-        </div>
-
-        {/* Review Form */}
-        {showReviewForm && deliveredOrder && (
-          <ReviewForm
-            productId={product.id}
-            orderId={deliveredOrder.id}
-            productName={product.name}
-            onSubmitted={() => {
-              setShowReviewForm(false)
-              fetchReviews(product.id)
-            }}
-            onCancel={() => setShowReviewForm(false)}
-          />
-        )}
-
-        {/* Reviews List */}
-        {reviews.length === 0 ? (
-          <div className="text-center py-12 bg-slate-900 border border-slate-800 rounded-2xl">
-            <p className="text-4xl mb-3">⭐</p>
-            <p className="text-slate-400">No reviews yet for this product</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {reviews.map(review => (
-              <div
-                key={review.id}
-                className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3"
-              >
-                <div className="flex items-start justify-between gap-3">
-
-                  {/* Customer info */}
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold text-sm shrink-0 overflow-hidden">
-                      {review.profiles?.avatar_url
-                        ? <img src={review.profiles.avatar_url} alt="" className="w-full h-full object-cover" />
-                        : review.profiles?.full_name?.charAt(0)?.toUpperCase() ?? 'U'
-                      }
-                    </div>
-                    <div>
-                      <p className="text-white font-medium text-sm">
-                        {review.profiles?.full_name ?? 'Customer'}
-                      </p>
-                      <p className="text-slate-500 text-xs">
-                        @{review.profiles?.username ?? '—'}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Stars + date */}
-                  <div className="text-right shrink-0">
-                    <StarRating value={review.rating} readonly size="sm" />
-                    <p className="text-slate-500 text-xs mt-1">
-                      {new Date(review.created_at).toLocaleDateString('en-US', {
-                        day: 'numeric', month: 'short', year: 'numeric',
-                      })}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Review text */}
-                {review.review_text && (
-                  <p className="text-slate-300 text-sm leading-relaxed">
-                    {review.review_text}
-                  </p>
-                )}
-
-                {/* Rating badge */}
-                <span className={cn(
-                  'inline-block text-xs font-medium px-2.5 py-1 rounded-full',
-                  review.rating >= 4 ? 'bg-green-500/10 text-green-400' :
-                  review.rating === 3 ? 'bg-yellow-500/10 text-yellow-400' :
-                  'bg-red-500/10 text-red-400'
-                )}>
-                  {['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent'][review.rating]}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-    </div>
+    </>
   )
 }
+
+/* ── Styles ──────────────────────────────────────────────── */
+const styles = `
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+  .pp-root * { box-sizing: border-box; }
+  .pp-root, .pp-root a, .pp-root button { cursor: pointer !important; }
+  .pp-root { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+  .scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+
+  /* ── fade-up ── */
+  @keyframes ppFadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .pp-fade-up { animation: ppFadeUp 0.45s cubic-bezier(.22,1,.36,1) both; }
+
+  /* ── loader ── */
+  .pp-loader {
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 12px; padding: 8rem 1rem;
+  }
+
+  /* ── breadcrumb ── */
+  .pp-crumb-link {
+    color: rgba(176,228,204,0.38); transition: color 0.15s ease;
+  }
+  .pp-crumb-link:hover { color: #408A71; }
+
+  /* ── main image ── */
+  .pp-main-img-wrap {
+    position: relative; aspect-ratio: 1/1; border-radius: 22px; overflow: hidden;
+    background: rgba(13,28,25,0.95);
+    border: 1px solid rgba(40,90,72,0.28);
+    box-shadow: 0 12px 40px rgba(9,20,19,0.5);
+  }
+  .pp-main-img {
+    transition: transform 0.5s cubic-bezier(.25,.46,.45,.94);
+  }
+  .pp-main-img-wrap:hover .pp-main-img { transform: scale(1.04); }
+
+  /* ── thumbnails ── */
+  .pp-thumb {
+    width: 64px; height: 64px; border-radius: 12px;
+    overflow: hidden; transition: all 0.18s ease;
+  }
+  .pp-thumb:hover { opacity: 0.85; }
+
+  /* ── shop row ── */
+  .pp-shop-row {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 5px 12px; border-radius: 99px;
+    background: rgba(40,90,72,0.18);
+    border: 1px solid rgba(64,138,113,0.25);
+    transition: background 0.18s ease;
+  }
+  .pp-shop-row:hover { background: rgba(40,90,72,0.30); }
+  .pp-shop-name {
+    font-size: 11px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: #408A71;
+  }
+
+  /* ── product title ── */
+  .pp-product-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.4rem, 3.5vw, 1.9rem);
+    font-weight: 700; color: #fff; line-height: 1.15;
+  }
+
+  /* ── price ── */
+  .pp-price-block { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .pp-price {
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    font-weight: 900; color: #B0E4CC; line-height: 1;
+  }
+  .pp-price-original {
+    font-size: 1rem; font-weight: 500;
+    color: rgba(176,228,204,0.28); text-decoration: line-through; line-height: 1;
+  }
+
+  /* ── description ── */
+  .pp-description {
+    font-size: 0.875rem; line-height: 1.7;
+    color: rgba(176,228,204,0.55);
+  }
+
+  /* ── low stock ── */
+  .pp-low-stock {
+    padding: 2px 8px; border-radius: 99px; font-size: 10px; font-weight: 900;
+    background: rgba(251,146,60,0.12); border: 1px solid rgba(251,146,60,0.28);
+    color: #fb923c;
+    animation: stockBlink 1.6s ease-in-out infinite;
+  }
+  @keyframes stockBlink { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+  /* ── action buttons ── */
+  .pp-btn-cart {
+    height: 48px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: rgba(40,90,72,0.25);
+    border: 1px solid rgba(64,138,113,0.38);
+    color: #B0E4CC; font-size: 0.875rem; font-weight: 800;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: background 0.18s ease, border-color 0.18s ease, transform 0.12s ease;
+  }
+  .pp-btn-cart:hover:not(:disabled) {
+    background: rgba(40,90,72,0.45); border-color: rgba(64,138,113,0.6);
+    transform: translateY(-1px);
+  }
+  .pp-btn-cart:disabled { opacity: 0.40; cursor: not-allowed !important; }
+
+  .pp-btn-buy {
+    height: 48px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: #408A71; color: #fff;
+    font-size: 0.875rem; font-weight: 800;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    border: none;
+    box-shadow: 0 6px 20px rgba(64,138,113,0.30);
+    transition: background 0.18s ease, transform 0.12s ease, box-shadow 0.18s ease;
+  }
+  .pp-btn-buy:hover:not(:disabled) {
+    background: #4eaa85; transform: translateY(-1px);
+    box-shadow: 0 10px 28px rgba(64,138,113,0.40);
+  }
+  .pp-btn-buy:disabled { opacity: 0.40; cursor: not-allowed !important; }
+
+  .pp-btn-wish {
+    width: 48px; height: 48px; border-radius: 14px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid; transition: all 0.2s ease;
+  }
+  .pp-btn-wish:hover { opacity: 0.85; transform: scale(1.04); }
+  .pp-btn-wish:disabled { opacity: 0.50; cursor: not-allowed !important; }
+
+  /* ── trust strip ── */
+  .pp-trust-tile {
+    display: flex; flex-direction: column; align-items: center; gap: 5px;
+    padding: 10px 8px; border-radius: 14px; text-align: center;
+    background: rgba(13,28,25,0.8);
+    border: 1px solid rgba(40,90,72,0.22);
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.07em; color: rgba(176,228,204,0.42);
+    transition: border-color 0.18s ease;
+  }
+  .pp-trust-tile:hover { border-color: rgba(64,138,113,0.38); }
+
+  /* ── section title + icon tile ── */
+  .pp-icon-tile {
+    width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, #285A48, #1a3d2e);
+    border: 1px solid rgba(64,138,113,0.35);
+  }
+  .pp-section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.2rem; font-weight: 700; color: #fff;
+  }
+
+  /* ── write review btn ── */
+  .pp-btn-review {
+    display: flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: 12px;
+    background: rgba(250,204,21,0.10);
+    border: 1px solid rgba(250,204,21,0.28);
+    color: #facc15; font-size: 0.8rem; font-weight: 800;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    transition: background 0.18s ease;
+  }
+  .pp-btn-review:hover { background: rgba(250,204,21,0.18); }
+
+  /* ── empty reviews ── */
+  .pp-empty-reviews {
+    display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 10px;
+    padding: 3rem 1rem; border-radius: 20px; text-align: center;
+    background: rgba(13,28,25,0.85);
+    border: 1px solid rgba(40,90,72,0.22);
+  }
+
+  /* ── review card ── */
+  @keyframes ppRevIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .pp-review-card {
+    padding: 18px 20px; border-radius: 18px;
+    background: linear-gradient(145deg, rgba(13,28,25,0.95), rgba(10,21,18,0.98));
+    border: 1px solid rgba(40,90,72,0.22);
+    animation: ppRevIn 0.38s cubic-bezier(.22,1,.36,1) both;
+    transition: border-color 0.2s ease;
+  }
+  .pp-review-card:hover { border-color: rgba(64,138,113,0.35); }
+
+  /* ── reviewer avatar ── */
+  .pp-avatar {
+    width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center; overflow: hidden;
+    background: linear-gradient(135deg, #285A48, #1a3d2e);
+    border: 1px solid rgba(64,138,113,0.3);
+  }
+
+  /* ── rating label pill ── */
+  .pp-rating-pill {
+    display: inline-block; padding: 3px 10px; border-radius: 99px;
+    font-size: 11px; font-weight: 800; letter-spacing: 0.04em;
+  }
+`

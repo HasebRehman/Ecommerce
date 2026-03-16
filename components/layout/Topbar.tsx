@@ -119,7 +119,7 @@ export default function Topbar() {
       `}</style>
 
       <header className={cn(
-        'tb-root fixed top-0 left-0 right-0 z-50 transition-all duration-300',
+        'tb-root fixed top-0 left-0 right-0 transition-all duration-300',
         scrolled
           ? 'bg-[#091413]/95 backdrop-blur-xl border-b border-[#285A48]/35 shadow-xl shadow-[#091413]/50'
           : 'bg-[#091413]/80 backdrop-blur-md border-b border-[#285A48]/20'
@@ -229,12 +229,12 @@ export default function Topbar() {
 
                 {/* Backdrop */}
                 {userMenuOpen && (
-                  <div className="fixed inset-0 z-10" onClick={() => setUserMenuOpen(false)} />
+                  <div className="fixed inset-0" onClick={() => setUserMenuOpen(false)} />
                 )}
 
                 {/* Dropdown */}
                 {userMenuOpen && (
-                  <div className="drop-in absolute right-0 top-full mt-2.5 w-56 z-20
+                  <div className="drop-in absolute right-0 top-full mt-2.5 w-56
                     bg-[#0d1c19] border border-[#285A48]/40 rounded-2xl shadow-2xl shadow-[#091413]/80 overflow-hidden">
 
                     {/* User info header */}
