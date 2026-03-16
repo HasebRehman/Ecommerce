@@ -2,11 +2,11 @@
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   ShoppingCart, Heart, LogOut,
   User, LayoutDashboard, Shield,
-  TrendingUp, Search, Bell,
+  TrendingUp, ShoppingBag, ChevronDown,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
@@ -14,7 +14,6 @@ import { useAuthStore } from '@/store/authStore'
 import { useCartStore } from '@/store/cartStore'
 import { useWishlistStore } from '@/store/wishlistStore'
 import { authService } from '@/lib/services/auth.service'
-import { ShoppingBag } from 'lucide-react'
 import NotificationBell from '@/components/store/NotificationBell'
 
 const ADMIN_ROLES = ['super_admin', 'platform_admin', 'operations_admin']
@@ -26,10 +25,18 @@ export default function Topbar() {
   const { count: wishlistCount } = useWishlistStore()
 
   const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const [scrolled,     setScrolled]     = useState(false)
 
   const isAdmin    = ADMIN_ROLES.includes(role ?? '')
   const isRetailer = role === 'business_owner'
   const isCustomer = !isAdmin && !isRetailer
+
+  /* scroll-aware background — same approach as before, just adds depth */
+  useEffect(() => {
+    const fn = () => setScrolled(window.scrollY > 8)
+    window.addEventListener('scroll', fn, { passive: true })
+    return () => window.removeEventListener('scroll', fn)
+  }, [])
 
   const handleLogout = async () => {
     try {
@@ -42,155 +49,294 @@ export default function Topbar() {
     }
   }
 
+  /* avatar initials helper */
+  const initials = user?.full_name
+    ? user.full_name.split(' ').map((w: string) => w[0]).slice(0, 2).join('').toUpperCase()
+    : 'U'
+
+  /* role label */
+  const roleLabel = isAdmin
+    ? (role?.replace(/_/g, ' ') ?? 'Admin')
+    : isRetailer
+      ? 'Retailer'
+      : 'Customer'
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-slate-950/95 backdrop-blur border-b border-slate-800">
-      <div className="max-w-7xl mx-auto px-4 h-16 flex items-center gap-4">
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-        {/* Logo */}
-        <Link href="/" className="shrink-0">
-          <h1 className="text-xl font-bold text-white">
-            Vendo<span className="text-blue-400">Sphere</span>
-          </h1>
-        </Link>
+        .tb-root * { box-sizing: border-box; }
+        .tb-root, .tb-root a, .tb-root button { cursor: pointer !important; }
+        .tb-root { font-family: 'Plus Jakarta Sans', sans-serif; }
 
-        {/* Right side */}
-        <div className="flex items-center gap-2 ml-auto">
+        /* badge pop */
+        @keyframes badgePop {
+          0%   { transform: scale(0.5); opacity: 0; }
+          70%  { transform: scale(1.2); }
+          100% { transform: scale(1);   opacity: 1; }
+        }
+        .badge-pop { animation: badgePop 0.25s cubic-bezier(.22,1,.36,1) both; }
 
-          {/* Cart */}
-          <Link href="/cart">
-            <button className="relative p-2 text-slate-400 hover:text-white transition-colors">
-              <ShoppingCart className="w-5 h-5" />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
-                  {cartCount > 9 ? '9+' : cartCount}
-                </span>
-              )}
-            </button>
+        /* dropdown */
+        @keyframes dropIn {
+          from { opacity: 0; transform: translateY(-8px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0)    scale(1);    }
+        }
+        .drop-in { animation: dropIn 0.18s cubic-bezier(.22,1,.36,1) both; }
+
+        /* icon button hover ring */
+        .tb-icon-btn {
+          position: relative;
+          display: flex; align-items: center; justify-content: center;
+          width: 36px; height: 36px; border-radius: 10px;
+          transition: background 0.18s ease, color 0.18s ease;
+          color: rgba(176,228,204,0.55);
+        }
+        .tb-icon-btn:hover {
+          background: rgba(40,90,72,0.35);
+          color: #B0E4CC;
+        }
+
+        /* shimmer on logo */
+        @keyframes shimmer {
+          0%   { background-position: -200% center; }
+          100% { background-position:  200% center; }
+        }
+        .logo-shimmer {
+          background: linear-gradient(90deg, #B0E4CC 20%, #408A71 45%, #B0E4CC 70%);
+          background-size: 200% auto;
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          animation: shimmer 4s linear infinite;
+        }
+
+        /* avatar ring pulse when menu open */
+        .avatar-ring-open {
+          box-shadow: 0 0 0 2px #408A71, 0 0 12px rgba(64,138,113,0.35);
+        }
+      `}</style>
+
+      <header className={cn(
+        'tb-root fixed top-0 left-0 right-0 z-50 transition-all duration-300',
+        scrolled
+          ? 'bg-[#091413]/95 backdrop-blur-xl border-b border-[#285A48]/35 shadow-xl shadow-[#091413]/50'
+          : 'bg-[#091413]/80 backdrop-blur-md border-b border-[#285A48]/20'
+      )}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-3">
+
+          {/* ── Logo ────────────────────────────────────── */}
+          <Link href="/" className="shrink-0">
+            <h1 style={{ fontFamily: "'DM Serif Display', serif" }} className="text-xl font-bold tracking-tight">
+              <span className="text-white">Vendo</span>
+              <span className="logo-shimmer">Sphere</span>
+            </h1>
           </Link>
 
-          {/* Wishlist */}
-          {isAuthenticated && (
-            <Link href="/wishlist">
-              <button className="relative p-2 text-slate-400 hover:text-white transition-colors">
-                <Heart className="w-5 h-5" />
-                {wishlistCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-medium">
-                    {wishlistCount > 9 ? '9+' : wishlistCount}
+          {/* ── Spacer ──────────────────────────────────── */}
+          <div className="flex-1" />
+
+          {/* ── Right cluster ───────────────────────────── */}
+          <div className="flex items-center gap-1">
+
+            {/* Cart */}
+            <Link href="/cart">
+              <div className="tb-icon-btn relative">
+                <ShoppingCart className="w-5 h-5" />
+                {cartCount > 0 && (
+                  <span className="badge-pop absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-[#408A71] text-white text-[10px] font-black rounded-full flex items-center justify-center leading-none border border-[#091413]">
+                    {cartCount > 9 ? '9+' : cartCount}
                   </span>
                 )}
-              </button>
+              </div>
             </Link>
-          )}
 
-          {/* ── Notification Bell ── */}
-          <NotificationBell />
-
-          {/* NOT logged in */}
-          {!isAuthenticated && (
-            <div className="flex items-center gap-2">
-              <Link href="/login">
-                <button className="px-4 py-2 text-slate-300 hover:text-white text-sm transition-colors">
-                  Login
-                </button>
-              </Link>
-              <Link href="/signup">
-                <button className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm rounded-lg transition-colors font-medium">
-                  Sign Up
-                </button>
-              </Link>
-            </div>
-          )}
-
-          {/* Logged in — user menu */}
-          {isAuthenticated && (
-            <div className="relative">
-              <button
-                onClick={() => setUserMenuOpen(p => !p)}
-                className="flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-800 transition-colors"
-              >
-                <div className="w-8 h-8 rounded-full overflow-hidden bg-blue-500 flex items-center justify-center text-white text-sm font-semibold shrink-0">
-                  {user?.avatar_url ? (
-                    <img src={user.avatar_url} alt={user.full_name ?? 'Avatar'} className="w-full h-full object-cover" />
-                  ) : (
-                    user?.full_name?.charAt(0)?.toUpperCase() ?? 'U'
+            {/* Wishlist */}
+            {isAuthenticated && (
+              <Link href="/wishlist">
+                <div className="tb-icon-btn relative">
+                  <Heart className="w-5 h-5" />
+                  {wishlistCount > 0 && (
+                    <span className="badge-pop absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center leading-none border border-[#091413]">
+                      {wishlistCount > 9 ? '9+' : wishlistCount}
+                    </span>
                   )}
                 </div>
-              </button>
+              </Link>
+            )}
 
-              {userMenuOpen && (
-                <>
+            {/* Notification Bell — your existing component, just wrapped */}
+            <div className="tb-icon-btn !w-auto !h-auto !bg-transparent !rounded-none p-0">
+              <NotificationBell />
+            </div>
+
+            {/* ── NOT logged in ────────────────────────── */}
+            {!isAuthenticated && (
+              <div className="flex items-center gap-2 ml-1">
+                <Link href="/login">
+                  <button className="px-4 py-2 text-[#B0E4CC]/65 hover:text-[#B0E4CC] text-sm font-semibold transition-colors rounded-xl hover:bg-[#285A48]/25">
+                    Login
+                  </button>
+                </Link>
+                <Link href="/signup">
+                  <button className="px-4 py-2 bg-[#408A71] hover:bg-[#4eaa85] text-white text-sm font-bold rounded-xl transition-all duration-200 shadow-lg shadow-[#285A48]/30 hover:scale-[1.03]">
+                    Sign Up
+                  </button>
+                </Link>
+              </div>
+            )}
+
+            {/* ── Logged in — user menu ────────────────── */}
+            {isAuthenticated && (
+              <div className="relative ml-1">
+
+                {/* Avatar trigger */}
+                <button
+                  onClick={() => setUserMenuOpen(p => !p)}
+                  className={cn(
+                    'flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-xl transition-all duration-200',
+                    'border hover:bg-[#285A48]/30',
+                    userMenuOpen
+                      ? 'bg-[#285A48]/30 border-[#408A71]/50'
+                      : 'bg-[#285A48]/15 border-[#285A48]/30 hover:border-[#408A71]/40'
+                  )}
+                >
+                  {/* Avatar circle */}
+                  <div className={cn(
+                    'w-7 h-7 rounded-lg overflow-hidden shrink-0 flex items-center justify-center',
+                    'bg-gradient-to-br from-[#408A71] to-[#285A48] text-white text-xs font-black',
+                    'transition-all duration-200',
+                    userMenuOpen && 'avatar-ring-open'
+                  )}>
+                    {user?.avatar_url ? (
+                      <img src={user.avatar_url} alt={user.full_name ?? 'Avatar'} className="w-full h-full object-cover" />
+                    ) : (
+                      <span>{initials}</span>
+                    )}
+                  </div>
+
+                  {/* Name — hidden on small screens */}
+                  <span className="hidden sm:block text-[#B0E4CC]/80 text-xs font-semibold max-w-[80px] truncate">
+                    {user?.full_name?.split(' ')[0] ?? 'Account'}
+                  </span>
+
+                  <ChevronDown className={cn(
+                    'w-3 h-3 text-[#408A71] transition-transform duration-200 shrink-0',
+                    userMenuOpen && 'rotate-180'
+                  )} />
+                </button>
+
+                {/* Backdrop */}
+                {userMenuOpen && (
                   <div className="fixed inset-0 z-10" onClick={() => setUserMenuOpen(false)} />
-                  <div className="absolute right-0 top-full mt-2 w-52 bg-slate-900 border border-slate-700 rounded-xl shadow-xl z-20 overflow-hidden">
+                )}
 
-                    <div className="px-4 py-3 border-b border-slate-800">
-                      <p className="text-white text-sm font-medium truncate">{user?.full_name}</p>
-                      <p className="text-slate-400 text-xs capitalize mt-0.5">
-                        {isAdmin ? role?.replace(/_/g, ' ') : isRetailer ? 'Retailer' : 'Customer'}
-                      </p>
+                {/* Dropdown */}
+                {userMenuOpen && (
+                  <div className="drop-in absolute right-0 top-full mt-2.5 w-56 z-20
+                    bg-[#0d1c19] border border-[#285A48]/40 rounded-2xl shadow-2xl shadow-[#091413]/80 overflow-hidden">
+
+                    {/* User info header */}
+                    <div className="px-4 py-3.5 border-b border-[#285A48]/30"
+                      style={{ background: 'linear-gradient(135deg, #162420 0%, #0d1c19 100%)' }}>
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0 flex items-center justify-center
+                          bg-gradient-to-br from-[#408A71] to-[#285A48] text-white text-sm font-black">
+                          {user?.avatar_url ? (
+                            <img src={user.avatar_url} alt={user.full_name ?? ''} className="w-full h-full object-cover" />
+                          ) : (
+                            <span>{initials}</span>
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-white text-sm font-bold truncate leading-tight">{user?.full_name}</p>
+                          <span className="inline-block mt-0.5 px-2 py-0.5 rounded-full bg-[#285A48]/50 border border-[#408A71]/25 text-[#B0E4CC]/60 text-[9px] font-black uppercase tracking-widest capitalize">
+                            {roleLabel}
+                          </span>
+                        </div>
+                      </div>
                     </div>
 
+                    {/* Menu items */}
                     <div className="p-1.5 space-y-0.5">
 
-                      <Link href="/profile" onClick={() => setUserMenuOpen(false)}>
-                        <button className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 text-sm transition-colors">
-                          <User className="w-4 h-4 text-blue-400" />
-                          My Profile
-                        </button>
-                      </Link>
+                      <MenuItem
+                        href="/profile"
+                        icon={<User className="w-4 h-4" style={{ color: '#408A71' }} />}
+                        label="My Profile"
+                        onClick={() => setUserMenuOpen(false)}
+                      />
 
-                      <Link href="/orders" onClick={() => setUserMenuOpen(false)}>
-                        <button className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 text-sm transition-colors">
-                          <ShoppingBag className="w-4 h-4 text-purple-400" />
-                          Order History
-                        </button>
-                      </Link>
+                      <MenuItem
+                        href="/orders"
+                        icon={<ShoppingBag className="w-4 h-4" style={{ color: '#B0E4CC' }} />}
+                        label="Order History"
+                        onClick={() => setUserMenuOpen(false)}
+                      />
 
                       {isAdmin && (
-                        <Link href="/admin/dashboard" onClick={() => setUserMenuOpen(false)}>
-                          <button className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 text-sm transition-colors">
-                            <Shield className="w-4 h-4 text-red-400" />
-                            Admin Panel
-                          </button>
-                        </Link>
+                        <MenuItem
+                          href="/admin/dashboard"
+                          icon={<Shield className="w-4 h-4 text-red-400" />}
+                          label="Admin Panel"
+                          onClick={() => setUserMenuOpen(false)}
+                        />
                       )}
 
                       {isRetailer && (
-                        <Link href="/dashboard" onClick={() => setUserMenuOpen(false)}>
-                          <button className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 text-sm transition-colors">
-                            <LayoutDashboard className="w-4 h-4 text-blue-400" />
-                            Dashboard
-                          </button>
-                        </Link>
+                        <MenuItem
+                          href="/dashboard"
+                          icon={<LayoutDashboard className="w-4 h-4" style={{ color: '#408A71' }} />}
+                          label="Dashboard"
+                          onClick={() => setUserMenuOpen(false)}
+                        />
                       )}
 
                       {isCustomer && isAuthenticated && (
-                        <Link href="/request-seller" onClick={() => setUserMenuOpen(false)}>
-                          <button className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 text-sm transition-colors">
-                            <TrendingUp className="w-4 h-4 text-green-400" />
-                            Request to Seller
-                          </button>
-                        </Link>
+                        <MenuItem
+                          href="/request-seller"
+                          icon={<TrendingUp className="w-4 h-4" style={{ color: '#B0E4CC' }} />}
+                          label="Request to Seller"
+                          onClick={() => setUserMenuOpen(false)}
+                        />
                       )}
 
-                      <div className="border-t border-slate-800 mt-1 pt-1">
+                      {/* Logout */}
+                      <div className="border-t border-[#285A48]/25 mt-1 pt-1">
                         <button
                           onClick={() => { setUserMenuOpen(false); handleLogout() }}
-                          className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-red-400 hover:bg-red-400/10 text-sm transition-colors"
+                          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-red-400/80 hover:text-red-400 hover:bg-red-500/10 text-sm font-semibold transition-all duration-150"
                         >
-                          <LogOut className="w-4 h-4" />
+                          <LogOut className="w-4 h-4 shrink-0" />
                           Logout
                         </button>
                       </div>
 
                     </div>
                   </div>
-                </>
-              )}
-            </div>
-          )}
-
+                )}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </>
+  )
+}
+
+/* ── Reusable dropdown menu item ─────────────────────────── */
+function MenuItem({
+  href, icon, label, onClick,
+}: {
+  href: string; icon: React.ReactNode; label: string; onClick: () => void
+}) {
+  return (
+    <Link href={href} onClick={onClick}>
+      <button className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-[#B0E4CC]/65 hover:text-[#B0E4CC] hover:bg-[#285A48]/30 text-sm font-semibold transition-all duration-150">
+        <span className="shrink-0">{icon}</span>
+        {label}
+      </button>
+    </Link>
   )
 }

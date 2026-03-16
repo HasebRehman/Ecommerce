@@ -29,22 +29,20 @@ interface Props {
 }
 
 export default function StoreProductCard({ product, onQuickBuy }: Props) {
-  const { isAuthenticated }                = useAuthStore()
+  const { isAuthenticated }                 = useAuthStore()
   const { productIds, addItem, removeItem } = useWishlistStore()
-  const { setCart }                        = useCartStore()
+  const { setCart }                         = useCartStore()
 
   const [addingCart,   setAddingCart]   = useState(false)
   const [togglingWish, setTogglingWish] = useState(false)
 
-  const isWishlisted  = productIds.has(product.id)
-  const isOutOfStock  = (product.stock ?? 0) <= 0
-  const displayPrice  = product.discount_price ?? product.price
+  const isWishlisted = productIds.has(product.id)
+  const isOutOfStock = (product.stock ?? 0) <= 0
+  const displayPrice = product.discount_price ?? product.price
 
+  /* ── handlers — completely unchanged ── */
   const handleWishlist = async () => {
-    if (!isAuthenticated) {
-      toast.error('Login to add to wishlist')
-      return
-    }
+    if (!isAuthenticated) { toast.error('Login to add to wishlist'); return }
     setTogglingWish(true)
     try {
       if (isWishlisted) {
@@ -64,10 +62,7 @@ export default function StoreProductCard({ product, onQuickBuy }: Props) {
   }
 
   const handleAddToCart = async () => {
-    if (!isAuthenticated) {
-      toast.error('Login to add to cart')
-      return
-    }
+    if (!isAuthenticated) { toast.error('Login to add to cart'); return }
     setAddingCart(true)
     try {
       await cartService.addToCart(product.id)
@@ -83,167 +78,325 @@ export default function StoreProductCard({ product, onQuickBuy }: Props) {
 
   const handleQuickBuy = () => {
     if (isOutOfStock) return
-    if (!isAuthenticated) {
-      toast.error('Login to buy')
-      return
-    }
+    if (!isAuthenticated) { toast.error('Login to buy'); return }
     onQuickBuy?.(product)
   }
 
   return (
-    <div className={cn(
-      'bg-slate-900 border rounded-xl overflow-hidden transition-all group',
-      isOutOfStock
-        ? 'border-slate-800 opacity-80'
-        : 'border-slate-800 hover:border-slate-700'
-    )}>
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
-      {/* Image */}
-      <div className="relative aspect-square bg-slate-800 overflow-hidden">
-        <Link href={`/product/${product.id}`}>
-          {product.images?.[0] ? (
-            <img
-              src={product.images[0]}
-              alt={product.name}
-              className={cn(
-                'w-full h-full object-cover transition-transform duration-300',
-                isOutOfStock ? 'grayscale-[30%]' : 'group-hover:scale-105'
-              )}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Store className="w-12 h-12 text-slate-600" />
+        .pc-root * { box-sizing: border-box; }
+        .pc-root, .pc-root button, .pc-root a { cursor: pointer !important; }
+        .pc-root { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        /* ── card lift on hover ── */
+        .pc-card {
+          transition: transform 0.32s cubic-bezier(.22,1,.36,1),
+                      box-shadow 0.32s cubic-bezier(.22,1,.36,1),
+                      border-color 0.25s ease;
+        }
+        .pc-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 20px 48px rgba(9,20,19,0.75), 0 0 0 1px rgba(64,138,113,0.35);
+        }
+
+        /* ── image zoom ── */
+        .pc-img {
+          transition: transform 0.55s cubic-bezier(.25,.46,.45,.94);
+        }
+        .pc-card:hover .pc-img {
+          transform: scale(1.09);
+        }
+
+        /* ── overlay fades in ── */
+        .pc-overlay {
+          opacity: 0;
+          transition: opacity 0.28s ease;
+        }
+        .pc-card:hover .pc-overlay {
+          opacity: 1;
+        }
+
+        /* ── action panel slides up ── */
+        .pc-actions {
+          transform: translateY(110%);
+          opacity: 0;
+          transition: transform 0.28s cubic-bezier(.22,1,.36,1),
+                      opacity  0.22s ease;
+        }
+        .pc-card:hover .pc-actions {
+          transform: translateY(0);
+          opacity: 1;
+        }
+        .pc-actions-always {
+          transform: translateY(0) !important;
+          opacity: 1 !important;
+        }
+
+        /* ── wishlist always visible on hover ── */
+        .pc-wish {
+          opacity: 0;
+          transform: scale(0.8);
+          transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease;
+        }
+        .pc-card:hover .pc-wish,
+        .pc-wish-active {
+          opacity: 1 !important;
+          transform: scale(1) !important;
+        }
+
+        /* ── heart burst ── */
+        @keyframes heartBurst {
+          0%   { transform: scale(1); }
+          30%  { transform: scale(1.55); }
+          60%  { transform: scale(0.9); }
+          100% { transform: scale(1); }
+        }
+        .heart-burst { animation: heartBurst 0.38s cubic-bezier(.36,.07,.19,.97); }
+
+        /* ── stock pulse ── */
+        @keyframes stockBlink {
+          0%, 100% { opacity: 1; }
+          50%      { opacity: 0.45; }
+        }
+        .stock-blink { animation: stockBlink 1.6s ease-in-out infinite; }
+
+        /* ── shimmer on card border when wishlisted ── */
+        @keyframes borderGlow {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0); }
+          50%      { box-shadow: 0 0 12px 2px rgba(239,68,68,0.25); }
+        }
+        .pc-wishlisted-glow { animation: borderGlow 2s ease-in-out infinite; }
+
+        /* ── button press ── */
+        .pc-btn:active { transform: scale(0.95); }
+        .pc-btn { transition: background 0.18s ease, transform 0.12s ease, opacity 0.18s ease; }
+      `}</style>
+
+      <div className={cn(
+        'pc-root pc-card group relative flex flex-col rounded-2xl overflow-hidden',
+        'border',
+        isOutOfStock
+          ? 'bg-[#0a1512] border-[#285A48]/15 opacity-70'
+          : isWishlisted
+            ? 'bg-[#0d1c19] border-red-500/30 pc-wishlisted-glow'
+            : 'bg-[#0d1c19] border-[#285A48]/25'
+      )}>
+
+        {/* ╔══════════════════════════════════════════╗
+            ║  IMAGE ZONE                              ║
+            ╚══════════════════════════════════════════╝ */}
+        <div className="relative overflow-hidden" style={{ aspectRatio: '1 / 1' }}>
+
+          {/* Image */}
+          <Link href={`/product/${product.id}`} className="block w-full h-full">
+            {product.images?.[0] ? (
+              <img
+                src={product.images[0]}
+                alt={product.name}
+                className={cn(
+                  'pc-img w-full h-full object-cover',
+                  isOutOfStock && 'grayscale-[50%] brightness-75'
+                )}
+              />
+            ) : (
+              <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-[#162420]">
+                <Store className="w-10 h-10 text-[#285A48]" />
+                <span className="text-[#285A48] text-[10px] font-bold uppercase tracking-widest">No Image</span>
+              </div>
+            )}
+          </Link>
+
+          {/* Dark overlay on hover for contrast */}
+          <div
+            className="pc-overlay absolute inset-0 pointer-events-none"
+            style={{ background: 'linear-gradient(to top, rgba(9,20,19,0.85) 0%, rgba(9,20,19,0.15) 55%, transparent 100%)' }}
+          />
+
+          {/* Permanent soft bottom scrim */}
+          <div
+            className="absolute inset-x-0 bottom-0 h-16 pointer-events-none"
+            style={{ background: 'linear-gradient(to top, rgba(9,20,19,0.6), transparent)' }}
+          />
+
+          {/* ── Category chip (top-left when no badge) ── */}
+          {product.categories?.name && !product.discount_price && !isOutOfStock && (
+            <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-[#285A48]/80 backdrop-blur-sm border border-[#408A71]/30 text-[#B0E4CC] text-[9px] font-black uppercase tracking-widest pointer-events-none">
+              {product.categories.name}
             </div>
           )}
-        </Link>
 
-        {/* Out of Stock Badge */}
-        {isOutOfStock && (
-          <div className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 bg-red-500 text-white text-xs font-bold rounded-lg shadow-lg">
-            <PackageX className="w-3 h-3" />
-            Out of Stock
-          </div>
-        )}
-
-        {/* Discount Badge — only if in stock */}
-        {!isOutOfStock && product.discount_price && (
-          <div className="absolute top-2 left-2">
-            <DiscountBadge
-              price={product.price}
-              discountPrice={product.discount_price}
-            />
-          </div>
-        )}
-
-        {/* Wishlist button — always visible for out of stock */}
-        <button
-          onClick={handleWishlist}
-          disabled={togglingWish}
-          className={cn(
-            'absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center transition-all',
-            isWishlisted
-              ? 'bg-red-500 text-white'
-              : isOutOfStock
-                ? 'bg-slate-900/80 text-slate-400 hover:text-red-400 opacity-100'
-                : 'bg-slate-900/80 text-slate-400 hover:text-red-400 opacity-0 group-hover:opacity-100'
+          {/* ── Out of stock badge ── */}
+          {isOutOfStock && (
+            <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#091413]/85 backdrop-blur-md border border-red-500/30 text-red-400 text-[10px] font-black tracking-wide shadow-lg pointer-events-none">
+              <PackageX className="w-3 h-3 shrink-0" />
+              Out of Stock
+            </div>
           )}
-        >
-          <Heart className={cn('w-4 h-4', isWishlisted && 'fill-current')} />
-        </button>
 
-        {/* Hover Actions */}
-        <div className={cn(
-          'absolute bottom-0 left-0 right-0 p-2 flex gap-2 transition-transform duration-200',
-          isOutOfStock
-            ? 'translate-y-0'
-            : 'translate-y-full group-hover:translate-y-0'
-        )}>
-          {/* Add to Cart — always allowed */}
+          {/* ── Discount badge ── */}
+          {!isOutOfStock && product.discount_price && (
+            <div className="absolute top-2.5 left-2.5 pointer-events-none">
+              <DiscountBadge price={product.price} discountPrice={product.discount_price} />
+            </div>
+          )}
+
+          {/* ── Wishlist button ── */}
+          <button
+            onClick={handleWishlist}
+            disabled={togglingWish}
+            className={cn(
+              'pc-wish absolute top-2.5 right-2.5 z-10',
+              'w-9 h-9 rounded-xl flex items-center justify-center',
+              'backdrop-blur-md border shadow-lg',
+              togglingWish && 'opacity-50 pointer-events-none',
+              isWishlisted
+                ? 'pc-wish-active bg-red-500 border-red-400/60 text-white heart-burst'
+                : 'bg-[#091413]/75 border-[#285A48]/50 text-[#B0E4CC]/60 hover:bg-red-500/15 hover:border-red-500/50 hover:text-red-400'
+            )}
+            aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+          >
+            <Heart className={cn('w-4 h-4 transition-all', isWishlisted && 'fill-current scale-110')} />
+          </button>
+
+          {/* ── Action bar slides up on hover ── */}
+          <div className={cn(
+            'pc-actions absolute bottom-0 inset-x-0 z-10 p-2.5 flex gap-2',
+            isOutOfStock && 'pc-actions-always'
+          )}>
+            {/* Add to Cart */}
+            <button
+              onClick={handleAddToCart}
+              disabled={addingCart}
+              className={cn(
+                'pc-btn flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl',
+                'text-[11px] font-black tracking-wide uppercase',
+                'bg-[#285A48] hover:bg-[#408A71] text-[#B0E4CC] hover:text-white',
+                'border border-[#408A71]/30 hover:border-[#408A71]/60',
+                'shadow-lg backdrop-blur-sm',
+                addingCart && 'opacity-50'
+              )}
+            >
+              <ShoppingCart className={cn('w-3.5 h-3.5 shrink-0', addingCart && 'animate-spin')} />
+              {addingCart ? 'Adding…' : 'Cart'}
+            </button>
+
+            {/* Quick Buy */}
+            <button
+              onClick={handleQuickBuy}
+              disabled={isOutOfStock}
+              className={cn(
+                'pc-btn flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl',
+                'text-[11px] font-black tracking-wide uppercase',
+                'shadow-lg backdrop-blur-sm border',
+                isOutOfStock
+                  ? 'bg-[#162420]/80 border-[#285A48]/20 text-[#B0E4CC]/25 cursor-not-allowed'
+                  : 'bg-[#408A71] hover:bg-[#4eaa85] text-white border-[#408A71]/50 hover:border-transparent'
+              )}
+            >
+              <Zap className="w-3.5 h-3.5 shrink-0" />
+              {isOutOfStock ? 'N/A' : 'Buy Now'}
+            </button>
+          </div>
+        </div>
+
+        {/* ╔══════════════════════════════════════════╗
+            ║  INFO ZONE                               ║
+            ╚══════════════════════════════════════════╝ */}
+        <div className="flex flex-col gap-2 p-3 flex-1">
+
+          {/* Shop row */}
+          {product.shop?.id && (
+            <Link href={`/shop/${product.shop.id}`}>
+              <div className="flex items-center gap-1.5 w-fit group/shop">
+                {/* Shop logo or fallback */}
+                <div className="relative w-5 h-5 rounded-full overflow-hidden border border-[#408A71]/30 shrink-0 bg-[#162420]">
+                  {product.shop?.logo_url ? (
+                    <img
+                      src={product.shop.logo_url}
+                      alt={product.shop.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <Store className="w-2.5 h-2.5 text-[#408A71]" />
+                    </div>
+                  )}
+                </div>
+                <span className="text-[#408A71] group-hover/shop:text-[#B0E4CC] text-[10px] font-bold uppercase tracking-widest truncate max-w-[110px] transition-colors">
+                  {product.shop?.name}
+                </span>
+              </div>
+            </Link>
+          )}
+
+          {/* Product name */}
+          <Link href={`/product/${product.id}`}>
+            <p className={cn(
+              'text-sm font-semibold line-clamp-2 leading-snug transition-colors duration-200',
+              isOutOfStock
+                ? 'text-[#B0E4CC]/30'
+                : 'text-[#B0E4CC]/75 hover:text-[#B0E4CC]'
+            )}>
+              {product.name}
+            </p>
+          </Link>
+
+          {/* ── Price block ── */}
+          <div className="mt-auto pt-1.5 flex items-end justify-between gap-2">
+            <div className="flex flex-col gap-0.5">
+              {isOutOfStock ? (
+                <>
+                  <span className="text-[#B0E4CC]/25 font-black text-base line-through leading-none">
+                    Rs. {displayPrice.toLocaleString()}
+                  </span>
+                  <span className="text-red-400/70 text-[9px] font-black uppercase tracking-widest">
+                    Unavailable
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span className="text-[#B0E4CC] font-black text-base leading-none">
+                    Rs. {displayPrice.toLocaleString()}
+                  </span>
+                  {product.discount_price && (
+                    <span className="text-[#B0E4CC]/30 text-[11px] line-through leading-none">
+                      Rs. {product.price.toLocaleString()}
+                    </span>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Low stock pill (right-aligned) */}
+            {!isOutOfStock && product.stock > 0 && product.stock <= 5 && (
+              <span className="stock-blink shrink-0 px-2 py-0.5 rounded-full bg-orange-500/15 border border-orange-500/25 text-orange-400 text-[9px] font-black uppercase tracking-wide whitespace-nowrap">
+                {product.stock} left
+              </span>
+            )}
+          </div>
+
+          {/* ── Bottom CTA strip (always visible — great for mobile) ── */}
           <button
             onClick={handleAddToCart}
-            disabled={addingCart}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2 bg-slate-900/95 hover:bg-slate-700 text-white text-xs font-medium rounded-lg transition-colors"
-          >
-            <ShoppingCart className="w-3.5 h-3.5" />
-            {addingCart ? 'Adding...' : 'Add to Cart'}
-          </button>
-
-          {/* Quick Buy — disabled if out of stock */}
-          <button
-            onClick={handleQuickBuy}
-            disabled={isOutOfStock}
+            disabled={addingCart || isOutOfStock}
             className={cn(
-              'flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium rounded-lg transition-colors',
+              'pc-btn w-full mt-1 flex items-center justify-center gap-2 py-2.5 rounded-xl',
+              'text-[11px] font-black uppercase tracking-wide border transition-all',
               isOutOfStock
-                ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                : 'bg-blue-500 hover:bg-blue-600 text-white'
+                ? 'bg-[#162420]/60 border-[#285A48]/15 text-[#B0E4CC]/20 cursor-not-allowed'
+                : 'bg-[#285A48]/20 hover:bg-[#408A71] border-[#285A48]/40 hover:border-[#408A71] text-[#B0E4CC]/70 hover:text-white',
+              addingCart && 'opacity-50'
             )}
           >
-            <Zap className="w-3.5 h-3.5" />
-            {isOutOfStock ? 'Unavailable' : 'Quick Buy'}
+            <ShoppingCart className="w-3.5 h-3.5 shrink-0" />
+            {isOutOfStock ? 'Out of Stock' : addingCart ? 'Adding…' : 'Add to Cart'}
           </button>
         </div>
-      </div>
-
-      {/* Info */}
-      <div className="p-3 space-y-1.5">
-
-        {/* Shop name */}
-        {product.shop?.id && (
-          <Link href={`/shop/${product.shop.id}`}>
-            <div className="flex items-center gap-1.5 hover:opacity-80 transition-opacity">
-              {product.shop?.logo_url ? (
-                <img
-                  src={product.shop.logo_url}
-                  alt={product.shop.name}
-                  className="w-4 h-4 rounded-full object-cover"
-                />
-              ) : (
-                <Store className="w-3.5 h-3.5 text-slate-500" />
-              )}
-              <span className="text-slate-500 text-xs truncate">
-                {product.shop?.name}
-              </span>
-            </div>
-          </Link>
-        )}
-
-        {/* Name */}
-        <Link href={`/product/${product.id}`}>
-          <p className="text-white text-sm font-medium line-clamp-2 leading-tight hover:text-blue-400 transition-colors">
-            {product.name}
-          </p>
-        </Link>
-
-        {/* Price */}
-        {isOutOfStock ? (
-          <div className="flex items-center gap-2">
-            <span className="text-slate-500 font-medium text-sm line-through">
-              Rs. {displayPrice.toLocaleString()}
-            </span>
-            <span className="text-red-400 text-xs font-medium">Unavailable</span>
-          </div>
-        ) : (
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-white font-bold text-sm">
-              Rs. {displayPrice.toLocaleString()}
-            </span>
-            {product.discount_price && (
-              <span className="text-slate-500 text-xs line-through">
-                Rs. {product.price.toLocaleString()}
-              </span>
-            )}
-          </div>
-        )}
-
-        {/* Stock indicator — low stock warning */}
-        {!isOutOfStock && product.stock <= 5 && (
-          <p className="text-orange-400 text-xs font-medium">
-            Only {product.stock} left!
-          </p>
-        )}
 
       </div>
-    </div>
+    </>
   )
 }
