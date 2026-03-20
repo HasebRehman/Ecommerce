@@ -1,9 +1,16 @@
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+
+const getAdmin = () => createAdminClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 export async function POST(request: Request) {
   try {
     const supabase = await createClient()
+    const admin    = getAdmin()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
@@ -39,7 +46,7 @@ export async function POST(request: Request) {
       retailer_id = product?.owner_id ?? null
     }
 
-    // Get product names for notification
+    // Get product names
     const productIds = items.map((i: any) => i.product_id).filter(Boolean)
     const { data: products } = await supabase
       .from('products')
@@ -63,9 +70,7 @@ export async function POST(request: Request) {
       .select()
       .single()
 
-    if (orderError) {
-      return NextResponse.json({ error: orderError.message }, { status: 400 })
-    }
+    if (orderError) return NextResponse.json({ error: orderError.message }, { status: 400 })
 
     const orderItems = items.map((item: any) => ({
       order_id:   order.id,
@@ -77,7 +82,14 @@ export async function POST(request: Request) {
     await supabase.from('order_items').insert(orderItems)
     await supabase.from('carts').delete().eq('user_id', user.id)
 
-    // ── Create notification for customer ──
+    // Get customer name
+    const { data: customerProfile } = await supabase
+      .from('profiles')
+      .select('full_name')
+      .eq('id', user.id)
+      .single()
+    const customerName = customerProfile?.full_name ?? 'A customer'
+
     const productNames = items
       .map((i: any) => productMap[i.product_id]?.name ?? 'Product')
       .join(', ')
@@ -90,13 +102,25 @@ export async function POST(request: Request) {
       hour: '2-digit', minute: '2-digit'
     })
 
-    await supabase.from('notifications').insert({
+    // ── Notification for CUSTOMER ──
+    await admin.from('notifications').insert({
       user_id:  user.id,
       title:    '🛍️ Order Placed Successfully!',
       message:  `You ordered ${productNames}${shop_name ? ` from ${shop_name}` : ''}. Total: Rs. ${total_amount.toLocaleString()}. ${dateStr} at ${timeStr}`,
       type:     'order_placed',
       order_id: order.id,
     })
+
+    // ── Notification for SELLER ──
+    if (retailer_id) {
+      await admin.from('notifications').insert({
+        user_id:  retailer_id,
+        title:    '🛍️ New Order Received!',
+        message:  `${customerName} placed an order for ${productNames}${shop_name ? ` in ${shop_name}` : ''}. Total: Rs. ${total_amount.toLocaleString()}. ${dateStr} at ${timeStr}`,
+        type:     'new_order',
+        order_id: order.id,
+      })
+    }
 
     return NextResponse.json({ order, message: 'Order placed successfully!' })
   } catch (err: any) {

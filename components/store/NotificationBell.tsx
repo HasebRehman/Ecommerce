@@ -102,10 +102,10 @@ export default function NotificationBell() {
     }
   }
 
-  const handleClick = (notif: any) => {
-    setOpen(false)
-    if (notif.order_id) router.push(`/orders/${notif.order_id}`)
-  }
+  // const handleClick = (notif: any) => {
+  //   setOpen(false)
+  //   if (notif.order_id) router.push(`/orders/${notif.order_id}`)
+  // }
 
   if (!isAuthenticated) return null
 
@@ -206,7 +206,7 @@ export default function NotificationBell() {
                 return (
                   <div
                     key={notif.id}
-                    onClick={() => handleClick(notif)}
+                    // onClick={() => handleClick(notif)}
                     className="nb-notif-row"
                     style={{
                       background: isUnread ? 'rgba(40,90,72,0.10)' : 'transparent',
@@ -255,7 +255,7 @@ export default function NotificationBell() {
             </div>
 
             {/* Footer */}
-            {notifications.length > 0 && (
+            {/* {notifications.length > 0 && (
               <>
                 <div className="nb-divider" />
                 <div className="px-4 py-3 flex items-center justify-center">
@@ -268,7 +268,7 @@ export default function NotificationBell() {
                   </button>
                 </div>
               </>
-            )}
+            )} */}
           </div>
         )}
       </div>

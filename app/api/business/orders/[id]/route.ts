@@ -2,8 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
 
-// Admin client bypasses RLS
-const getAdminClient = () => createAdminClient(
+const getAdmin = () => createAdminClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
@@ -35,7 +34,6 @@ export async function GET(
 
     if (error || !order) return NextResponse.json({ error: 'Order not found' }, { status: 404 })
     return NextResponse.json({ order })
-
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
@@ -48,7 +46,7 @@ export async function PUT(
   try {
     const { id }   = await params
     const supabase = await createClient()
-    const admin    = getAdminClient()
+    const admin    = getAdmin()
 
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -60,7 +58,6 @@ export async function PUT(
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
 
-    // Get order with items + shop + customer
     const { data: existing } = await supabase
       .from('orders')
       .select(`
@@ -78,16 +75,10 @@ export async function PUT(
     if (status === 'confirmed' && existing.status === 'pending') {
       for (const item of existing.order_items ?? []) {
         const { data: product } = await supabase
-          .from('products')
-          .select('stock')
-          .eq('id', item.product_id)
-          .single()
-
+          .from('products').select('stock').eq('id', item.product_id).single()
         if (product) {
-          const newStock = Math.max(0, (product.stock ?? 0) - item.quantity)
-          await supabase
-            .from('products')
-            .update({ stock: newStock })
+          await supabase.from('products')
+            .update({ stock: Math.max(0, (product.stock ?? 0) - item.quantity) })
             .eq('id', item.product_id)
         }
       }
@@ -97,39 +88,28 @@ export async function PUT(
     if (status === 'cancelled_by_seller' && existing.status === 'confirmed') {
       for (const item of existing.order_items ?? []) {
         const { data: product } = await supabase
-          .from('products')
-          .select('stock')
-          .eq('id', item.product_id)
-          .single()
-
+          .from('products').select('stock').eq('id', item.product_id).single()
         if (product) {
-          await supabase
-            .from('products')
+          await supabase.from('products')
             .update({ stock: (product.stock ?? 0) + item.quantity })
             .eq('id', item.product_id)
         }
       }
     }
 
-    const updateData: any = {
-      status,
-      updated_at: new Date().toISOString(),
-    }
-
-    if (status === 'cancelled_by_seller') {
-      updateData.cancelled_by = 'seller'
-    }
+    const updateData: any = { status, updated_at: new Date().toISOString() }
+    if (status === 'cancelled_by_seller') updateData.cancelled_by = 'seller'
 
     const { data: order, error } = await supabase
-      .from('orders')
-      .update(updateData)
-      .eq('id', id)
-      .select()
-      .single()
+      .from('orders').update(updateData).eq('id', id).select().single()
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
-    // ── Create notification for customer using ADMIN client ──
+    // Get customer name
+    const { data: customerProfile } = await supabase
+      .from('profiles').select('full_name').eq('id', existing.user_id).single()
+    const customerName = customerProfile?.full_name ?? 'Customer'
+
     const shopName = (existing.shops as any)?.name ?? ''
     const now      = new Date()
     const dateStr  = now.toLocaleDateString('en-US', {
@@ -139,10 +119,11 @@ export async function PUT(
       hour: '2-digit', minute: '2-digit'
     })
 
-    const STATUS_NOTIF: Record<string, { title: string, message: string }> = {
+    // ── Notifications config ──
+    const CUSTOMER_NOTIF: Record<string, { title: string, message: string }> = {
       confirmed: {
         title:   '✅ Order Confirmed!',
-        message: `Your order${shopName ? ` from ${shopName}` : ''} has been confirmed by the seller. Total: Rs. ${existing.total_amount?.toLocaleString()}. ${dateStr} at ${timeStr}`,
+        message: `Your order${shopName ? ` from ${shopName}` : ''} has been confirmed. Total: Rs. ${existing.total_amount?.toLocaleString()}. ${dateStr} at ${timeStr}`,
       },
       shipped: {
         title:   '🚚 Order Shipped!',
@@ -150,7 +131,7 @@ export async function PUT(
       },
       delivered: {
         title:   '🎉 Order Delivered!',
-        message: `Your order${shopName ? ` from ${shopName}` : ''} has been delivered successfully. Total: Rs. ${existing.total_amount?.toLocaleString()}. ${dateStr} at ${timeStr}`,
+        message: `Your order${shopName ? ` from ${shopName}` : ''} delivered successfully. Total: Rs. ${existing.total_amount?.toLocaleString()}. ${dateStr} at ${timeStr}`,
       },
       cancelled_by_seller: {
         title:   '❌ Order Cancelled by Seller',
@@ -158,33 +139,55 @@ export async function PUT(
       },
     }
 
-    const notif = STATUS_NOTIF[status]
-    if (notif && existing.user_id) {
-      // Use admin client to bypass RLS — inserting for customer's user_id
-      const { error: notifError } = await admin
-        .from('notifications')
-        .insert({
-          user_id:  existing.user_id,
-          title:    notif.title,
-          message:  notif.message,
-          type:     status,
-          order_id: id,
-        })
+    const SELLER_NOTIF: Record<string, { title: string, message: string }> = {
+      confirmed: {
+        title:   '✅ You Confirmed an Order',
+        message: `You confirmed ${customerName}'s order${shopName ? ` in ${shopName}` : ''}. Total: Rs. ${existing.total_amount?.toLocaleString()}. ${dateStr} at ${timeStr}`,
+      },
+      shipped: {
+        title:   '🚚 Order Marked as Shipped',
+        message: `You marked ${customerName}'s order as shipped${shopName ? ` from ${shopName}` : ''}. Total: Rs. ${existing.total_amount?.toLocaleString()}. ${dateStr} at ${timeStr}`,
+      },
+      delivered: {
+        title:   '🎉 Order Marked as Delivered',
+        message: `${customerName}'s order has been delivered${shopName ? ` from ${shopName}` : ''}. Total: Rs. ${existing.total_amount?.toLocaleString()}. ${dateStr} at ${timeStr}`,
+      },
+      cancelled_by_seller: {
+        title:   '❌ You Cancelled an Order',
+        message: `You cancelled ${customerName}'s order${shopName ? ` from ${shopName}` : ''}. Total: Rs. ${existing.total_amount?.toLocaleString()}. ${dateStr} at ${timeStr}`,
+      },
+    }
 
-      if (notifError) {
-        console.error('Notification insert error:', notifError)
-      }
+    // ── Send to CUSTOMER ──
+    const cNotif = CUSTOMER_NOTIF[status]
+    if (cNotif && existing.user_id) {
+      await admin.from('notifications').insert({
+        user_id:  existing.user_id,
+        title:    cNotif.title,
+        message:  cNotif.message,
+        type:     status,
+        order_id: id,
+      })
+    }
+
+    // ── Send to SELLER (themselves) ──
+    const sNotif = SELLER_NOTIF[status]
+    if (sNotif) {
+      await admin.from('notifications').insert({
+        user_id:  user.id,
+        title:    sNotif.title,
+        message:  sNotif.message,
+        type:     status,
+        order_id: id,
+      })
     }
 
     return NextResponse.json({
       order,
-      message: status === 'confirmed'
-        ? 'Order confirmed! Stock updated.'
-        : status === 'cancelled_by_seller'
-        ? 'Order cancelled.'
+      message: status === 'confirmed' ? 'Order confirmed! Stock updated.'
+        : status === 'cancelled_by_seller' ? 'Order cancelled.'
         : `Order marked as ${status}`,
     })
-
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 })
   }
