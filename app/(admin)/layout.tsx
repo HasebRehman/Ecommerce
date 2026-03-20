@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import AdminSidebar from '@/components/layout/AdminSidebar'
+import DashboardTopbar from '@/components/layout/DashboardTopbar'
 
 const ADMIN_ROLES = ['super_admin', 'platform_admin', 'operations_admin']
 
@@ -28,8 +29,9 @@ export default async function AdminLayout({
     <div className="min-h-screen bg-slate-950">
       <div className="flex">
         <AdminSidebar />
-        <main className="flex-1 ml-64 min-h-screen">
-          <div className="p-6">
+        <main className="flex-1 ml-64 min-h-screen flex flex-col">
+          <DashboardTopbar variant="admin" />
+          <div className="p-6 flex-1">
             {children}
           </div>
         </main>

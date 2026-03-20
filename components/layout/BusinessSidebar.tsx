@@ -203,7 +203,7 @@ export default function BusinessSidebar({ subRoles }: Props) {
         </div>
       </div>
 
-      {/* User Info + Bell */}
+      {/* User Info — no bell here anymore */}
       <div className="p-4 border-b border-slate-800">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold text-sm shrink-0 overflow-hidden">
@@ -217,107 +217,6 @@ export default function BusinessSidebar({ subRoles }: Props) {
               {user?.full_name ?? 'Retailer'}
             </p>
             <p className="text-blue-400 text-xs">Retailer</p>
-          </div>
-
-          {/* Bell icon */}
-          <div className="relative" ref={bellRef}>
-            <button
-              onClick={handleBellOpen}
-              className="relative p-1.5 text-slate-400 hover:text-white transition-colors"
-            >
-              <Bell className="w-4 h-4" />
-              {unread > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[14px] h-3.5 px-0.5 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold">
-                  {unread > 9 ? '9+' : unread}
-                </span>
-              )}
-            </button>
-
-            {/* Notification dropdown */}
-            {bellOpen && (
-              <div className="absolute left-0 top-full mt-2 w-72 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 overflow-hidden"
-                style={{ left: 'auto', right: '-8px' }}
-              >
-                <div className="flex items-center justify-between px-3 py-2.5 border-b border-slate-800">
-                  <div className="flex items-center gap-2">
-                    <Bell className="w-3.5 h-3.5 text-blue-400" />
-                    <p className="text-white font-semibold text-xs">Notifications</p>
-                    {unread > 0 && (
-                      <span className="px-1.5 py-0.5 bg-red-500/20 text-red-400 text-[10px] rounded-full border border-red-500/30">
-                        {unread} new
-                      </span>
-                    )}
-                  </div>
-                  <button onClick={() => setBellOpen(false)} className="text-slate-500 hover:text-white">
-                    <X className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
-                <div className="max-h-80 overflow-y-auto">
-                  {notifications.length === 0 ? (
-                    <div className="text-center py-8">
-                      <Bell className="w-8 h-8 text-slate-700 mx-auto mb-2" />
-                      <p className="text-slate-500 text-xs">No notifications yet</p>
-                    </div>
-                  ) : (
-                    notifications.map(notif => {
-                      const cfg  = TYPE_CONFIG[notif.type] ?? TYPE_CONFIG.order
-                      const Icon = cfg.icon
-                      return (
-                        <div
-                          key={notif.id}
-                          // onClick={() => handleNotifClick(notif)}
-                          className={cn(
-                            'flex items-start gap-2.5 px-3 py-2.5 border-b border-slate-800 last:border-0 cursor-pointer hover:bg-slate-800/50 transition-colors',
-                            !notif.is_read && 'bg-slate-800/30'
-                          )}
-                        >
-                          <div className={cn(
-                            'w-7 h-7 rounded-full flex items-center justify-center shrink-0 mt-0.5',
-                            cfg.bg
-                          )}>
-                            <Icon className={cn('w-3.5 h-3.5', cfg.color)} />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-1">
-                              <p className={cn(
-                                'text-xs font-medium leading-tight',
-                                notif.is_read ? 'text-slate-300' : 'text-white'
-                              )}>
-                                {notif.title}
-                              </p>
-                              {!notif.is_read && (
-                                <div className="w-1.5 h-1.5 rounded-full bg-blue-400 shrink-0 mt-1" />
-                              )}
-                            </div>
-                            <p className="text-slate-400 text-[11px] mt-0.5 leading-relaxed line-clamp-2">
-                              {notif.message}
-                            </p>
-                            <p className="text-slate-600 text-[10px] mt-1">
-                              {new Date(notif.created_at).toLocaleDateString('en-US', {
-                                day: 'numeric', month: 'short',
-                                hour: '2-digit', minute: '2-digit'
-                              })}
-                            </p>
-                          </div>
-                        </div>
-                      )
-                    })
-                  )}
-                </div>
-
-                {/* {notifications.length > 0 && (
-                  <div className="px-3 py-2 border-t border-slate-800 text-center">
-                    <button
-                      onClick={() => { setBellOpen(false); router.push('/dashboard/orders') }}
-                      className="text-blue-400 hover:text-blue-300 text-xs transition-colors"
-                    >
-                      View all orders →
-                    </button>
-                  </div>
-                )} */}
-              </div>
-            )}
           </div>
         </div>
       </div>

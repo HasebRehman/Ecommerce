@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import BusinessSidebar from '@/components/layout/BusinessSidebar'
+import DashboardTopbar from '@/components/layout/DashboardTopbar'
 
 export default async function BusinessLayout({
   children,
@@ -26,8 +27,9 @@ export default async function BusinessLayout({
     <div className="min-h-screen bg-slate-950">
       <div className="flex">
         <BusinessSidebar subRoles={roleRecord?.sub_roles ?? []} />
-        <main className="flex-1 ml-64 min-h-screen">
-          <div className="p-6">
+        <main className="flex-1 ml-64 min-h-screen flex flex-col">
+          <DashboardTopbar variant="business" />
+          <div className="p-6 flex-1">
             {children}
           </div>
         </main>
