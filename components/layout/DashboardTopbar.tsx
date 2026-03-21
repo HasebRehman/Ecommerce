@@ -89,12 +89,14 @@ export default function DashboardTopbar({ variant }: Props) {
       const unreadCount = data.unread ?? 0
 
       if (isFirst.current) {
+        // First load — set everything and record all IDs
         setNotifications(list, unreadCount)
         list.forEach((n: any) => knownIds.current.add(n.id))
         isFirst.current = false
         return
       }
 
+      // Only add genuinely new ones
       const newOnes = list.filter((n: any) => !knownIds.current.has(n.id))
       if (newOnes.length > 0) {
         newOnes.forEach((n: any) => {

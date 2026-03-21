@@ -5,10 +5,7 @@ export async function GET() {
   try {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const { data: roleRecord } = await supabase
       .from('user_roles')
@@ -20,36 +17,75 @@ export async function GET() {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const subRoles = roleRecord?.sub_roles ?? []
-
-    // Get workspaces belonging to this user
-    const { data: workspaces, count: workspaceCount } = await supabase
-      .from('workspaces')
-      .select('*', { count: 'exact' })
+    // ── Shops ──
+    const { data: shops } = await supabase
+      .from('shops')
+      .select('id, status')
       .eq('owner_id', user.id)
 
-    // Separate shops and warehouses
-    const shops      = workspaces?.filter(w => w.type === 'shop')      ?? []
-    const warehouses = workspaces?.filter(w => w.type === 'warehouse') ?? []
+    const totalShops = shops?.length ?? 0
+    const liveShops  = shops?.filter(s => s.status === 'live').length ?? 0
+
+    // ── Products ──
+    const { count: totalProducts } = await supabase
+      .from('products')
+      .select('id', { count: 'exact', head: true })
+      .eq('owner_id', user.id)
+
+    // ── Orders ──
+    const { data: orders } = await supabase
+      .from('orders')
+      .select('id, status, total_amount, created_at')
+      .eq('retailer_id', user.id)
+
+    const allOrders = orders ?? []
+
+    const totalOrders    = allOrders.length
+    const confirmedOrders = allOrders.filter(o => o.status === 'confirmed').length
+    const shippedOrders   = allOrders.filter(o => o.status === 'shipped').length
+    const deliveredOrders = allOrders.filter(o => o.status === 'delivered').length
+    const cancelledOrders = allOrders.filter(o =>
+      o.status === 'cancelled_by_seller' ||
+      o.status === 'cancelled_by_customer' ||
+      o.status === 'cancelled'
+    ).length
+
+    // ── Revenue (delivered orders only) ──
+    const totalRevenue = allOrders
+      .filter(o => o.status === 'delivered')
+      .reduce((sum, o) => sum + (o.total_amount ?? 0), 0)
+
+    // ── Current Month Revenue ──
+    const now           = new Date()
+    const monthStart    = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
+    const monthEnd      = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString()
+
+    const currentMonthRevenue = allOrders
+      .filter(o =>
+        o.status === 'delivered' &&
+        o.created_at >= monthStart &&
+        o.created_at <= monthEnd
+      )
+      .reduce((sum, o) => sum + (o.total_amount ?? 0), 0)
+
+    const currentMonth = now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
 
     return NextResponse.json({
-      subRoles,
       stats: {
-        totalWorkspaces: workspaceCount ?? 0,
-        totalShops:      shops.length,
-        totalWarehouses: warehouses.length,
-        totalOrders:     0,   // will fill when orders feature is built
-        totalProducts:   0,   // will fill when products feature is built
-        totalRevenue:    0,   // will fill when orders feature is built
+        totalShops,
+        liveShops,
+        totalProducts:      totalProducts   ?? 0,
+        totalOrders,
+        confirmedOrders,
+        shippedOrders,
+        deliveredOrders,
+        cancelledOrders,
+        totalRevenue,
+        currentMonthRevenue,
+        currentMonth,
       },
-      workspaces: workspaces ?? [],
     })
-
-  } catch (err) {
-    console.error('Business stats error:', err)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 })
   }
 }
