@@ -183,7 +183,7 @@ export default function BusinessSidebar({ subRoles }: Props) {
     { label: 'Inventory', href: '/dashboard/inventory', icon: Package         },
     { label: 'Reviews',   href: '/dashboard/reviews',   icon: Star            },
     { label: 'Analytics', href: '/dashboard/analytics', icon: BarChart3       },
-    { label: 'Settings',  href: '/dashboard/settings',  icon: Settings        },
+    // { label: 'Settings',  href: '/dashboard/settings',  icon: Settings        },
   ]
 
   return (
