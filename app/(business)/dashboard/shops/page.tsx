@@ -2,15 +2,18 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Plus, Store, Loader2 } from 'lucide-react'
+import { Plus, Store, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { shopService } from '@/lib/services/shop.service'
 import ShopCard from '@/components/dashboard/business/shops/ShopCard'
 
+const SHOPS_PER_PAGE = 6 // 2 rows × 3 columns
+
 export default function ShopsPage() {
-  const [shops,   setShops]   = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+  const [shops,       setShops]       = useState<any[]>([])
+  const [loading,     setLoading]     = useState(true)
+  const [currentPage, setCurrentPage] = useState(1)
 
   const loadShops = async () => {
     try {
@@ -25,16 +28,22 @@ export default function ShopsPage() {
 
   useEffect(() => { loadShops() }, [])
 
+  // ── Pagination logic ──
+  const totalPages   = Math.ceil(shops.length / SHOPS_PER_PAGE)
+  const startIndex   = (currentPage - 1) * SHOPS_PER_PAGE
+  const endIndex     = startIndex + SHOPS_PER_PAGE
+  const currentShops = shops.slice(startIndex, endIndex)
+
   const handleDelete = (id: string) => {
     toast('Delete this shop?', {
       description: 'All shop data and product assignments will be removed.',
-      duration: 10000,
+      duration:    10000,
       action: {
-        label: 'Yes, Delete',
+        label:   'Yes, Delete',
         onClick: () => void deleteShop(id),
       },
       cancel: {
-        label: 'Cancel',
+        label:   'Cancel',
         onClick: () => {},
       },
     })
@@ -46,6 +55,12 @@ export default function ShopsPage() {
       await shopService.deleteShop(id)
       toast.dismiss(toastId)
       toast.success('Shop deleted!')
+      // If last item on page, go back one page
+      const newTotal = shops.length - 1
+      const newPages = Math.ceil(newTotal / SHOPS_PER_PAGE)
+      if (currentPage > newPages && currentPage > 1) {
+        setCurrentPage(p => p - 1)
+      }
       loadShops()
     } catch (err: any) {
       toast.dismiss(toastId)
@@ -62,6 +77,11 @@ export default function ShopsPage() {
           <h1 className="text-2xl font-bold text-white">My Shops</h1>
           <p className="text-slate-400 mt-1">
             {shops.length} shop{shops.length !== 1 ? 's' : ''} created
+            {totalPages > 1 && (
+              <span className="text-slate-500">
+                {' '}· Page {currentPage} of {totalPages}
+              </span>
+            )}
           </p>
         </div>
         <Link href="/dashboard/shops/new">
@@ -92,15 +112,70 @@ export default function ShopsPage() {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {shops.map(shop => (
-            <ShopCard
-              key={shop.id}
-              shop={shop}
-              onDelete={handleDelete}
-            />
-          ))}
-        </div>
+        <>
+          {/* Grid — 3 per row, 2 rows = 6 per page */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {currentShops.map(shop => (
+              <ShopCard
+                key={shop.id}
+                shop={shop}
+                onDelete={handleDelete}
+              />
+            ))}
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-2">
+
+              {/* Info */}
+              <p className="text-slate-500 text-sm">
+                Showing {startIndex + 1}–{Math.min(endIndex, shops.length)} of {shops.length} shops
+              </p>
+
+              {/* Controls */}
+              <div className="flex items-center gap-2">
+
+                {/* Prev */}
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 hover:text-white text-sm rounded-lg transition-all"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                  Prev
+                </button>
+
+                {/* Page numbers */}
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`w-9 h-9 rounded-lg text-sm font-medium transition-all ${
+                        currentPage === page
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700'
+                      }`}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Next */}
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 hover:text-white text-sm rounded-lg transition-all"
+                >
+                  Next
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
     </div>
