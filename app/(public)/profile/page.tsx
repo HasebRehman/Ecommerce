@@ -6,6 +6,7 @@ import {
   Camera, Save, Loader2, Mail, Phone,
   FileText, AtSign, Shield, Store,
   ShoppingBag, User, X, Edit3, CheckCircle,
+  AlertCircle,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthStore } from '@/store/authStore'
@@ -55,13 +56,16 @@ export default function ProfilePage() {
     banner_url: '',
   })
 
+  const [originalUsername, setOriginalUsername] = useState('') // ✅ Track original username
+  const [usernameError, setUsernameError] = useState('') // ✅ Username validation error
+
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [uploadingBanner, setUploadingBanner] = useState(false)
 
   const avatarRef = useRef<HTMLInputElement>(null)
   const bannerRef = useRef<HTMLInputElement>(null)
 
-  /* ── all data-loading & handlers are UNCHANGED ── */
+  /* ── Load profile data ── */
   useEffect(() => {
     if (!isAuthenticated) { router.push('/login'); return }
     profileService.getProfile()
@@ -77,11 +81,41 @@ export default function ProfilePage() {
           avatar_url: data.profile?.avatar_url ?? '',
           banner_url: data.profile?.banner_url ?? '',
         })
+        setOriginalUsername(data.profile?.username ?? '') // ✅ Store original username
       })
       .catch(() => toast.error('Failed to load profile'))
       .finally(() => setLoading(false))
-  }, [isAuthenticated])
+  }, [isAuthenticated, router])
 
+  /* ── ✅ USERNAME VALIDATION ── */
+  const validateUsername = (username: string): string => {
+    if (!username || username.trim() === '') {
+      return 'Username is required'
+    }
+    if (username.length < 3) {
+      return 'Username must be at least 3 characters'
+    }
+    if (username.length > 20) {
+      return 'Username must be less than 20 characters'
+    }
+    if (!/^[a-zA-Z0-9_-]+$/.test(username)) {
+      return 'Username can only contain letters, numbers, underscores, and hyphens'
+    }
+    return ''
+  }
+
+  /* ── ✅ Handle username change with validation ── */
+  const handleUsernameChange = (value: string) => {
+    const cleanValue = value.toLowerCase().replace(/\s/g, '')
+    setFormData(p => ({ ...p, username: cleanValue }))
+    
+    // Clear error when typing
+    if (usernameError) {
+      setUsernameError('')
+    }
+  }
+
+  /* ── Avatar upload ── */
   const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -95,6 +129,7 @@ export default function ProfilePage() {
     finally { setUploadingAvatar(false) }
   }
 
+  /* ── Banner upload ── */
   const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -108,22 +143,52 @@ export default function ProfilePage() {
     finally { setUploadingBanner(false) }
   }
 
+  /* ── ✅ SAVE WITH VALIDATION ── */
   const handleSave = async () => {
+    // ✅ Validate username before saving
+    const validationError = validateUsername(formData.username)
+    if (validationError) {
+      setUsernameError(validationError)
+      toast.info(validationError)
+      return
+    }
+
     setSaving(true)
+    setUsernameError('')
+
     try {
       const data = await profileService.updateProfile(formData)
       setUser(data.profile)
+      setOriginalUsername(data.profile.username) // ✅ Update original username
       setEditing(false)
       toast.success('Profile updated! ✅')
     } catch (err: any) {
-      toast.error(err.message || 'Failed to update')
+      console.error('Profile update error:', err)
+      
+      // ✅ Handle specific error responses
+      const errorMessage = err.response?.data?.error || err.message
+      
+      if (err.response?.status === 409 || errorMessage.includes('already taken')) {
+        setUsernameError('This username is already taken')
+        toast.error('This username is already taken. Please choose another one.')
+      } else if (errorMessage.includes('required')) {
+        setUsernameError('Username is required')
+        toast.info('Please enter a username')
+      } else if (errorMessage.includes('3-20 characters')) {
+        setUsernameError(errorMessage)
+        toast.error(errorMessage)
+      } else {
+        toast.error('Failed to update profile. Please try again.')
+      }
     } finally {
       setSaving(false)
     }
   }
 
+  /* ── Cancel editing ── */
   const handleCancel = () => {
     setEditing(false)
+    setUsernameError('') // ✅ Clear errors
     profileService.getProfile().then(data => {
       setFormData({
         full_name:  data.profile?.full_name  ?? '',
@@ -190,6 +255,13 @@ export default function ProfilePage() {
           border-color: rgba(40,90,72,0.18);
           color: rgba(176,228,204,0.35);
           cursor: not-allowed !important;
+        }
+        .pp-field.error {
+          border-color: rgba(239,68,68,0.5);
+        }
+        .pp-field.error:focus {
+          border-color: rgba(239,68,68,0.7);
+          box-shadow: 0 0 0 3px rgba(239,68,68,0.15);
         }
 
         /* ── Section card ── */
@@ -280,6 +352,15 @@ export default function ProfilePage() {
           transition: background 0.18s ease;
         }
         .pp-banner-btn:hover { background: rgba(40,90,72,0.6); }
+
+        /* ✅ Error message */
+        .pp-error {
+          display: flex; align-items: center; gap: 6px;
+          color: #f87171;
+          font-size: 0.75rem;
+          font-weight: 600;
+          margin-top: 0.375rem;
+        }
       `}</style>
 
       <div className="pp-root max-w-3xl mx-auto px-4 sm:px-6 py-10 space-y-5">
@@ -485,19 +566,25 @@ export default function ProfilePage() {
               />
             </div>
 
-            {/* Username */}
+            {/* ✅ Username with validation */}
             <div>
               <label className="pp-label">
-                <AtSign className="w-3 h-3" /> Username
+                <AtSign className="w-3 h-3" /> Username <span style={{ color: '#f87171' }}>*</span>
               </label>
               <input
                 type="text"
                 value={formData.username}
-                onChange={e => setFormData(p => ({ ...p, username: e.target.value.toLowerCase().replace(/\s/g, '') }))}
+                onChange={e => handleUsernameChange(e.target.value)}
                 disabled={!editing}
                 placeholder="yourname"
-                className="pp-field"
+                className={cn('pp-field', usernameError && 'error')}
               />
+              {usernameError && (
+                <p className="pp-error">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  {usernameError}
+                </p>
+              )}
             </div>
 
             {/* Email — always read-only */}
