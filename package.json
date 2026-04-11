@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:messaging-db": "node scripts/test-admin-messages-db.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",

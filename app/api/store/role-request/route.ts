@@ -7,13 +7,17 @@ export async function GET() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { data: request } = await supabase
+    // Fetch all requests for this user to count rejections
+    const { data: allRequests } = await supabase
       .from('role_upgrade_requests')
       .select('*')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
+
+    const request      = allRequests?.[0] ?? null
+    const totalCount   = allRequests?.length ?? 0
+    // Attach a virtual request_count based on total rows
+    const enriched     = request ? { ...request, request_count: totalCount } : null
 
     const { data: roleRecord } = await supabase
       .from('user_roles')
@@ -22,12 +26,12 @@ export async function GET() {
       .single()
 
     return NextResponse.json({
-      request:  request ?? null,
+      request:  enriched,
       role:     roleRecord?.role,
       subRoles: roleRecord?.sub_roles ?? [],
     })
 
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -38,20 +42,35 @@ export async function POST() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { data: existing } = await supabase
+    // Fetch all existing requests for this user
+    const { data: allRequests } = await supabase
       .from('role_upgrade_requests')
       .select('id, status')
       .eq('user_id', user.id)
-      .eq('status', 'pending')
-      .maybeSingle()
+      .order('created_at', { ascending: false })
 
-    if (existing) {
+    const totalCount = allRequests?.length ?? 0
+    const latest     = allRequests?.[0] ?? null
+
+    // Block if already pending
+    if (latest?.status === 'pending') {
+      return NextResponse.json({ error: 'You already have a pending request' }, { status: 400 })
+    }
+
+    // Block if approved
+    if (latest?.status === 'approved') {
+      return NextResponse.json({ error: 'Your request has already been approved' }, { status: 400 })
+    }
+
+    // Block if 3 requests already submitted
+    if (totalCount >= 3) {
       return NextResponse.json(
-        { error: 'You already have a pending request' },
+        { error: 'You have reached the maximum number of requests (3). You can no longer send requests.' },
         { status: 400 }
       )
     }
 
+    // Insert a new request row each time
     const { data: request, error } = await supabase
       .from('role_upgrade_requests')
       .insert({
@@ -66,12 +85,15 @@ export async function POST() {
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
+    // Attach virtual request_count
+    const enriched = { ...request, request_count: totalCount + 1 }
+
     return NextResponse.json({
-      request,
+      request: enriched,
       message: 'Request submitted! Admin will review it soon.',
     })
 
-  } catch (err) {
+  } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

@@ -73,6 +73,7 @@ export interface RoleUpgradeRequest {
   reason: string | null
   documents_url: string[]
   status: RequestStatus
+  request_count: number        // 1–3, tracks how many times user has requested
   reviewed_by: string | null
   reviewed_at: string | null
   review_notes: string | null

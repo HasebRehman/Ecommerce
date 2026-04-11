@@ -5,7 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard, Users, TrendingUp, Building2,
   Settings, LogOut, Shield, Activity, FileText,
-  Layers, Bell, ChevronRight,
+  Layers, Bell, ChevronRight, MessageSquare,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -13,13 +13,16 @@ import { authService } from '@/lib/services/auth.service'
 import { useAuthStore } from '@/store/authStore'
 import { Badge } from '@/components/ui/badge'
 import type { UserRole } from '@/types'
+import { useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import api from '@/lib/axios'
 
 // Menu item type
 interface MenuItem {
   label:      string
   href:       string
   icon:       any
-  roles:      UserRole[]   // which roles can see this item
+  roles:      UserRole[]
   badge?:     string
 }
 
@@ -93,6 +96,14 @@ const ALL_MENU_ITEMS: MenuItem[] = [
     icon:  FileText,
     roles: ['operations_admin'],
   },
+
+  // ── Messages (all admins) ──
+  {
+    label: 'Messages',
+    href:  '/admin/messages',
+    icon:  MessageSquare,
+    roles: ['super_admin', 'platform_admin', 'operations_admin'],
+  },
 ]
 
 // Role display config
@@ -126,9 +137,34 @@ export default function AdminSidebar() {
   const pathname              = usePathname()
   const router                = useRouter()
   const { clearAuth, user, role } = useAuthStore()
+  const [unreadMessages, setUnreadMessages] = useState(0)
 
   const userRole   = role as UserRole
   const config     = ROLE_CONFIG[userRole] ?? ROLE_CONFIG.super_admin
+
+  // Load initial unread count + subscribe to new messages
+  useEffect(() => {
+    if (!user) return
+
+    api.get('/api/admin/messages')
+      .then(res => setUnreadMessages(res.data.totalUnread ?? 0))
+      .catch(() => {})
+
+    const supabase = createClient()
+    const channel  = supabase
+      .channel('sidebar-unread')
+      .on('postgres_changes', {
+        event:  'INSERT',
+        schema: 'public',
+        table:  'admin_messages',
+        filter: `receiver_id=eq.${user.id}`,
+      }, () => {
+        setUnreadMessages(prev => prev + 1)
+      })
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [user])
 
   // Filter menu items based on current user's role
   const menuItems = ALL_MENU_ITEMS.filter(item =>
@@ -200,15 +236,21 @@ export default function AdminSidebar() {
         {uniqueMenuItems.map((item) => {
           const Icon     = item.icon
           const isActive = pathname.startsWith(item.href)
+          const isMessages = item.href === '/admin/messages'
+          // Reset unread when visiting messages page
+          const handleClick = () => {
+            if (isMessages) setUnreadMessages(0)
+          }
 
           return (
             <Link
               key={item.href}
               href={item.href}
+              onClick={handleClick}
               className={cn(
                 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all group',
                 isActive
-                  ? cn('font-medium', 
+                  ? cn('font-medium',
                       userRole === 'super_admin'       && 'bg-red-500/15 text-red-400',
                       userRole === 'platform_admin'    && 'bg-orange-500/15 text-orange-400',
                       userRole === 'operations_admin'  && 'bg-yellow-500/15 text-yellow-400',
@@ -218,7 +260,15 @@ export default function AdminSidebar() {
             >
               <Icon className="w-4 h-4 shrink-0" />
               <span className="flex-1">{item.label}</span>
-              {isActive && (
+              {isMessages && unreadMessages > 0 && (
+                <span className="bg-blue-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                  {unreadMessages > 99 ? '99+' : unreadMessages}
+                </span>
+              )}
+              {isActive && !isMessages && (
+                <ChevronRight className="w-3 h-3 opacity-60" />
+              )}
+              {isActive && isMessages && unreadMessages === 0 && (
                 <ChevronRight className="w-3 h-3 opacity-60" />
               )}
             </Link>
