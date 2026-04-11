@@ -30,24 +30,41 @@ export async function GET(request: Request) {
 
     const adminClient = createAdminSupabaseClient()
 
+    // Get all users with their auth data
+    const { data: authUsers } = await adminClient.auth.admin.listUsers({
+      page,
+      perPage: 1000, // Get all to filter properly
+    })
+
     let query = adminClient
       .from('profiles')
       .select(`*, user_roles!user_roles_user_id_fkey(role, sub_roles, is_active)`, { count: 'exact' })
       .order('created_at', { ascending: false })
-      .range(offset, offset + limit - 1)
 
     if (search) {
       query = query.ilike('full_name', `%${search}%`)
     }
 
-    const { data: users, count, error } = await query
+    const { data: profiles, count, error } = await query
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
+    // Merge profiles with email from auth
+    const users = (profiles ?? []).map(profile => {
+      const authUser = authUsers?.users.find(u => u.id === profile.id)
+      return {
+        ...profile,
+        email: authUser?.email ?? '',
+      }
+    })
+
+    // Apply pagination
+    const paginatedUsers = users.slice(offset, offset + limit)
+
     return NextResponse.json({
-      users: users ?? [],
+      users: paginatedUsers,
       pagination: {
         total:      count ?? 0,
         page,

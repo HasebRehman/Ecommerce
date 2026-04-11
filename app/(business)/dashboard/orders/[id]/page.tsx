@@ -12,6 +12,7 @@ import { useAuthStore } from '@/store/authStore'
 import api from '@/lib/axios'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
+import { createClient } from '@/lib/supabase/client'
 
 const STATUS_OPTIONS = [
   { value: 'pending',             label: 'Pending',              icon: Clock,        color: 'text-yellow-400' },
@@ -57,42 +58,37 @@ export default function SellerOrderDetailPage() {
       .finally(() => setLoading(false))
   }, [id, isAuthenticated])
 
-  // ── Supabase Realtime subscription ──
   useEffect(() => {
     if (!id || id === 'undefined') return
 
-    let channel: any
+    const supabase = createClient()
+    const channelName = `order-seller-${id}-${Date.now()}`
 
-    const setupRealtime = async () => {
-      const { createClient } = await import('@/lib/supabase/client')
-      const supabase = createClient()
+    const channel = supabase
+      .channel(channelName)
+      .on(
+        'postgres_changes',
+        {
+          event:  'UPDATE',
+          schema: 'public',
+          table:  'orders',
+          filter: `id=eq.${id}`,
+        },
+        (payload: any) => {
+          setOrder((prev: any) => ({ ...prev, ...payload.new }))
+          setSelectedStatus(payload.new.status)
+        }
+      )
+      .subscribe()
 
-      channel = supabase
-        .channel(`order-seller-${id}`)
-        .on(
-          'postgres_changes',
-          {
-            event:  'UPDATE',
-            schema: 'public',
-            table:  'orders',
-            filter: `id=eq.${id}`,
-          },
-          (payload) => {
-            setOrder((prev: any) => ({ ...prev, ...payload.new }))
-            setSelectedStatus(payload.new.status)
-          }
-        )
-        .subscribe()
+    return () => {
+      supabase.removeChannel(channel)
     }
-
-    setupRealtime()
-    return () => { channel?.unsubscribe() }
   }, [id])
 
   const handleUpdateStatus = async () => {
     if (!selectedStatus || selectedStatus === order?.status) return
 
-    // Confirm cancel
     if (selectedStatus === 'cancelled_by_seller') {
       if (!confirm('Are you sure you want to cancel this order?')) {
         setSelectedStatus(order.status)
@@ -105,10 +101,10 @@ export default function SellerOrderDetailPage() {
       await api.put(`/api/business/orders/${id}`, { status: selectedStatus })
       setOrder((prev: any) => ({ ...prev, status: selectedStatus }))
       toast.success(
-        selectedStatus === 'confirmed'          ? '✅ Order confirmed! Stock updated.' :
-        selectedStatus === 'shipped'            ? '🚚 Order marked as shipped!'        :
-        selectedStatus === 'delivered'          ? '🎉 Order delivered!'                :
-        selectedStatus === 'cancelled_by_seller'? '❌ Order cancelled.'                :
+        selectedStatus === 'confirmed'           ? '✅ Order confirmed! Stock updated.' :
+        selectedStatus === 'shipped'             ? '🚚 Order marked as shipped!'        :
+        selectedStatus === 'delivered'           ? '🎉 Order delivered!'                :
+        selectedStatus === 'cancelled_by_seller' ? '❌ Order cancelled.'                :
         'Status updated!'
       )
     } catch (err: any) {
@@ -137,12 +133,11 @@ export default function SellerOrderDetailPage() {
   const items = order.order_items      ?? []
   const shop  = order.shops
 
-  // Filter dropdown options based on current status
   const availableOptions = STATUS_OPTIONS.filter(opt => {
     if (isTerminal(order.status)) return false
-    if (order.status === 'pending')    return ['confirmed', 'cancelled_by_seller'].includes(opt.value)
-    if (order.status === 'confirmed')  return ['shipped',   'cancelled_by_seller'].includes(opt.value)
-    if (order.status === 'shipped')    return ['delivered'].includes(opt.value)
+    if (order.status === 'pending')   return ['confirmed', 'cancelled_by_seller'].includes(opt.value)
+    if (order.status === 'confirmed') return ['shipped',   'cancelled_by_seller'].includes(opt.value)
+    if (order.status === 'shipped')   return ['delivered'].includes(opt.value)
     return false
   })
 
@@ -177,7 +172,7 @@ export default function SellerOrderDetailPage() {
           </div>
         </div>
 
-        {/* ── Status Dropdown + Save ── */}
+        {/* Status Dropdown + Save */}
         {!isTerminal(order.status) && availableOptions.length > 0 && (
           <div className="flex items-center gap-3">
             <div className="relative">
@@ -202,14 +197,12 @@ export default function SellerOrderDetailPage() {
 
               {dropdownOpen && (
                 <div className="absolute right-0 top-full mt-2 w-56 bg-slate-900 border border-slate-700 rounded-xl shadow-xl z-50 overflow-hidden">
-                  {/* Current status — disabled */}
                   <div className="px-3 py-2 border-b border-slate-800">
                     <p className="text-slate-500 text-xs">Current Status</p>
                     <p className={cn('text-sm font-medium mt-0.5', cfg.color)}>
                       {cfg.label}
                     </p>
                   </div>
-                  {/* Available next statuses */}
                   <div className="p-1">
                     {availableOptions.map(opt => (
                       <button
@@ -234,7 +227,6 @@ export default function SellerOrderDetailPage() {
               )}
             </div>
 
-            {/* Save button — only show if status changed */}
             {selectedStatus !== order.status && (
               <button
                 onClick={handleUpdateStatus}
@@ -251,7 +243,6 @@ export default function SellerOrderDetailPage() {
           </div>
         )}
 
-        {/* Terminal state badge */}
         {isTerminal(order.status) && (
           <span className={cn(
             'flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-medium border',
@@ -367,7 +358,6 @@ export default function SellerOrderDetailPage() {
                     <p className="text-slate-400 text-xs mt-1">
                       Rs. {item.price?.toLocaleString()} × {item.quantity}
                     </p>
-                    {/* Stock after deduction */}
                     {order.status !== 'pending' && item.products?.stock !== undefined && (
                       <p className="text-slate-500 text-xs mt-0.5">
                         Stock remaining: {item.products.stock}
@@ -455,14 +445,14 @@ export default function SellerOrderDetailPage() {
             </div>
           )}
 
-          {/* Status History hint */}
+          {/* Status Flow */}
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
             <p className="text-white font-semibold text-sm">Status Flow</p>
             <div className="space-y-2">
               {['pending', 'confirmed', 'shipped', 'delivered'].map((s, i) => {
-                const scfg    = STATUS_CONFIG[s]
-                const SIcon   = scfg.icon
-                const isDone  = ['pending','confirmed','shipped','delivered']
+                const scfg   = STATUS_CONFIG[s]
+                const SIcon  = scfg.icon
+                const isDone = ['pending', 'confirmed', 'shipped', 'delivered']
                   .indexOf(order.status) >= i
                 return (
                   <div key={s} className="flex items-center gap-3">

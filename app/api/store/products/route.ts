@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     const limit       = 20
     const offset      = (page - 1) * limit
 
-    let query = supabase
+    const { data, error } = await supabase
       .from('shop_products')
       .select(`
         product_id,
@@ -22,30 +22,52 @@ export async function GET(request: Request) {
           is_active, sizes, colors,
           categories(id, name)
         )
-      `, { count: 'exact' })
+      `)
       .eq('shops.status', 'live')
       .eq('products.is_active', true)
       .gt('products.stock', 0)
       .range(offset, offset + limit - 1)
 
-    const { data, count, error } = await query
-
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
-    const products = (data ?? []).map(item => ({
-      ...(item.products as any),
-      shop: item.shops,
-    }))
+    // Filter in JS since Supabase nested filters on joined tables may not apply server-side
+    let products = (data ?? [])
+      .filter((item: any) => {
+        const shop    = Array.isArray(item.shops)    ? item.shops[0]    : item.shops
+        const product = Array.isArray(item.products) ? item.products[0] : item.products
+        return shop?.status === 'live' && product?.is_active === true && product?.stock > 0
+      })
+      .map((item: any) => {
+        const shop    = Array.isArray(item.shops)    ? item.shops[0]    : item.shops
+        const product = Array.isArray(item.products) ? item.products[0] : item.products
+        return { ...product, shop }
+      })
+
+    // Apply search filter
+    if (search) {
+      const q = search.toLowerCase()
+      products = products.filter((p: any) =>
+        p.name?.toLowerCase().includes(q) || p.description?.toLowerCase().includes(q)
+      )
+    }
+
+    // Apply category filter
+    if (category_id) {
+      products = products.filter((p: any) =>
+        p.categories?.id === category_id ||
+        (Array.isArray(p.categories) && p.categories.some((c: any) => c.id === category_id))
+      )
+    }
 
     return NextResponse.json({
       products,
       pagination: {
-        total:      count ?? 0,
+        total:      products.length,
         page,
         limit,
-        totalPages: Math.ceil((count ?? 0) / limit),
+        totalPages: Math.ceil(products.length / limit),
       },
     })
 

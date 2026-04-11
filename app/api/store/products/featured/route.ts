@@ -19,16 +19,30 @@ export async function GET() {
       .eq('shops.status', 'live')
       .eq('products.is_active', true)
       .gt('products.stock', 0)
-      .limit(10)
+      .limit(50)
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
-    const products = (data ?? []).map(item => ({
-      ...(item.products as any),
-      shop: item.shops,
-    }))
+    const seen = new Set()
+    const products = (data ?? [])
+      .filter((item: any) => {
+        const shop    = Array.isArray(item.shops)    ? item.shops[0]    : item.shops
+        const product = Array.isArray(item.products) ? item.products[0] : item.products
+        if (!shop || !product) return false
+        if (shop?.status !== 'live') return false
+        if (!product?.is_active || product?.stock <= 0) return false
+        if (seen.has(product.id)) return false
+        seen.add(product.id)
+        return true
+      })
+      .slice(0, 10)
+      .map((item: any) => {
+        const shop    = Array.isArray(item.shops)    ? item.shops[0]    : item.shops
+        const product = Array.isArray(item.products) ? item.products[0] : item.products
+        return { ...product, shop }
+      })
 
     return NextResponse.json({ products })
 

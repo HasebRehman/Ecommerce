@@ -20,23 +20,37 @@ export async function GET() {
       .eq('products.is_active', true)
       .gt('products.stock', 0)
       .not('products.discount_price', 'is', null)
-      .limit(10)
+      .limit(50)
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
-    // Sort by highest discount percentage
+    const seen = new Set()
     const products = (data ?? [])
-      .map(item => ({
-        ...(item.products as any),
-        shop: item.shops,
-      }))
-      .filter((p: any) => p.discount_price && p.price)
+      .filter((item: any) => {
+        const shop    = Array.isArray(item.shops)    ? item.shops[0]    : item.shops
+        const product = Array.isArray(item.products) ? item.products[0] : item.products
+        if (!shop || !product) return false
+        if (shop?.status !== 'live') return false
+        if (!product?.is_active || product?.stock <= 0) return false
+        if (!product?.discount_price) return false
+        if (seen.has(product.id)) return false
+        seen.add(product.id)
+        return true
+      })
       .sort((a: any, b: any) => {
-        const discA = ((a.price - a.discount_price) / a.price) * 100
-        const discB = ((b.price - b.discount_price) / b.price) * 100
+        const pA = Array.isArray(a.products) ? a.products[0] : a.products
+        const pB = Array.isArray(b.products) ? b.products[0] : b.products
+        const discA = ((pA?.price - pA?.discount_price) / pA?.price) * 100
+        const discB = ((pB?.price - pB?.discount_price) / pB?.price) * 100
         return discB - discA
+      })
+      .slice(0, 10)
+      .map((item: any) => {
+        const shop    = Array.isArray(item.shops)    ? item.shops[0]    : item.shops
+        const product = Array.isArray(item.products) ? item.products[0] : item.products
+        return { ...product, shop }
       })
 
     return NextResponse.json({ products })

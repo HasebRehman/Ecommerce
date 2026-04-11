@@ -11,26 +11,25 @@ import { cn } from '@/lib/utils'
 
 interface Props {
   shopId: string
-  initialProductIds?: string[]
 }
 
-export default function ShopProductsManager({
-  shopId,
-  initialProductIds,
-}: Props) {
-  const [allProducts,      setAllProducts]      = useState<any[]>([])
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(
-    new Set(initialProductIds ?? [])
-  )
+export default function ShopProductsManager({ shopId }: Props) {
+  const [allProducts, setAllProducts] = useState<any[]>([])
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [loading,          setLoading]          = useState(true)
   const [saving,           setSaving]           = useState(false)
   const [hasChanges,       setHasChanges]       = useState(false)
 
   useEffect(() => {
-    productService.getProducts({ page: 1 })
-      .then(data => setAllProducts(data.products ?? []))
-      .finally(() => setLoading(false))
-  }, [])
+    Promise.all([
+      productService.getProducts({ page: 1 }),
+      shopService.getShopProducts(shopId),
+    ]).then(([productsData, shopProductsData]) => {
+      setAllProducts(productsData.products ?? [])
+      const existingIds = (shopProductsData.products ?? []).map((sp: any) => sp.product_id)
+      setSelectedIds(new Set(existingIds))
+    }).finally(() => setLoading(false))
+  }, [shopId])
 
   const toggleProduct = (id: string) => {
     setSelectedIds(prev => {

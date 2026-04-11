@@ -22,6 +22,7 @@ export async function GET(
   }
 }
 
+// Bulk replace: replaces all shop products with the provided productIds array
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -32,13 +33,32 @@ export async function POST(
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    const { product_id } = await request.json()
+    const { productIds } = await request.json()
 
-    const { error } = await supabase.from('shop_products')
-      .upsert({ shop_id: id, product_id }, { onConflict: 'shop_id,product_id' })
+    if (!Array.isArray(productIds)) {
+      return NextResponse.json({ error: 'productIds must be an array' }, { status: 400 })
+    }
 
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 })
-    return NextResponse.json({ message: 'Product added to shop!' })
+    // Delete all existing assignments for this shop
+    const { error: deleteError } = await supabase
+      .from('shop_products')
+      .delete()
+      .eq('shop_id', id)
+
+    if (deleteError) {
+      return NextResponse.json({ error: deleteError.message }, { status: 400 })
+    }
+
+    // Insert new assignments (skip if empty selection)
+    if (productIds.length > 0) {
+      const rows = productIds.map((product_id: string) => ({ shop_id: id, product_id }))
+      const { error: insertError } = await supabase.from('shop_products').insert(rows)
+      if (insertError) {
+        return NextResponse.json({ error: insertError.message }, { status: 400 })
+      }
+    }
+
+    return NextResponse.json({ message: 'Shop products updated!' })
   } catch (err) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }

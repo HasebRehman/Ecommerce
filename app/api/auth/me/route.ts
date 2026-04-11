@@ -14,16 +14,25 @@ export async function GET() {
       )
     }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single()
-
     const { data: roleRecord } = await supabase
       .from('user_roles')
       .select('*')
       .eq('user_id', user.id)
+      .single()
+
+    // Force logout if account has been deactivated
+    if (roleRecord && roleRecord.is_active === false) {
+      await supabase.auth.signOut()
+      return NextResponse.json(
+        { error: 'Your account has been deactivated by the admin. Please contact support.' },
+        { status: 403 }
+      )
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
       .single()
 
     return NextResponse.json({
