@@ -25,13 +25,20 @@ export async function POST(request: Request) {
     if (authUser) {
       const { data: roleRecord } = await adminSupabase
         .from('user_roles')
-        .select('is_active')
+        .select('is_active, is_banned')
         .eq('user_id', authUser.id)
         .single()
 
-      if (roleRecord && roleRecord.is_active === false) {
+      if (roleRecord?.is_active === false) {
         return NextResponse.json(
           { error: 'Your account has been deactivated by the admin. Please contact support.' },
+          { status: 403 }
+        )
+      }
+
+      if (roleRecord?.is_banned === true) {
+        return NextResponse.json(
+          { error: 'You have been permanently banned by the admin team.' },
           { status: 403 }
         )
       }

@@ -29,6 +29,15 @@ export async function GET() {
       )
     }
 
+    // Force logout if account has been banned
+    if (roleRecord && roleRecord.is_banned === true) {
+      await supabase.auth.signOut()
+      return NextResponse.json(
+        { error: 'You have been permanently banned by the admin team.' },
+        { status: 403 }
+      )
+    }
+
     const { data: profile } = await supabase
       .from('profiles')
       .select('*')

@@ -15,7 +15,7 @@ export async function GET(request: Request) {
       .from('shop_products')
       .select(`
         product_id,
-        shops!inner(id, name, slug, logo_url, status),
+        shops!inner(id, name, slug, logo_url, status, owner_id),
         products!inner(
           id, name, description, price,
           discount_price, images, stock,
@@ -29,7 +29,23 @@ export async function GET(request: Request) {
       .range(offset, offset + limit - 1)
 
     if (error) {
+      console.error('Products query error:', error)
       return NextResponse.json({ error: error.message }, { status: 400 })
+    }
+
+    // Get banned seller ids (with error handling)
+    let bannedIds = new Set()
+    try {
+      const { data: bannedRoles, error: bannedError } = await supabase
+        .from('user_roles').select('user_id').eq('is_banned', true)
+      
+      if (bannedError) {
+        console.error('Error fetching banned users:', bannedError)
+      } else {
+        bannedIds = new Set((bannedRoles ?? []).map((r: any) => r.user_id))
+      }
+    } catch (err) {
+      console.error('Exception fetching banned users:', err)
     }
 
     // Filter in JS since Supabase nested filters on joined tables may not apply server-side
@@ -37,7 +53,10 @@ export async function GET(request: Request) {
       .filter((item: any) => {
         const shop    = Array.isArray(item.shops)    ? item.shops[0]    : item.shops
         const product = Array.isArray(item.products) ? item.products[0] : item.products
-        return shop?.status === 'live' && product?.is_active === true && product?.stock > 0
+        return shop?.status === 'live'
+          && product?.is_active === true
+          && product?.stock > 0
+          && !bannedIds.has(shop?.owner_id)
       })
       .map((item: any) => {
         const shop    = Array.isArray(item.shops)    ? item.shops[0]    : item.shops
@@ -71,7 +90,8 @@ export async function GET(request: Request) {
       },
     })
 
-  } catch (err) {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  } catch (err: any) {
+    console.error('Products error:', err)
+    return NextResponse.json({ error: err.message || 'Internal server error' }, { status: 500 })
   }
 }

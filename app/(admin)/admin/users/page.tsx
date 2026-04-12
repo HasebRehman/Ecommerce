@@ -157,9 +157,16 @@ export default function AdminUsersPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <Badge className={cn('capitalize text-xs border', ROLE_COLORS[role])}>
-                            {role.replace(/_/g, ' ')}
-                          </Badge>
+                          <div className="flex items-center gap-2">
+                            <Badge className={cn('capitalize text-xs border', ROLE_COLORS[role])}>
+                              {role.replace(/_/g, ' ')}
+                            </Badge>
+                            {user.user_roles?.[0]?.is_banned && (
+                              <Badge className="bg-red-500/20 text-red-400 border-red-500/30 text-xs border">
+                                BANNED
+                              </Badge>
+                            )}
+                          </div>
                         </td>
                         <td className="px-6 py-4">
                           <p className="text-slate-300 text-sm">{user.email ?? '—'}</p>

@@ -698,7 +698,7 @@ export default function LandingPage() {
         ══════════════════════════════════════════════ */}
         <footer className="border-t border-[#285A48]/25 mt-4" style={{ background: '#07100e' }}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-14 pb-8">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+            <div className="grid grid-cols-2 md:grid-cols-6 gap-8 mb-12">
 
               {/* Brand */}
               <div className="col-span-2">
@@ -749,6 +749,13 @@ export default function LandingPage() {
                     { label: 'My Account', href: '/account' },
                     { label: 'My Orders',  href: '/account/orders' },
                     { label: 'Wishlist',   href: '/wishlist' },
+                  ],
+                },
+                {
+                  title: 'Actions',
+                  links: [
+                    { label: 'Report',         href: '/report' },
+                    { label: 'Report History', href: '/report/history' },
                   ],
                 },
               ].map(col => (

@@ -98,6 +98,8 @@ ADMIN: {
   ROLE_REQUESTS: `${BASE}/admin/role-requests`,
   ROLE_REQUEST:  (id: string) => `${BASE}/admin/role-requests/${id}`,
   WORKSPACES:    `${BASE}/admin/workspaces`,
+  REPORTS:       `${BASE}/admin/reports`,
+  REPORT_DETAIL: (id: string) => `${BASE}/admin/reports/${id}`,
 },
 
 // ── BUSINESS ──────────────────────────────
@@ -121,6 +123,8 @@ STORE: {
   FEATURED:       `${BASE}/store/products/featured`,
   DISCOUNTED:     `${BASE}/store/products/discounted`,
   TOP_SHOPS:      `${BASE}/store/shops/top`,
+  SHOPS:          `${BASE}/store/shops`,
+  SHOP_PRODUCTS:  (id: string) => `${BASE}/store/shops/${id}/products`,
   WISHLIST:       `${BASE}/store/wishlist`,
   WISHLIST_ITEM:  (id: string) => `${BASE}/store/wishlist/${id}`,
   CART:           `${BASE}/store/cart`,
@@ -128,6 +132,13 @@ STORE: {
   ORDERS:         `${BASE}/store/orders`,
   ROLE_REQUEST:   `${BASE}/store/role-request`,
   ORDER:       (id: string) => `${BASE}/store/orders/${id}`,
+},
+
+// ── REPORTS ───────────────────────────────
+REPORTS: {
+  LIST:   `${BASE}/reports`,
+  CREATE: `${BASE}/reports`,
+  DETAIL: (id: string) => `${BASE}/reports/${id}`,
 },
 
 } as const

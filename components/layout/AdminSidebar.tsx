@@ -6,6 +6,7 @@ import {
   LayoutDashboard, Users, TrendingUp, Building2,
   Settings, LogOut, Shield, Activity, FileText,
   Layers, Bell, ChevronRight, MessageSquare,
+  AlertTriangle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -102,6 +103,14 @@ const ALL_MENU_ITEMS: MenuItem[] = [
     label: 'Messages',
     href:  '/admin/messages',
     icon:  MessageSquare,
+    roles: ['super_admin', 'platform_admin', 'operations_admin'],
+  },
+
+  // ── Reports (all admins) ──
+  {
+    label: 'Reports',
+    href:  '/admin/reports',
+    icon:  AlertTriangle,
     roles: ['super_admin', 'platform_admin', 'operations_admin'],
   },
 ]

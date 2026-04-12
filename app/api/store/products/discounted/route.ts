@@ -9,7 +9,7 @@ export async function GET() {
       .from('shop_products')
       .select(`
         product_id,
-        shops!inner(id, name, slug, logo_url, status),
+        shops!inner(id, name, slug, logo_url, status, owner_id),
         products!inner(
           id, name, price, discount_price,
           images, stock, is_active,
@@ -26,6 +26,11 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
+    // Get banned seller ids
+    const { data: bannedRoles } = await supabase
+      .from('user_roles').select('user_id').eq('is_banned', true)
+    const bannedIds = new Set((bannedRoles ?? []).map((r: any) => r.user_id))
+
     const seen = new Set()
     const products = (data ?? [])
       .filter((item: any) => {
@@ -35,6 +40,7 @@ export async function GET() {
         if (shop?.status !== 'live') return false
         if (!product?.is_active || product?.stock <= 0) return false
         if (!product?.discount_price) return false
+        if (bannedIds.has(shop?.owner_id)) return false
         if (seen.has(product.id)) return false
         seen.add(product.id)
         return true
