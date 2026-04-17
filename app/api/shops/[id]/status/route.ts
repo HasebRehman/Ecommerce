@@ -16,8 +16,12 @@ export async function PUT(
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
 
+    const updatePayload: Record<string, unknown> = { status, updated_at: new Date().toISOString() }
+    if (status === 'live') updatePayload.is_active = true
+    if (status === 'draft' || status === 'paused') updatePayload.is_active = false
+
     const { data: shop, error } = await supabase
-      .from('shops').update({ status, updated_at: new Date().toISOString() })
+      .from('shops').update(updatePayload)
       .eq('id', id).eq('owner_id', user.id).select().single()
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })

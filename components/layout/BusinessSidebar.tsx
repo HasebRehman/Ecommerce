@@ -7,7 +7,7 @@ import {
   LayoutDashboard, ShoppingBag, Package,
   BarChart3, Settings, LogOut, ChevronRight,
   Store, Star, Bell, X, CheckCircle, Truck,
-  XCircle, Package as PackageIcon,
+  XCircle, Package as PackageIcon, ShieldAlert, AlertTriangle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -22,13 +22,14 @@ interface Props {
 }
 
 const TYPE_CONFIG: Record<string, { icon: any, color: string, bg: string }> = {
-  new_order:             { icon: ShoppingBag,  color: 'text-blue-400',   bg: 'bg-blue-500/10'   },
-  confirmed:             { icon: CheckCircle,  color: 'text-green-400',  bg: 'bg-green-500/10'  },
-  shipped:               { icon: Truck,        color: 'text-purple-400', bg: 'bg-purple-500/10' },
-  delivered:             { icon: PackageIcon,  color: 'text-green-400',  bg: 'bg-green-500/10'  },
-  cancelled_by_seller:   { icon: XCircle,      color: 'text-red-400',    bg: 'bg-red-500/10'    },
-  cancelled_by_customer: { icon: XCircle,      color: 'text-orange-400', bg: 'bg-orange-500/10' },
-  order:                 { icon: ShoppingBag,  color: 'text-blue-400',   bg: 'bg-blue-500/10'   },
+  new_order:             { icon: ShoppingBag,   color: 'text-blue-400',   bg: 'bg-blue-500/10'   },
+  confirmed:             { icon: CheckCircle,   color: 'text-green-400',  bg: 'bg-green-500/10'  },
+  shipped:               { icon: Truck,         color: 'text-purple-400', bg: 'bg-purple-500/10' },
+  delivered:             { icon: PackageIcon,   color: 'text-green-400',  bg: 'bg-green-500/10'  },
+  cancelled_by_seller:   { icon: XCircle,       color: 'text-red-400',    bg: 'bg-red-500/10'    },
+  cancelled_by_customer: { icon: XCircle,       color: 'text-orange-400', bg: 'bg-orange-500/10' },
+  order:                 { icon: ShoppingBag,   color: 'text-blue-400',   bg: 'bg-blue-500/10'   },
+  warning:               { icon: AlertTriangle, color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
 }
 
 export default function BusinessSidebar({ subRoles }: Props) {
@@ -47,6 +48,7 @@ export default function BusinessSidebar({ subRoles }: Props) {
   const orderPollRef            = useRef<NodeJS.Timeout | null>(null)
   const knownNotifIds           = useRef<Set<string>>(new Set())
   const isFirstNotif            = useRef(true)
+  const [unreadWarnings, setUnreadWarnings] = useState(0)
 
   // ── Close bell on outside click ──
   useEffect(() => {
@@ -91,6 +93,21 @@ export default function BusinessSidebar({ subRoles }: Props) {
     fetchNotifications()
     pollRef.current = setInterval(fetchNotifications, 4000)
     return () => { if (pollRef.current) clearInterval(pollRef.current) }
+  }, [user?.id])
+
+  // ── Poll unread warnings count every 15s ──
+  useEffect(() => {
+    if (!user?.id) return
+    const fetchUnreadWarnings = async () => {
+      try {
+        const res  = await fetch('/api/business/warnings?page=1', { credentials: 'include' })
+        const data = await res.json()
+        setUnreadWarnings(data.unread ?? 0)
+      } catch { /* silent */ }
+    }
+    fetchUnreadWarnings()
+    const t = setInterval(fetchUnreadWarnings, 15000)
+    return () => clearInterval(t)
   }, [user?.id])
 
   // ── Poll new orders every 8s ──
@@ -144,6 +161,13 @@ export default function BusinessSidebar({ subRoles }: Props) {
     if (pathname.startsWith('/dashboard/orders')) clearNewOrders()
   }, [pathname])
 
+  // ── Clear warnings badge when on warnings page ──
+  useEffect(() => {
+    if (pathname.startsWith('/dashboard/warnings') && unreadWarnings > 0) {
+      setUnreadWarnings(0)
+    }
+  }, [pathname])
+
   const handleBellOpen = async () => {
     const next = !bellOpen
     setBellOpen(next)
@@ -183,6 +207,7 @@ export default function BusinessSidebar({ subRoles }: Props) {
     { label: 'Inventory', href: '/dashboard/inventory', icon: Package         },
     { label: 'Reviews',   href: '/dashboard/reviews',   icon: Star            },
     { label: 'Analytics', href: '/dashboard/analytics', icon: BarChart3       },
+    { label: 'Warnings',  href: '/dashboard/warnings',  icon: ShieldAlert     },
     // { label: 'Settings',  href: '/dashboard/settings',  icon: Settings        },
   ]
 
@@ -228,28 +253,36 @@ export default function BusinessSidebar({ subRoles }: Props) {
         </p>
 
         {MENU_ITEMS.map((item) => {
-          const Icon     = item.icon
-          const isActive = pathname === item.href ||
+          const Icon       = item.icon
+          const isActive   = pathname === item.href ||
             (item.href !== '/dashboard' && pathname.startsWith(item.href))
-          const isOrders = item.href === '/dashboard/orders'
+          const isOrders   = item.href === '/dashboard/orders'
+          const isWarnings = item.href === '/dashboard/warnings'
 
           return (
             <Link key={item.href} href={item.href}
               className={cn(
                 'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all',
                 isActive
-                  ? 'bg-blue-500/15 text-blue-400 font-medium'
+                  ? isWarnings
+                    ? 'bg-yellow-500/15 text-yellow-400 font-medium'
+                    : 'bg-blue-500/15 text-blue-400 font-medium'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800'
               )}
             >
-              <Icon className="w-4 h-4 shrink-0" />
+              <Icon className={cn('w-4 h-4 shrink-0', isWarnings && !isActive && 'text-yellow-500/70')} />
               <span className="flex-1">{item.label}</span>
               {isOrders && count > 0 && (
                 <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">
                   {count > 99 ? '99+' : count}
                 </span>
               )}
-              {isActive && !(isOrders && count > 0) && (
+              {isWarnings && unreadWarnings > 0 && (
+                <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-yellow-500 text-black text-xs font-bold rounded-full animate-pulse">
+                  {unreadWarnings > 99 ? '99+' : unreadWarnings}
+                </span>
+              )}
+              {isActive && !(isOrders && count > 0) && !(isWarnings && unreadWarnings > 0) && (
                 <ChevronRight className="w-3 h-3 opacity-60" />
               )}
             </Link>

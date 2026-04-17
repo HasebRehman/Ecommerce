@@ -95,7 +95,7 @@ export async function PATCH(
     // Get report + current status + seller id
     const { data: report, error: reportError } = await supabase
       .from('reports')
-      .select('id, status, shops(owner_id)')
+      .select('id, status, reason, message, product_id, shops(id, owner_id)')
       .eq('id', id)
       .single()
 
@@ -130,9 +130,11 @@ export async function PATCH(
       return NextResponse.json({ error: updateError.message }, { status: 400 })
     }
 
-    // Warning: send a system message to the seller
-    // admin_messages table uses sender_id + receiver_id — we use the acting admin as sender
+    // Warning: send a system message, store in seller_warnings, and send notification
     if (action === 'warning' && sellerId) {
+      const adminClient = createAdminSupabaseClient()
+
+      // 1. Admin message
       const { error: msgError } = await supabase
         .from('admin_messages')
         .insert({
@@ -140,10 +142,32 @@ export async function PATCH(
           receiver_id: sellerId,
           message:     'You have received a warning regarding a report submitted against your shop. Please review your products and ensure compliance with our platform policies.',
         })
-      if (msgError) {
-        // Non-critical — report status already updated, just log
-        console.error('Warning message insert failed:', msgError.message)
-      }
+      if (msgError) console.error('Warning message insert failed:', msgError.message)
+
+      // 2. Store warning record for seller warnings page
+      const { error: warnError } = await adminClient
+        .from('seller_warnings')
+        .insert({
+          seller_id:  sellerId,
+          report_id:  id,
+          shop_id:    shopData?.id ?? null,
+          product_id: report.product_id ?? null,
+          reason:     report.reason,
+          message:    report.message,
+        })
+      if (warnError) console.error('seller_warnings insert failed:', warnError.message)
+
+      // 3. Real-time notification to seller
+      const { error: notifError } = await adminClient
+        .from('notifications')
+        .insert({
+          user_id:  sellerId,
+          title:    '⚠️ Warning Issued',
+          message:  'Admin has issued a warning on your shop. Please review your products and comply with platform policies.',
+          type:     'warning',
+          order_id: null,
+        })
+      if (notifError) console.error('Warning notification insert failed:', notifError.message)
     }
 
     // Ban: mark seller as banned + invalidate sessions
