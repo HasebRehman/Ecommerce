@@ -8,7 +8,7 @@ import { toast } from 'sonner'
 import { shopService } from '@/lib/services/shop.service'
 import ShopCard from '@/components/dashboard/business/shops/ShopCard'
 
-const SHOPS_PER_PAGE = 6 // 2 rows × 3 columns
+const SHOPS_PER_PAGE = 9 // 3 rows × 3 columns
 
 export default function ShopsPage() {
   const [shops,       setShops]       = useState<any[]>([])
@@ -69,115 +69,153 @@ export default function ShopsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@300;400;500;600;700;800&display=swap');
+        .font-montserrat { font-family: 'Montserrat', sans-serif; }
+        .font-open-sans { font-family: 'Open Sans', sans-serif; }
+      `}</style>
 
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-white">My Shops</h1>
-          <p className="text-slate-400 mt-1">
-            {shops.length} shop{shops.length !== 1 ? 's' : ''} created
-            {totalPages > 1 && (
-              <span className="text-slate-500">
-                {' '}· Page {currentPage} of {totalPages}
-              </span>
-            )}
-          </p>
-        </div>
-        <Link href="/dashboard/shops/new">
-          <Button className="bg-blue-500 hover:bg-blue-600 text-white">
-            <Plus className="w-4 h-4 mr-2" />
-            Create Shop
-          </Button>
-        </Link>
-      </div>
+      <div className="space-y-6 font-open-sans">
 
-      {/* Shops Grid */}
-      {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
-        </div>
-      ) : shops.length === 0 ? (
-        <div className="text-center py-20">
-          <Store className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-          <p className="text-white text-lg font-medium">No shops yet</p>
-          <p className="text-slate-400 text-sm mt-1 mb-6">
-            Create your first shop to start selling
-          </p>
+        {/* Header */}
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-montserrat font-bold" style={{ color: '#1e1b4b' }}>
+              My Shops
+            </h1>
+            <p className="mt-2 text-sm sm:text-base font-open-sans" style={{ color: '#6b7280' }}>
+              {shops.length} shop{shops.length !== 1 ? 's' : ''} created
+              {totalPages > 1 && (
+                <span style={{ color: '#9ca3af' }}>
+                  {' '}· Page {currentPage} of {totalPages}
+                </span>
+              )}
+            </p>
+          </div>
           <Link href="/dashboard/shops/new">
-            <Button className="bg-blue-500 hover:bg-blue-600 text-white">
-              <Plus className="w-4 h-4 mr-2" />
-              Create First Shop
-            </Button>
+            <button 
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 text-white font-semibold rounded-lg transition-all duration-200 hover:scale-105 font-montserrat text-sm"
+              style={{ 
+                background: 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)',
+                boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)'
+              }}
+            >
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Create Shop</span>
+              <span className="sm:hidden">Create</span>
+            </button>
           </Link>
         </div>
-      ) : (
-        <>
-          {/* Grid — 3 per row, 2 rows = 6 per page */}
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {currentShops.map(shop => (
-              <ShopCard
-                key={shop.id}
-                shop={shop}
-                onDelete={handleDelete}
-              />
-            ))}
+
+        {/* Shops Grid */}
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#7C3AED' }} />
           </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between pt-2">
-
-              {/* Info */}
-              <p className="text-slate-500 text-sm">
-                Showing {startIndex + 1}–{Math.min(endIndex, shops.length)} of {shops.length} shops
-              </p>
-
-              {/* Controls */}
-              <div className="flex items-center gap-2">
-
-                {/* Prev */}
-                <button
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 hover:text-white text-sm rounded-lg transition-all"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  Prev
-                </button>
-
-                {/* Page numbers */}
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`w-9 h-9 rounded-lg text-sm font-medium transition-all ${
-                        currentPage === page
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700'
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Next */}
-                <button
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 hover:text-white text-sm rounded-lg transition-all"
-                >
-                  Next
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
+        ) : shops.length === 0 ? (
+          <div className="text-center py-20 rounded-2xl border-2 border-dashed" style={{ borderColor: 'rgba(196, 181, 253, 0.3)', background: 'rgba(124, 58, 237, 0.05)' }}>
+            <Store className="w-16 h-16 mx-auto mb-4" style={{ color: '#C4B5FD' }} />
+            <p className="text-lg font-semibold font-montserrat" style={{ color: '#1e1b4b' }}>No shops yet</p>
+            <p className="text-sm mt-1 mb-6 font-open-sans" style={{ color: '#6b7280' }}>
+              Create your first shop to start selling
+            </p>
+            <Link href="/dashboard/shops/new">
+              <button 
+                className="inline-flex items-center gap-2 px-6 py-3 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 font-montserrat"
+                style={{ 
+                  background: 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)',
+                  boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)'
+                }}
+              >
+                <Plus className="w-5 h-5" />
+                Create First Shop
+              </button>
+            </Link>
+          </div>
+        ) : (
+          <>
+            {/* Grid — 3 per row, 3 rows = 9 per page */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+              {currentShops.map(shop => (
+                <ShopCard
+                  key={shop.id}
+                  shop={shop}
+                  onDelete={handleDelete}
+                />
+              ))}
             </div>
-          )}
-        </>
-      )}
 
-    </div>
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t" style={{ borderColor: 'rgba(196, 181, 253, 0.2)' }}>
+
+                {/* Info */}
+                <p className="text-sm font-open-sans" style={{ color: '#6b7280' }}>
+                  Showing <span style={{ color: '#1e1b4b', fontWeight: '600' }}>{startIndex + 1}–{Math.min(endIndex, shops.length)}</span> of <span style={{ color: '#1e1b4b', fontWeight: '600' }}>{shops.length}</span> shops
+                </p>
+
+                {/* Controls */}
+                <div className="flex items-center gap-2 flex-wrap justify-center sm:justify-end">
+
+                  {/* Prev */}
+                  <button
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer font-montserrat"
+                    style={{
+                      background: currentPage === 1 ? 'rgba(196, 181, 253, 0.1)' : 'rgba(124, 58, 237, 0.15)',
+                      color: currentPage === 1 ? '#C4B5FD' : '#7C3AED',
+                      opacity: currentPage === 1 ? 0.5 : 1,
+                      pointerEvents: currentPage === 1 ? 'none' : 'auto'
+                    }}
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    <span className="hidden sm:inline">Prev</span>
+                  </button>
+
+                  {/* Page numbers */}
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                      <button
+                        key={page}
+                        onClick={() => setCurrentPage(page)}
+                        className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg text-sm font-bold transition-all duration-200 cursor-pointer font-montserrat"
+                        style={{
+                          background: currentPage === page 
+                            ? 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)'
+                            : 'rgba(196, 181, 253, 0.1)',
+                          color: currentPage === page ? '#ffffff' : '#7C3AED',
+                          boxShadow: currentPage === page ? '0 4px 12px rgba(124, 58, 237, 0.3)' : 'none'
+                        }}
+                      >
+                        {page}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Next */}
+                  <button
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition-all duration-200 cursor-pointer font-montserrat"
+                    style={{
+                      background: currentPage === totalPages ? 'rgba(196, 181, 253, 0.1)' : 'rgba(124, 58, 237, 0.15)',
+                      color: currentPage === totalPages ? '#C4B5FD' : '#7C3AED',
+                      opacity: currentPage === totalPages ? 0.5 : 1,
+                      pointerEvents: currentPage === totalPages ? 'none' : 'auto'
+                    }}
+                  >
+                    <span className="hidden sm:inline">Next</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+      </div>
+    </>
   )
 }

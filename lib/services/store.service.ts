@@ -6,6 +6,7 @@ export const storeService = {
     search?:      string
     category_id?: string
     page?:        number
+    limit?:       number
   }) {
     const response = await api.get(API.STORE.PRODUCTS, { params })
     return response.data

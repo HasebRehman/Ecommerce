@@ -5,95 +5,29 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import {
   LayoutDashboard, ShoppingBag, Package,
-  BarChart3, Settings, LogOut, ChevronRight,
-  Store, Star, Bell, X, CheckCircle, Truck,
-  XCircle, Package as PackageIcon, ShieldAlert, AlertTriangle,
+  BarChart3, LogOut, ChevronRight,
+  Store, Star, ShieldAlert,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { authService } from '@/lib/services/auth.service'
 import { useAuthStore } from '@/store/authStore'
 import { useNewOrdersStore } from '@/store/newOrdersStore'
-import { useNotificationStore } from '@/store/notificationStore'
 import { Badge } from '@/components/ui/badge'
 
 interface Props {
   subRoles: string[]
+  isCollapsed: boolean
 }
 
-const TYPE_CONFIG: Record<string, { icon: any, color: string, bg: string }> = {
-  new_order:             { icon: ShoppingBag,   color: 'text-blue-400',   bg: 'bg-blue-500/10'   },
-  confirmed:             { icon: CheckCircle,   color: 'text-green-400',  bg: 'bg-green-500/10'  },
-  shipped:               { icon: Truck,         color: 'text-purple-400', bg: 'bg-purple-500/10' },
-  delivered:             { icon: PackageIcon,   color: 'text-green-400',  bg: 'bg-green-500/10'  },
-  cancelled_by_seller:   { icon: XCircle,       color: 'text-red-400',    bg: 'bg-red-500/10'    },
-  cancelled_by_customer: { icon: XCircle,       color: 'text-orange-400', bg: 'bg-orange-500/10' },
-  order:                 { icon: ShoppingBag,   color: 'text-blue-400',   bg: 'bg-blue-500/10'   },
-  warning:               { icon: AlertTriangle, color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
-}
-
-export default function BusinessSidebar({ subRoles }: Props) {
+export default function BusinessSidebar({ subRoles, isCollapsed }: Props) {
   const pathname            = usePathname()
   const router              = useRouter()
   const { clearAuth, user } = useAuthStore()
   const { count, increment, clearNewOrders } = useNewOrdersStore()
-  const {
-    notifications, unread,
-    setNotifications, addNotification, markAllRead,
-  } = useNotificationStore()
 
-  const [bellOpen, setBellOpen] = useState(false)
-  const bellRef                 = useRef<HTMLDivElement>(null)
-  const pollRef                 = useRef<NodeJS.Timeout | null>(null)
   const orderPollRef            = useRef<NodeJS.Timeout | null>(null)
-  const knownNotifIds           = useRef<Set<string>>(new Set())
-  const isFirstNotif            = useRef(true)
   const [unreadWarnings, setUnreadWarnings] = useState(0)
-
-  // ── Close bell on outside click ──
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (bellRef.current && !bellRef.current.contains(e.target as Node)) {
-        setBellOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [])
-
-  // ── Fetch seller notifications ──
-  const fetchNotifications = async () => {
-    try {
-      const res  = await fetch('/api/business/notifications', { credentials: 'include' })
-      const data = await res.json()
-      const list = data.notifications ?? []
-      const unreadCount = data.unread ?? 0
-
-      if (isFirstNotif.current) {
-        setNotifications(list, unreadCount)
-        list.forEach((n: any) => knownNotifIds.current.add(n.id))
-        isFirstNotif.current = false
-        return
-      }
-
-      // Find new ones
-      const newOnes = list.filter((n: any) => !knownNotifIds.current.has(n.id))
-      if (newOnes.length > 0) {
-        newOnes.forEach((n: any) => {
-          knownNotifIds.current.add(n.id)
-          addNotification(n)
-        })
-      }
-    } catch { /* silent */ }
-  }
-
-  // ── Poll notifications every 4s ──
-  useEffect(() => {
-    if (!user?.id) return
-    fetchNotifications()
-    pollRef.current = setInterval(fetchNotifications, 4000)
-    return () => { if (pollRef.current) clearInterval(pollRef.current) }
-  }, [user?.id])
 
   // ── Poll unread warnings count every 15s ──
   useEffect(() => {
@@ -154,41 +88,22 @@ export default function BusinessSidebar({ subRoles }: Props) {
     checkNewOrders()
     orderPollRef.current = setInterval(checkNewOrders, 8000)
     return () => { if (orderPollRef.current) clearInterval(orderPollRef.current) }
-  }, [user?.id])
+  }, [user?.id, increment, router])
 
   // ── Clear order badge on orders page ──
   useEffect(() => {
     if (pathname.startsWith('/dashboard/orders')) clearNewOrders()
-  }, [pathname])
+  }, [pathname, clearNewOrders])
 
   // ── Clear warnings badge when on warnings page ──
   useEffect(() => {
     if (pathname.startsWith('/dashboard/warnings') && unreadWarnings > 0) {
       setUnreadWarnings(0)
     }
-  }, [pathname])
-
-  const handleBellOpen = async () => {
-    const next = !bellOpen
-    setBellOpen(next)
-    if (next && unread > 0) {
-      try {
-        await fetch('/api/business/notifications/read', {
-          method: 'PUT', credentials: 'include'
-        })
-        markAllRead()
-      } catch { /* silent */ }
-    }
-  }
-
-  // const handleNotifClick = (notif: any) => {
-  //   setBellOpen(false)
-  //   if (notif.order_id) router.push(`/dashboard/orders/${notif.order_id}`)
-  // }
+  }, [pathname, unreadWarnings])
 
   const handleLogout = async () => {
     try {
-      if (pollRef.current)      clearInterval(pollRef.current)
       if (orderPollRef.current) clearInterval(orderPollRef.current)
       await authService.logout()
       clearAuth()
@@ -208,99 +123,198 @@ export default function BusinessSidebar({ subRoles }: Props) {
     { label: 'Reviews',   href: '/dashboard/reviews',   icon: Star            },
     { label: 'Analytics', href: '/dashboard/analytics', icon: BarChart3       },
     { label: 'Warnings',  href: '/dashboard/warnings',  icon: ShieldAlert     },
-    // { label: 'Settings',  href: '/dashboard/settings',  icon: Settings        },
   ]
 
   return (
-    <aside className="fixed left-0 top-0 h-full w-64 bg-slate-900 border-r border-slate-800 flex flex-col z-40">
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@300;400;500;600;700;800&display=swap');
+        .font-montserrat { font-family: 'Montserrat', sans-serif; }
+        .font-open-sans { font-family: 'Open Sans', sans-serif; }
+        
+        /* Cursor pointer for all clickable elements */
+        a, button, [role="button"], .cursor-pointer {
+          cursor: pointer !important;
+        }
 
-      {/* Logo */}
-      <div className="p-6 border-b border-slate-800">
-        <Link href="/dashboard">
-          <h1 className="text-xl font-bold text-white">
-            Vendo<span className="text-blue-400">Sphere</span>
-          </h1>
-        </Link>
-        <div className="mt-3">
-          <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30 text-xs">
-            Retailer
-          </Badge>
+        /* Hide scrollbar while keeping scroll functionality */
+        .sidebar-nav::-webkit-scrollbar {
+          display: none;
+        }
+        .sidebar-nav {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
+      
+      <aside 
+        className={cn(
+          'fixed left-0 top-0 h-full flex flex-col z-40 transition-all duration-300 font-open-sans',
+          isCollapsed ? 'w-20' : 'w-64'
+        )}
+        style={{ 
+          background: 'linear-gradient(180deg, #7C3AED 0%, #6D28D9 50%, #4C1D95 100%)',
+          boxShadow: '4px 0 24px rgba(124, 58, 237, 0.3)'
+        }}
+      >
+
+        {/* Logo */}
+        <div className={cn(
+          'border-b transition-all duration-300',
+          isCollapsed ? 'p-4' : 'p-6'
+        )} style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+          <Link href="/dashboard" className="block cursor-pointer">
+            {isCollapsed ? (
+              <div className="flex items-center justify-center">
+                <img 
+                  src="/logo-for-dark-short.png" 
+                  alt="VendoSphere" 
+                  className="object-contain"
+                  style={{ maxWidth: '100px', maxHeight: '100px' }}
+                />
+              </div>
+            ) : (
+              <div className="flex items-center justify-start">
+                <img 
+                  src="/logo-for-dark-removebg-preview.png" 
+                  alt="VendoSphere" 
+                  className="h-10 w-auto object-contain"
+                  style={{ maxHeight: '40px', maxWidth: '200px' }}
+                />
+              </div>
+            )}
+          </Link>
+          {/* {!isCollapsed && (
+            <div className="mt-3">
+              <Badge 
+                className="text-xs font-montserrat font-bold"
+                style={{ 
+                  background: 'rgba(255, 255, 255, 0.15)',
+                  color: '#EDE9FE',
+                  border: '1px solid rgba(255, 255, 255, 0.2)'
+                }}
+              >
+                Retailer
+              </Badge>
+            </div>
+          )} */}
         </div>
-      </div>
 
-      {/* User Info — no bell here anymore */}
-      <div className="p-4 border-b border-slate-800">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white font-semibold text-sm shrink-0 overflow-hidden">
-            {user?.avatar_url
-              ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
-              : user?.full_name?.charAt(0)?.toUpperCase() ?? 'R'
-            }
+        {/* User Info */}
+        {!isCollapsed && (
+          <div className="p-4 border-b" style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+            <div className="flex items-center gap-3">
+              <div 
+                className="w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm shrink-0 overflow-hidden"
+                style={{ background: 'rgba(255, 255, 255, 0.2)' }}
+              >
+                {user?.avatar_url
+                  ? <img src={user.avatar_url} alt="" className="w-full h-full object-cover" />
+                  : user?.full_name?.charAt(0)?.toUpperCase() ?? 'R'
+                }
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-white text-sm font-semibold truncate font-montserrat">
+                  {user?.full_name ?? 'Retailer'}
+                </p>
+                <p className="text-xs" style={{ color: '#EDE9FE' }}>Retailer</p>
+              </div>
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-white text-sm font-medium truncate">
-              {user?.full_name ?? 'Retailer'}
-            </p>
-            <p className="text-blue-400 text-xs">Retailer</p>
-          </div>
-        </div>
-      </div>
+        )}
 
-      {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
-        <p className="text-slate-500 text-xs uppercase tracking-wider font-medium px-3 mb-3">
-          Main Menu
-        </p>
-
-        {MENU_ITEMS.map((item) => {
-          const Icon       = item.icon
-          const isActive   = pathname === item.href ||
-            (item.href !== '/dashboard' && pathname.startsWith(item.href))
-          const isOrders   = item.href === '/dashboard/orders'
-          const isWarnings = item.href === '/dashboard/warnings'
-
-          return (
-            <Link key={item.href} href={item.href}
-              className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all',
-                isActive
-                  ? isWarnings
-                    ? 'bg-yellow-500/15 text-yellow-400 font-medium'
-                    : 'bg-blue-500/15 text-blue-400 font-medium'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-800'
-              )}
+        {/* Navigation */}
+        <nav className={cn(
+          'flex-1 overflow-y-auto space-y-1 sidebar-nav',
+          isCollapsed ? 'mt-8 p-2' : 'p-4'
+        )}>
+          {!isCollapsed && (
+            <p 
+              className="text-xs uppercase tracking-wider font-bold px-3 mb-3 font-montserrat"
+              style={{ color: 'rgba(255, 255, 255, 0.5)' }}
             >
-              <Icon className={cn('w-4 h-4 shrink-0', isWarnings && !isActive && 'text-yellow-500/70')} />
-              <span className="flex-1">{item.label}</span>
-              {isOrders && count > 0 && (
-                <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">
-                  {count > 99 ? '99+' : count}
-                </span>
-              )}
-              {isWarnings && unreadWarnings > 0 && (
-                <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-yellow-500 text-black text-xs font-bold rounded-full animate-pulse">
-                  {unreadWarnings > 99 ? '99+' : unreadWarnings}
-                </span>
-              )}
-              {isActive && !(isOrders && count > 0) && !(isWarnings && unreadWarnings > 0) && (
-                <ChevronRight className="w-3 h-3 opacity-60" />
-              )}
-            </Link>
-          )
-        })}
-      </nav>
+              Main Menu
+            </p>
+          )}
 
-      {/* Logout */}
-      <div className="p-4 border-t border-slate-800">
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-slate-400 hover:text-red-400 hover:bg-red-400/10 transition-all w-full"
-        >
-          <LogOut className="w-4 h-4" />
-          Logout
-        </button>
-      </div>
+          {MENU_ITEMS.map((item) => {
+            const Icon       = item.icon
+            const isActive   = pathname === item.href ||
+              (item.href !== '/dashboard' && pathname.startsWith(item.href))
+            const isOrders   = item.href === '/dashboard/orders'
+            const isWarnings = item.href === '/dashboard/warnings'
 
-    </aside>
+            return (
+              <Link 
+                key={item.href} 
+                href={item.href}
+                className={cn(
+                  'flex items-center gap-3 rounded-xl text-sm transition-all duration-200 group relative cursor-pointer',
+                  isCollapsed ? 'px-3 py-3 justify-center' : 'px-3 py-2.5',
+                  isActive
+                    ? 'text-white font-semibold'
+                    : 'hover:text-white'
+                )}
+                style={{
+                  background: isActive ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
+                  color: isActive ? '#ffffff' : 'rgba(255, 255, 255, 0.7)',
+                }}
+                title={isCollapsed ? item.label : undefined}
+              >
+                <Icon className="w-5 h-5 shrink-0" />
+                {!isCollapsed && (
+                  <>
+                    <span className="flex-1 font-open-sans">{item.label}</span>
+                    {isOrders && count > 0 && (
+                      <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">
+                        {count > 99 ? '99+' : count}
+                      </span>
+                    )}
+                    {isWarnings && unreadWarnings > 0 && (
+                      <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 bg-yellow-400 text-black text-xs font-bold rounded-full animate-pulse">
+                        {unreadWarnings > 99 ? '99+' : unreadWarnings}
+                      </span>
+                    )}
+                    {isActive && !(isOrders && count > 0) && !(isWarnings && unreadWarnings > 0) && (
+                      <ChevronRight className="w-3 h-3 opacity-60" />
+                    )}
+                  </>
+                )}
+                {isCollapsed && (isOrders && count > 0) && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                    {count > 9 ? '9+' : count}
+                  </span>
+                )}
+                {isCollapsed && (isWarnings && unreadWarnings > 0) && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-yellow-400 text-black text-[10px] font-bold rounded-full flex items-center justify-center">
+                    {unreadWarnings > 9 ? '9+' : unreadWarnings}
+                  </span>
+                )}
+              </Link>
+            )
+          })}
+        </nav>
+
+        {/* Logout */}
+        <div className={cn(
+          'border-t',
+          isCollapsed ? 'p-2' : 'p-4'
+        )} style={{ borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+          <button
+            onClick={handleLogout}
+            className={cn(
+              'flex items-center gap-3 rounded-xl text-sm transition-all w-full group cursor-pointer',
+              isCollapsed ? 'px-3 py-3 justify-center' : 'px-3 py-2.5'
+            )}
+            style={{ color: 'rgba(255, 255, 255, 0.7)' }}
+            title={isCollapsed ? 'Logout' : undefined}
+          >
+            <LogOut className="w-5 h-5 shrink-0 group-hover:text-red-300 transition-colors" />
+            {!isCollapsed && <span className="font-open-sans group-hover:text-white">Logout</span>}
+          </button>
+        </div>
+
+      </aside>
+    </>
   )
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname, useRouter } from 'next/navigation'
-import { Home, Bell, X, CheckCircle, Truck, XCircle, ShoppingBag, Package } from 'lucide-react'
+import { Home, Bell, X, CheckCircle, Truck, XCircle, ShoppingBag, Package, Menu } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useNotificationStore } from '@/store/notificationStore'
 import { useAuthStore } from '@/store/authStore'
@@ -57,9 +57,10 @@ const TYPE_CONFIG: Record<string, { icon: any, color: string, bg: string }> = {
 
 interface Props {
   variant: 'business' | 'admin'
+  onToggleSidebar?: () => void
 }
 
-export default function DashboardTopbar({ variant }: Props) {
+export default function DashboardTopbar({ variant, onToggleSidebar }: Props) {
   const pathname = usePathname()
   const router   = useRouter()
   const { user } = useAuthStore()
@@ -145,133 +146,209 @@ export default function DashboardTopbar({ variant }: Props) {
   // }
 
   return (
-    <header className="h-16 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-6 sticky top-0 z-30">
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@300;400;500;600;700;800&display=swap');
+        .font-montserrat { font-family: 'Montserrat', sans-serif; }
+        .font-open-sans { font-family: 'Open Sans', sans-serif; }
+        
+        /* Cursor pointer for all clickable elements */
+        a, button, [role="button"], .cursor-pointer {
+          cursor: pointer !important;
+        }
+      `}</style>
+      
+      <header 
+        className="h-16 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-30 font-open-sans"
+        style={{ 
+          background: 'white',
+          borderBottom: '1px solid rgba(196, 181, 253, 0.3)',
+          boxShadow: '0 4px 16px rgba(124, 58, 237, 0.08)'
+        }}
+      >
 
-      {/* Left — Page title */}
-      <div>
-        <h1 className="text-white font-bold text-lg leading-tight">{page.title}</h1>
-        <p className="text-slate-400 text-xs mt-0.5">{page.desc}</p>
-      </div>
-
-      {/* Right — Bell + Home */}
-      <div className="flex items-center gap-3">
-
-        {/* Notification Bell */}
-        <div className="relative" ref={bellRef}>
-          <button
-            onClick={handleBellOpen}
-            className="relative p-2 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-xl transition-all"
-          >
-            <Bell className="w-4 h-4" />
-            {unread > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold animate-pulse">
-                {unread > 9 ? '9+' : unread}
-              </span>
-            )}
-          </button>
-
-          {/* Notification Panel */}
-          {bellOpen && (
-            <div className="absolute right-0 top-full mt-2 w-80 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl z-50 overflow-hidden">
-
-              {/* Header */}
-              <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
-                <div className="flex items-center gap-2">
-                  <Bell className="w-4 h-4 text-blue-400" />
-                  <p className="text-white font-semibold text-sm">Notifications</p>
-                  {unread > 0 && (
-                    <span className="px-1.5 py-0.5 bg-red-500/20 text-red-400 text-xs rounded-full border border-red-500/30">
-                      {unread} new
-                    </span>
-                  )}
-                </div>
-                <button
-                  onClick={() => setBellOpen(false)}
-                  className="p-1 text-slate-500 hover:text-white transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* List */}
-              <div className="max-h-96 overflow-y-auto">
-                {notifications.length === 0 ? (
-                  <div className="text-center py-10">
-                    <Bell className="w-10 h-10 text-slate-700 mx-auto mb-2" />
-                    <p className="text-slate-500 text-sm">No notifications yet</p>
-                  </div>
-                ) : (
-                  notifications.map(notif => {
-                    const cfg  = TYPE_CONFIG[notif.type] ?? TYPE_CONFIG.order
-                    const Icon = cfg.icon
-                    return (
-                      <div
-                        key={notif.id}
-                        // onClick={() => handleNotifClick(notif)}
-                        className={cn(
-                          'flex items-start gap-3 px-4 py-3 border-b border-slate-800 last:border-0 cursor-pointer hover:bg-slate-800/50 transition-colors',
-                          !notif.is_read && 'bg-slate-800/30'
-                        )}
-                      >
-                        <div className={cn(
-                          'w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5',
-                          cfg.bg
-                        )}>
-                          <Icon className={cn('w-4 h-4', cfg.color)} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <p className={cn(
-                              'text-sm font-medium leading-tight',
-                              notif.is_read ? 'text-slate-300' : 'text-white'
-                            )}>
-                              {notif.title}
-                            </p>
-                            {!notif.is_read && (
-                              <div className="w-2 h-2 rounded-full bg-blue-400 shrink-0 mt-1.5" />
-                            )}
-                          </div>
-                          <p className="text-slate-400 text-xs mt-1 leading-relaxed line-clamp-2">
-                            {notif.message}
-                          </p>
-                          <p className="text-slate-600 text-xs mt-1">
-                            {new Date(notif.created_at).toLocaleDateString('en-US', {
-                              day: 'numeric', month: 'short',
-                              hour: '2-digit', minute: '2-digit'
-                            })}
-                          </p>
-                        </div>
-                      </div>
-                    )
-                  })
-                )}
-              </div>
-
-              {/* Footer */}
-              {/* {notifications.length > 0 && (
-                <div className="px-4 py-2.5 border-t border-slate-800 text-center">
-                  <button
-                    onClick={() => { setBellOpen(false); router.push(orderLinkBase) }}
-                    className="text-blue-400 hover:text-blue-300 text-xs transition-colors"
-                  >
-                    View all orders →
-                  </button>
-                </div>
-              )} */}
-            </div>
+        {/* Left — Hamburger + Page title */}
+        <div className="flex items-center gap-3 sm:gap-4">
+          {onToggleSidebar && (
+            <button
+              onClick={onToggleSidebar}
+              className="p-2 rounded-xl transition-all duration-200 hover:scale-105 cursor-pointer"
+              style={{ 
+                background: 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)',
+                boxShadow: '0 4px 12px rgba(124, 58, 237, 0.3)'
+              }}
+              aria-label="Toggle sidebar"
+            >
+              <Menu className="w-5 h-5 text-white" />
+            </button>
           )}
+          <div>
+            <h1 
+              className="text-base sm:text-lg font-bold leading-tight font-montserrat"
+              style={{ color: '#1e1b4b' }}
+            >
+              {page.title}
+            </h1>
+            <p 
+              className="text-xs mt-0.5 hidden sm:block font-open-sans"
+              style={{ color: '#6b7280' }}
+            >
+              {page.desc}
+            </p>
+          </div>
         </div>
 
-        {/* Go to Main Website */}
-        <button
-          onClick={() => router.push('/')}
-          className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-sm font-medium rounded-xl transition-all border border-slate-700 hover:border-slate-600"
-        >
-          <Home className="w-4 h-4" />
-          <span className="hidden sm:inline">Main Site</span>
-        </button>
+        {/* Right — Bell + Home */}
+        <div className="flex items-center gap-2 sm:gap-3">
 
-      </div>
-    </header>
+          {/* Notification Bell */}
+          <div className="relative" ref={bellRef}>
+            <button
+              onClick={handleBellOpen}
+              className="relative p-2 rounded-xl transition-all duration-200 cursor-pointer hover:scale-105"
+              style={{ 
+                background: 'rgba(124, 58, 237, 0.1)',
+                color: '#7C3AED'
+              }}
+            >
+              <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
+              {unread > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-bold animate-pulse">
+                  {unread > 9 ? '9+' : unread}
+                </span>
+              )}
+            </button>
+
+            {/* Notification Panel */}
+            {bellOpen && (
+              <div 
+                className="absolute right-0 top-full mt-2 w-80 rounded-2xl shadow-2xl z-50 overflow-hidden"
+                style={{ 
+                  background: 'white',
+                  border: '1px solid rgba(196, 181, 253, 0.3)',
+                  boxShadow: '0 20px 60px rgba(124, 58, 237, 0.25)'
+                }}
+              >
+
+                {/* Header */}
+                <div 
+                  className="flex items-center justify-between px-4 py-3 border-b"
+                  style={{ borderColor: 'rgba(196, 181, 253, 0.2)' }}
+                >
+                  <div className="flex items-center gap-2">
+                    <Bell className="w-4 h-4" style={{ color: '#7C3AED' }} />
+                    <p className="font-semibold text-sm font-montserrat" style={{ color: '#1e1b4b' }}>
+                      Notifications
+                    </p>
+                    {unread > 0 && (
+                      <span 
+                        className="px-1.5 py-0.5 text-xs rounded-full border font-bold"
+                        style={{ 
+                          background: 'rgba(239, 68, 68, 0.1)',
+                          color: '#ef4444',
+                          borderColor: 'rgba(239, 68, 68, 0.3)'
+                        }}
+                      >
+                        {unread} new
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => setBellOpen(false)}
+                    className="p-1 transition-colors cursor-pointer hover:scale-110"
+                    style={{ color: '#6b7280' }}
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {/* List - Show only latest 10 notifications */}
+                <div className="max-h-96 overflow-y-auto">
+                  {notifications.length === 0 ? (
+                    <div className="text-center py-10">
+                      <Bell className="w-10 h-10 mx-auto mb-2" style={{ color: '#C4B5FD' }} />
+                      <p className="text-sm" style={{ color: '#6b7280' }}>No notifications yet</p>
+                    </div>
+                  ) : (
+                    notifications.slice(0, 10).map(notif => {
+                      const cfg  = TYPE_CONFIG[notif.type] ?? TYPE_CONFIG.order
+                      const Icon = cfg.icon
+                      return (
+                        <div
+                          key={notif.id}
+                          className={cn(
+                            'flex items-start gap-3 px-4 py-3 border-b last:border-0 cursor-pointer transition-colors hover:bg-purple-50/30',
+                            !notif.is_read && 'bg-purple-50/50'
+                          )}
+                          style={{ borderColor: 'rgba(196, 181, 253, 0.2)' }}
+                        >
+                          <div 
+                            className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+                            style={{ background: cfg.bg }}
+                          >
+                            <Icon className="w-4 h-4" style={{ color: cfg.color }} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <p 
+                                className={cn(
+                                  'text-sm font-medium leading-tight font-montserrat',
+                                  notif.is_read ? 'text-gray-600' : 'text-gray-900'
+                                )}
+                              >
+                                {notif.title}
+                              </p>
+                              {!notif.is_read && (
+                                <div className="w-2 h-2 rounded-full shrink-0 mt-1.5" style={{ background: '#7C3AED' }} />
+                              )}
+                            </div>
+                            <p className="text-xs mt-1 leading-relaxed line-clamp-2 font-open-sans" style={{ color: '#6b7280' }}>
+                              {notif.message}
+                            </p>
+                            <p className="text-xs mt-1 font-open-sans" style={{ color: '#9ca3af' }}>
+                              {new Date(notif.created_at).toLocaleDateString('en-US', {
+                                day: 'numeric', month: 'short',
+                                hour: '2-digit', minute: '2-digit'
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
+
+                {/* Footer - Show if there are more than 10 notifications */}
+                {notifications.length > 10 && (
+                  <div 
+                    className="px-4 py-2.5 border-t text-center"
+                    style={{ borderColor: 'rgba(196, 181, 253, 0.2)' }}
+                  >
+                    <p className="text-xs font-open-sans" style={{ color: '#6b7280' }}>
+                      Showing latest 10 of {notifications.length} notifications
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Go to Main Website */}
+          <button
+            onClick={() => router.push('/')}
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 text-sm font-semibold rounded-xl transition-all duration-200 border font-montserrat cursor-pointer hover:scale-105"
+            style={{ 
+              background: 'white',
+              color: '#7C3AED',
+              borderColor: 'rgba(124, 58, 237, 0.3)'
+            }}
+          >
+            <Home className="w-4 h-4" />
+            <span className="hidden sm:inline">Main Site</span>
+          </button>
+
+        </div>
+      </header>
+    </>
   )
 }

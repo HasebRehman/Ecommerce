@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { useAuthStore } from '@/store/authStore'
-import { Loader2, RefreshCw } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
 import RetailerStats from '@/components/dashboard/business/RetailerStats'
 // import RecentOrders from '@/components/dashboard/business/RecentOrders'
 
@@ -58,53 +58,43 @@ export default function BusinessDashboard() {
       if (pollRef.current) clearInterval(pollRef.current)
       document.removeEventListener('visibilitychange', handleVisible)
     }
-  }, [])
+  }, [fetchStats])
 
   return (
-    <div className="space-y-6">
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@300;400;500;600;700;800&display=swap');
+        .font-montserrat { font-family: 'Montserrat', sans-serif; }
+        .font-open-sans { font-family: 'Open Sans', sans-serif; }
+      `}</style>
+      
+      <div className="space-y-6 font-open-sans">
 
-      {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-white">
-            Welcome back, {user?.full_name?.split(' ')[0]} 👋
-          </h1>
-          <p className="text-slate-400 mt-1 text-sm">
-            Here's what's happening with your store today
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-800 px-3 py-1.5 rounded-lg">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-green-400 font-medium">Live</span>
-            {lastUpdated && (
-              <span>· {lastUpdated.toLocaleTimeString('en-US', {
-                hour: '2-digit', minute: '2-digit', second: '2-digit'
-              })}</span>
-            )}
+        {/* Header */}
+        <div className="flex items-start justify-between flex-wrap gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-montserrat font-bold" style={{ color: '#1e1b4b' }}>
+              Welcome back, {user?.full_name?.split(' ')[0]} 👋
+            </h1>
+            <p className="mt-2 text-sm sm:text-base font-open-sans" style={{ color: '#6b7280' }}>
+              Here's what's happening with your store today
+            </p>
           </div>
-          <button
-            onClick={() => fetchStats(false)}
-            className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-all"
-            title="Refresh now"
-          >
-            <RefreshCw className="w-4 h-4" />
-          </button>
         </div>
+
+        {/* Stats */}
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#7C3AED' }} />
+          </div>
+        ) : (
+          <RetailerStats stats={stats} />
+        )}
+
+        {/* Recent Orders */}
+        {/* <RecentOrders /> */}
+
       </div>
-
-      {/* Stats */}
-      {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
-        </div>
-      ) : (
-        <RetailerStats stats={stats} />
-      )}
-
-      {/* Recent Orders */}
-      {/* <RecentOrders /> */}
-
-    </div>
+    </>
   )
 }
