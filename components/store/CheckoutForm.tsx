@@ -75,13 +75,13 @@ export default function CheckoutForm({ items, total, onCancel, onSuccess }: Prop
       <style>{styles}</style>
       <div className="cf-root cf-success-card p-8 text-center">
         <div className="cf-success-icon mx-auto mb-5">
-          <CheckCircle className="w-10 h-10" style={{ color: '#408A71' }} />
+          <CheckCircle className="w-10 h-10" style={{ color: '#7C3AED' }} />
         </div>
-        <h3 className="text-white font-extrabold text-xl mb-1"
-          style={{ fontFamily: "'DM Serif Display', serif" }}>
+        <h3 className="text-gray-900 font-extrabold text-xl mb-1"
+          style={{ fontFamily: "'Montserrat', sans-serif" }}>
           Order Placed!
         </h3>
-        <p className="text-sm" style={{ color: 'rgba(176,228,204,0.50)' }}>
+        <p className="text-sm" style={{ color: '#6B7280' }}>
           We'll contact you soon to confirm delivery
         </p>
         <div className="cf-progress-bar mt-6" />
@@ -109,9 +109,9 @@ export default function CheckoutForm({ items, total, onCancel, onSuccess }: Prop
           {/* Title */}
           <div className="flex items-center gap-2.5">
             <div className="cf-icon-tile">
-              <CreditCard className="w-3.5 h-3.5" style={{ color: '#B0E4CC' }} />
+              <CreditCard className="w-3.5 h-3.5" style={{ color: '#fff' }} />
             </div>
-            <p className="text-white font-bold text-sm">Payment Method</p>
+            <p className="text-gray-900 font-bold text-sm" style={{ fontFamily: "'Montserrat', sans-serif" }}>Payment Method</p>
           </div>
 
           <div className="cf-divider" />
@@ -126,18 +126,18 @@ export default function CheckoutForm({ items, total, onCancel, onSuccess }: Prop
                   onClick={() => setPaymentMethod(pm.value)}
                   className="cf-payment-option flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-all"
                   style={{
-                    background:  active ? 'rgba(40,90,72,0.30)' : 'rgba(13,28,25,0.7)',
-                    border:      active ? '1px solid rgba(64,138,113,0.6)' : '1px solid rgba(40,90,72,0.22)',
-                    boxShadow:   active ? '0 0 0 1px rgba(64,138,113,0.15)' : 'none',
+                    background:  active ? 'rgba(124,58,237,0.15)' : 'rgba(124,58,237,0.05)',
+                    border:      active ? '1px solid rgba(124,58,237,0.4)' : '1px solid rgba(124,58,237,0.15)',
+                    boxShadow:   active ? '0 0 0 1px rgba(124,58,237,0.2)' : 'none',
                     cursor:      'pointer',
                   }}
                 >
                   {/* Radio */}
                   <div className="shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all"
                     style={{
-                      borderColor: active ? '#408A71' : 'rgba(40,90,72,0.5)',
-                      background:  active ? '#408A71' : 'transparent',
-                      boxShadow:   active ? '0 0 6px rgba(64,138,113,0.4)' : 'none',
+                      borderColor: active ? '#7C3AED' : 'rgba(124,58,237,0.3)',
+                      background:  active ? '#7C3AED' : 'transparent',
+                      boxShadow:   active ? '0 0 6px rgba(124,58,237,0.4)' : 'none',
                     }}>
                     {active && (
                       <span className="w-1.5 h-1.5 rounded-full bg-white block" />
@@ -147,14 +147,14 @@ export default function CheckoutForm({ items, total, onCancel, onSuccess }: Prop
                   {/* Icon */}
                   <div className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
                     style={{
-                      background: active ? 'rgba(64,138,113,0.25)' : 'rgba(40,90,72,0.2)',
-                      border: '1px solid rgba(40,90,72,0.3)',
+                      background: active ? 'rgba(124,58,237,0.2)' : 'rgba(124,58,237,0.1)',
+                      border: '1px solid rgba(124,58,237,0.2)',
                     }}>
-                    <Icon className="w-3 h-3" style={{ color: active ? '#B0E4CC' : 'rgba(176,228,204,0.45)' }} />
+                    <Icon className="w-3 h-3" style={{ color: active ? '#7C3AED' : 'rgba(124,58,237,0.5)' }} />
                   </div>
 
                   <span className="text-sm font-semibold transition-colors"
-                    style={{ color: active ? '#B0E4CC' : 'rgba(176,228,204,0.50)' }}>
+                    style={{ color: active ? '#7C3AED' : '#6B7280' }}>
                     {pm.label}
                   </span>
                 </div>
@@ -169,15 +169,15 @@ export default function CheckoutForm({ items, total, onCancel, onSuccess }: Prop
           {/* Title */}
           <div className="flex items-center gap-2.5">
             <div className="cf-icon-tile">
-              <FileText className="w-3.5 h-3.5" style={{ color: '#B0E4CC' }} />
+              <FileText className="w-3.5 h-3.5" style={{ color: '#fff' }} />
             </div>
             <div className="flex items-center gap-2">
-              <p className="text-white font-bold text-sm">Notes</p>
+              <p className="text-gray-900 font-bold text-sm" style={{ fontFamily: "'Montserrat', sans-serif" }}>Notes</p>
               <span className="text-[10px] font-black uppercase tracking-wide px-2 py-0.5 rounded-full"
                 style={{
-                  background: 'rgba(40,90,72,0.2)',
-                  color: 'rgba(176,228,204,0.38)',
-                  border: '1px solid rgba(40,90,72,0.3)',
+                  background: 'rgba(124,58,237,0.12)',
+                  color: '#7C3AED',
+                  border: '1px solid rgba(124,58,237,0.25)',
                 }}>
                 optional
               </span>
@@ -235,104 +235,107 @@ export default function CheckoutForm({ items, total, onCancel, onSuccess }: Prop
 
 /* ── Shared styles ─────────────────────────────────────────── */
 const styles = `
-  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;500;600&display=swap');
 
   .cf-root * { box-sizing: border-box; }
-  .cf-root, .cf-root button, .cf-root a { cursor: pointer !important; }
-  .cf-root { font-family: 'Plus Jakarta Sans', sans-serif; }
+  .cf-root { font-family: 'Open Sans', sans-serif; }
 
   /* section card */
   .cf-section {
-    background: linear-gradient(145deg, rgba(13,28,25,0.95) 0%, rgba(10,21,18,0.98) 100%);
-    border: 1px solid rgba(40,90,72,0.28);
+    background: linear-gradient(145deg, rgba(124,58,237,0.08) 0%, rgba(109,40,217,0.06) 100%);
+    border: 1px solid rgba(124,58,237,0.15);
     border-radius: 18px;
     padding: 1rem;
+    box-shadow: 0 4px 16px rgba(124,58,237,0.12), 0 2px 8px rgba(124,58,237,0.08);
   }
 
   /* icon tile */
   .cf-icon-tile {
     width: 28px; height: 28px; border-radius: 8px;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    background: linear-gradient(135deg, #285A48, #1a3d2e);
-    border: 1px solid rgba(64,138,113,0.35);
+    background: linear-gradient(135deg, #7C3AED, #6D28D9);
+    border: 1px solid rgba(124,58,237,0.35);
   }
 
   /* gradient divider */
   .cf-divider {
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(40,90,72,0.4), transparent);
+    background: linear-gradient(90deg, transparent, rgba(124,58,237,0.2), transparent);
   }
 
   /* payment option hover */
-  .cf-payment-option:hover { border-color: rgba(64,138,113,0.38) !important; }
+  .cf-payment-option:hover { border-color: rgba(124,58,237,0.3) !important; }
 
   /* textarea */
   .cf-textarea {
-    background: rgba(9,20,19,0.7);
-    border: 1px solid rgba(40,90,72,0.38);
+    background: rgba(243,232,255,0.5);
+    border: 1px solid rgba(124,58,237,0.2);
     border-radius: 12px;
     padding: 0.6rem 0.85rem;
-    color: #B0E4CC;
+    color: #374151;
     font-size: 0.825rem;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Open Sans', sans-serif;
     outline: none;
-    caret-color: #408A71;
+    caret-color: #7C3AED;
     transition: border-color 0.18s ease, box-shadow 0.18s ease;
   }
-  .cf-textarea::placeholder { color: rgba(176,228,204,0.22); }
+  .cf-textarea::placeholder { color: #7C3AED; }
   .cf-textarea:focus {
-    border-color: #408A71;
-    background: rgba(9,20,19,0.95);
-    box-shadow: 0 0 0 3px rgba(64,138,113,0.13);
+    border-color: #7C3AED;
+    background: rgba(243,232,255,0.8);
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.13);
   }
 
   /* primary button */
   .cf-btn-primary {
-    background: #408A71;
+    background: #7C3AED;
     color: #fff;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 0.825rem; font-weight: 800;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.825rem; font-weight: 400;
     border: none; border-radius: 14px;
-    box-shadow: 0 6px 20px rgba(64,138,113,0.30);
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(124,58,237,0.30);
     transition: background 0.18s ease, transform 0.12s ease, box-shadow 0.18s ease, opacity 0.18s ease;
   }
   .cf-btn-primary:hover:not(:disabled) {
-    background: #4eaa85;
+    background: #6D28D9;
     transform: translateY(-1px);
-    box-shadow: 0 10px 28px rgba(64,138,113,0.38);
+    box-shadow: 0 10px 28px rgba(124,58,237,0.38);
   }
   .cf-btn-primary:active:not(:disabled) { transform: translateY(0); }
-  .cf-btn-primary:disabled { opacity: 0.45; cursor: not-allowed !important; }
+  .cf-btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
 
   /* ghost button */
   .cf-btn-ghost {
-    background: rgba(40,90,72,0.18);
-    border: 1px solid rgba(40,90,72,0.38);
-    color: rgba(176,228,204,0.55);
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: rgba(124,58,237,0.1);
+    border: 1px solid rgba(124,58,237,0.2);
+    color: #7C3AED;
+    font-family: 'Montserrat', sans-serif;
     font-size: 0.825rem; font-weight: 700;
     border-radius: 14px;
+    cursor: pointer;
     transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
   }
   .cf-btn-ghost:hover {
-    background: rgba(40,90,72,0.30);
-    border-color: rgba(64,138,113,0.45);
-    color: #B0E4CC;
+    background: rgba(124,58,237,0.15);
+    border-color: rgba(124,58,237,0.3);
+    color: #6D28D9;
   }
 
   /* success state */
   .cf-success-card {
-    background: linear-gradient(145deg, rgba(13,28,25,0.95), rgba(10,21,18,0.98));
-    border: 1px solid rgba(64,138,113,0.3);
+    background: linear-gradient(145deg, rgba(124,58,237,0.08) 0%, rgba(109,40,217,0.06) 100%);
+    border: 1px solid rgba(124,58,237,0.15);
     border-radius: 20px;
+    box-shadow: 0 4px 16px rgba(124,58,237,0.12), 0 2px 8px rgba(124,58,237,0.08);
   }
 
   .cf-success-icon {
     width: 64px; height: 64px; border-radius: 20px;
     display: flex; align-items: center; justify-content: center;
-    background: linear-gradient(135deg, rgba(40,90,72,0.4), rgba(26,61,46,0.6));
-    border: 1px solid rgba(64,138,113,0.4);
-    box-shadow: 0 8px 24px rgba(64,138,113,0.2);
+    background: linear-gradient(135deg, rgba(124,58,237,0.2), rgba(109,40,217,0.15));
+    border: 1px solid rgba(124,58,237,0.3);
+    box-shadow: 0 8px 24px rgba(124,58,237,0.15);
   }
 
   /* progress bar animation after success */
@@ -342,7 +345,7 @@ const styles = `
   }
   .cf-progress-bar {
     height: 3px; border-radius: 99px;
-    background: linear-gradient(90deg, #285A48, #408A71, #B0E4CC);
+    background: linear-gradient(90deg, #7C3AED, #6D28D9, #C4B5FD);
     animation: cfProgress 1.4s ease-in-out forwards;
   }
 

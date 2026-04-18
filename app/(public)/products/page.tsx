@@ -21,7 +21,7 @@ export default function AllProductsPage() {
   const loadProducts = useCallback(async (s = '', cat = '', page = 1) => {
     setLoading(true)
     try {
-      const data = await storeService.getProducts({ search: s, category_id: cat, page })
+      const data = await storeService.getProducts({ search: s, category_id: cat, page, limit: 20 })
       setProducts(data.products ?? [])
       setPagination(data.pagination ?? { total: 0, page: 1, totalPages: 1 })
     } catch {
@@ -155,15 +155,15 @@ export default function AllProductsPage() {
         {/* ── Product grid ──────────────────────────── */}
         {loading ? (
           <div className="ap-loader">
-            <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#408A71' }} />
-            <span style={{ color: 'rgba(176,228,204,0.40)', fontSize: '0.85rem', fontWeight: 500 }}>
+            <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#7C3AED' }} />
+            <span style={{ color: '#9CA3AF', fontSize: '0.85rem', fontWeight: 500 }}>
               Loading products…
             </span>
           </div>
         ) : products.length === 0 ? (
           <div className="ap-empty">
             <div className="ap-empty-icon">
-              <ShoppingBag className="w-9 h-9" style={{ color: '#B0E4CC' }} />
+              <ShoppingBag className="w-9 h-9" style={{ color: '#fff' }} />
             </div>
             <h2 className="ap-empty-title">No products found</h2>
             <p className="ap-empty-sub">
@@ -206,9 +206,9 @@ export default function AllProductsPage() {
               disabled={pagination.page === 1}
               className="ap-page-btn"
               style={{
-                background:   pagination.page === 1 ? 'rgba(13,28,25,0.4)' : 'rgba(13,28,25,0.85)',
-                color:        pagination.page === 1 ? 'rgba(176,228,204,0.20)' : 'rgba(176,228,204,0.55)',
-                border:       '1px solid rgba(40,90,72,0.25)',
+                background:   pagination.page === 1 ? 'rgba(124,58,237,0.1)' : 'rgba(124,58,237,0.15)',
+                color:        pagination.page === 1 ? '#D1D5DB' : '#7C3AED',
+                border:       '1px solid rgba(124,58,237,0.2)',
                 cursor:       pagination.page === 1 ? 'not-allowed' : 'pointer',
               }}
             >
@@ -236,10 +236,10 @@ export default function AllProductsPage() {
                   onClick={() => loadProducts(search, categoryId, p)}
                   className="ap-page-btn"
                   style={{
-                    background:  active ? '#408A71' : 'rgba(13,28,25,0.85)',
-                    color:       active ? '#fff'    : 'rgba(176,228,204,0.55)',
-                    border:      active ? '1px solid rgba(64,138,113,0.55)' : '1px solid rgba(40,90,72,0.25)',
-                    boxShadow:   active ? '0 4px 14px rgba(64,138,113,0.28)' : 'none',
+                    background:  active ? '#7C3AED' : 'rgba(124,58,237,0.1)',
+                    color:       active ? '#fff'    : '#7C3AED',
+                    border:      active ? '1px solid rgba(124,58,237,0.5)' : '1px solid rgba(124,58,237,0.2)',
+                    boxShadow:   active ? '0 4px 14px rgba(124,58,237,0.28)' : 'none',
                     fontWeight:  active ? 800 : 600,
                   }}
                 >
@@ -254,9 +254,9 @@ export default function AllProductsPage() {
               disabled={pagination.page === pagination.totalPages}
               className="ap-page-btn"
               style={{
-                background:   pagination.page === pagination.totalPages ? 'rgba(13,28,25,0.4)' : 'rgba(13,28,25,0.85)',
-                color:        pagination.page === pagination.totalPages ? 'rgba(176,228,204,0.20)' : 'rgba(176,228,204,0.55)',
-                border:       '1px solid rgba(40,90,72,0.25)',
+                background:   pagination.page === pagination.totalPages ? 'rgba(124,58,237,0.1)' : 'rgba(124,58,237,0.15)',
+                color:        pagination.page === pagination.totalPages ? '#D1D5DB' : '#7C3AED',
+                border:       '1px solid rgba(124,58,237,0.2)',
                 cursor:       pagination.page === pagination.totalPages ? 'not-allowed' : 'pointer',
               }}
             >
@@ -267,7 +267,7 @@ export default function AllProductsPage() {
 
         {/* Page info — below pagination */}
         {pagination.totalPages > 1 && (
-          <p className="text-center text-xs" style={{ color: 'rgba(176,228,204,0.28)', marginTop: '-12px' }}>
+          <p className="text-center text-xs" style={{ color: '#9CA3AF', marginTop: '-12px' }}>
             Page {pagination.page} of {pagination.totalPages} · {pagination.total.toLocaleString()} products
           </p>
         )}
@@ -288,11 +288,10 @@ export default function AllProductsPage() {
 
 /* ── Styles ──────────────────────────────────────────────── */
 const styles = `
-  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;500;600&display=swap');
 
   .ap-root * { box-sizing: border-box; }
-  .ap-root, .ap-root a, .ap-root button { cursor: pointer !important; }
-  .ap-root { font-family: 'Plus Jakarta Sans', sans-serif; }
+  .ap-root { font-family: 'Open Sans', sans-serif; }
 
   .scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
   .scrollbar-hide::-webkit-scrollbar { display: none; }
@@ -313,13 +312,13 @@ const styles = `
 
   /* ── title / subtitle ── */
   .ap-title {
-    font-family: 'DM Serif Display', serif;
+    font-family: 'Montserrat', sans-serif;
     font-size: clamp(1.5rem, 3vw, 2rem);
-    font-weight: 700; color: #fff; line-height: 1.1;
+    font-weight: 700; color: #000000; line-height: 1.1;
   }
   .ap-subtitle {
     font-size: 0.85rem; margin-top: 4px;
-    color: rgba(176,228,204,0.40);
+    color: #000000;
   }
 
   /* ── search ── */
@@ -330,40 +329,40 @@ const styles = `
   @media (max-width: 640px) { .ap-search-wrap { max-width: 100%; } }
   .ap-search-icon {
     position: absolute; left: 12px;
-    color: rgba(64,138,113,0.65); pointer-events: none; flex-shrink: 0;
+    color: rgba(124,58,237,0.65); pointer-events: none; flex-shrink: 0;
   }
   .ap-search-input {
     width: 100%; height: 40px;
     padding: 0 36px 0 36px;
-    background: rgba(13,28,25,0.9);
-    border: 1px solid rgba(40,90,72,0.35);
+    background: rgba(243,232,255,0.5);
+    border: 1px solid rgba(124,58,237,0.2);
     border-radius: 12px;
-    color: #B0E4CC; font-size: 0.85rem; font-weight: 500;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    outline: none; caret-color: #408A71;
+    color: #374151; font-size: 0.85rem; font-weight: 500;
+    font-family: 'Open Sans', sans-serif;
+    outline: none; caret-color: #7C3AED;
     transition: border-color 0.18s ease, box-shadow 0.18s ease;
   }
-  .ap-search-input::placeholder { color: rgba(176,228,204,0.22); }
+  .ap-search-input::placeholder { color: #D1D5DB; }
   .ap-search-input:focus {
-    border-color: #408A71;
-    box-shadow: 0 0 0 3px rgba(64,138,113,0.13);
+    border-color: #7C3AED;
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.13);
   }
   .ap-search-clear {
     position: absolute; right: 10px;
     width: 22px; height: 22px; border-radius: 6px;
     display: flex; align-items: center; justify-content: center;
-    background: rgba(40,90,72,0.25);
-    color: rgba(176,228,204,0.5);
-    border: none; transition: background 0.15s ease, color 0.15s ease;
+    background: rgba(124,58,237,0.15);
+    color: #7C3AED;
+    border: none; transition: background 0.15s ease, color 0.15s ease; cursor: pointer;
   }
-  .ap-search-clear:hover { background: rgba(40,90,72,0.45); color: #B0E4CC; }
+  .ap-search-clear:hover { background: rgba(124,58,237,0.25); color: #6D28D9; }
 
   /* ── category pill ── */
   .ap-cat-pill {
     padding: 7px 16px; border-radius: 99px;
     font-size: 0.78rem; font-weight: 700;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    transition: all 0.18s ease; white-space: nowrap;
+    font-family: 'Montserrat', sans-serif;
+    transition: all 0.18s ease; white-space: nowrap; cursor: pointer;
   }
   .ap-cat-pill:hover { opacity: 0.85; }
 
@@ -371,17 +370,17 @@ const styles = `
   .ap-active-filter {
     display: inline-flex; align-items: center; gap: 5px;
     padding: 4px 10px; border-radius: 99px;
-    background: rgba(64,138,113,0.12);
-    border: 1px solid rgba(64,138,113,0.3);
-    color: #408A71; font-size: 11px; font-weight: 800;
+    background: rgba(124,58,237,0.12);
+    border: 1px solid rgba(124,58,237,0.25);
+    color: #7C3AED; font-size: 11px; font-weight: 800;
   }
   .ap-filter-x {
     width: 16px; height: 16px; border-radius: 4px;
     display: flex; align-items: center; justify-content: center;
-    background: rgba(64,138,113,0.2); color: #408A71;
-    border: none; transition: background 0.15s;
+    background: rgba(124,58,237,0.2); color: #7C3AED;
+    border: none; transition: background 0.15s; cursor: pointer;
   }
-  .ap-filter-x:hover { background: rgba(64,138,113,0.4); }
+  .ap-filter-x:hover { background: rgba(124,58,237,0.4); }
 
   /* ── loader ── */
   .ap-loader {
@@ -399,27 +398,27 @@ const styles = `
   .ap-empty-icon {
     width: 72px; height: 72px; border-radius: 22px; margin-bottom: 6px;
     display: flex; align-items: center; justify-content: center;
-    background: linear-gradient(135deg, #285A48 0%, #1a3d2e 100%);
-    border: 1px solid rgba(64,138,113,0.35);
-    box-shadow: 0 10px 30px rgba(9,20,19,0.6);
+    background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+    border: 1px solid rgba(124,58,237,0.35);
+    box-shadow: 0 10px 30px rgba(124,58,237,0.2);
   }
   .ap-empty-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.35rem; font-weight: 700; color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.35rem; font-weight: 700; color: #1F2937;
   }
   .ap-empty-sub {
     font-size: 0.85rem; line-height: 1.55;
-    color: rgba(176,228,204,0.40); margin-bottom: 4px;
+    color: #6B7280; margin-bottom: 4px;
   }
   .ap-btn-clear {
     padding: 8px 22px; border-radius: 12px;
-    background: rgba(40,90,72,0.22);
-    border: 1px solid rgba(64,138,113,0.35);
-    color: #408A71; font-size: 0.8rem; font-weight: 800;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    transition: background 0.18s ease, color 0.18s ease;
+    background: rgba(124,58,237,0.12);
+    border: 1px solid rgba(124,58,237,0.25);
+    color: #7C3AED; font-size: 0.8rem; font-weight: 800;
+    font-family: 'Montserrat', sans-serif;
+    transition: background 0.18s ease, color 0.18s ease; cursor: pointer;
   }
-  .ap-btn-clear:hover { background: rgba(40,90,72,0.38); color: #B0E4CC; }
+  .ap-btn-clear:hover { background: rgba(124,58,237,0.2); color: #6D28D9; }
 
   /* ── pagination ── */
   .ap-pagination {
@@ -429,13 +428,13 @@ const styles = `
   .ap-page-btn {
     width: 36px; height: 36px; border-radius: 10px;
     display: flex; align-items: center; justify-content: center;
-    font-size: 0.8rem; font-family: 'Plus Jakarta Sans', sans-serif;
-    transition: all 0.18s ease;
+    font-size: 0.8rem; font-family: 'Montserrat', sans-serif;
+    transition: all 0.18s ease; cursor: pointer;
   }
-  .ap-page-btn:hover:not(:disabled) { border-color: rgba(64,138,113,0.5) !important; }
+  .ap-page-btn:hover:not(:disabled) { border-color: rgba(124,58,237,0.5) !important; }
   .ap-ellipsis {
     width: 36px; height: 36px; display: flex;
     align-items: center; justify-content: center;
-    color: rgba(176,228,204,0.28); font-size: 0.85rem;
+    color: #9CA3AF; font-size: 0.85rem;
   }
 `

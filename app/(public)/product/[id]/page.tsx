@@ -117,8 +117,8 @@ export default function ProductPage() {
     <>
       <style>{styles}</style>
       <div className="pp-root pp-loader">
-        <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#408A71' }} />
-        <span style={{ color: 'rgba(176,228,204,0.40)', fontSize: '0.85rem', fontWeight: 500 }}>
+        <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#7C3AED' }} />
+        <span style={{ color: '#9CA3AF', fontSize: '0.85rem', fontWeight: 500 }}>
           Loading product…
         </span>
       </div>
@@ -129,8 +129,8 @@ export default function ProductPage() {
     <>
       <style>{styles}</style>
       <div className="pp-root pp-loader">
-        <Package className="w-12 h-12" style={{ color: '#285A48' }} />
-        <p style={{ color: 'rgba(176,228,204,0.40)', fontWeight: 600 }}>Product not found</p>
+        <Package className="w-12 h-12" style={{ color: '#7C3AED' }} />
+        <p style={{ color: '#9CA3AF', fontWeight: 600 }}>Product not found</p>
       </div>
     </>
   )
@@ -150,18 +150,12 @@ export default function ProductPage() {
       <div className="pp-root max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
 
         {/* ── Breadcrumb ───────────────────────────── */}
-        <div className="pp-fade-up flex items-center gap-2 mb-7 text-xs font-medium" style={{ color: 'rgba(176,228,204,0.38)' }}>
+        <div className="pp-fade-up flex items-center gap-2 mb-7 text-xs font-medium" style={{ color: '#7C3AED' }}>
           <Link href="/" className="pp-crumb-link">Home</Link>
           <span>/</span>
           <Link href="/products" className="pp-crumb-link">Products</Link>
-          {product.categories?.name && (
-            <>
-              <span>/</span>
-              <span style={{ color: 'rgba(176,228,204,0.55)' }}>{product.categories.name}</span>
-            </>
-          )}
           <span>/</span>
-          <span className="truncate max-w-[140px]" style={{ color: '#B0E4CC' }}>{product.name}</span>
+          <span className="truncate max-w-[140px]" style={{ color: '#7C3AED' }}>{product.name}</span>
         </div>
 
         {/* ── Product grid ─────────────────────────── */}
@@ -180,9 +174,9 @@ export default function ProductPage() {
                 />
               ) : (
                 <div className="w-full h-full flex flex-col items-center justify-center gap-3"
-                  style={{ background: '#162420' }}>
-                  <Package className="w-14 h-14" style={{ color: '#285A48' }} />
-                  <span className="text-xs font-bold uppercase tracking-widest" style={{ color: 'rgba(176,228,204,0.25)' }}>
+                  style={{ background: '#F3E8FF' }}>
+                  <Package className="w-14 h-14" style={{ color: '#7C3AED' }} />
+                  <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#D1D5DB' }}>
                     No image
                   </span>
                 </div>
@@ -221,9 +215,9 @@ export default function ProductPage() {
                     className="pp-thumb shrink-0"
                     style={{
                       border: i === mainImage
-                        ? '2px solid #408A71'
-                        : '2px solid rgba(40,90,72,0.25)',
-                      boxShadow: i === mainImage ? '0 0 10px rgba(64,138,113,0.3)' : 'none',
+                        ? '2px solid #7C3AED'
+                        : '2px solid rgba(124,58,237,0.15)',
+                      boxShadow: i === mainImage ? '0 0 10px rgba(124,58,237,0.3)' : 'none',
                     }}
                   >
                     <img src={img} alt="" className="w-full h-full object-cover" />
@@ -237,22 +231,22 @@ export default function ProductPage() {
           <div className="pp-fade-up space-y-5" style={{ animationDelay: '80ms' }}>
 
             {/* Shop link */}
-            {shop && (
+            {/* {shop && (
               <Link href={`/shop/${shop.id}`}>
                 <div className="pp-shop-row">
                   {shop.logo_url
                     ? <img src={shop.logo_url} alt={shop.name}
                         className="w-6 h-6 rounded-full object-cover"
-                        style={{ border: '1px solid rgba(64,138,113,0.35)' }} />
+                        style={{ border: '1px solid rgba(124,58,237,0.25)' }} />
                     : <div className="w-6 h-6 rounded-full flex items-center justify-center"
-                        style={{ background: 'rgba(40,90,72,0.3)', border: '1px solid rgba(64,138,113,0.25)' }}>
-                        <Store className="w-3.5 h-3.5" style={{ color: '#408A71' }} />
+                        style={{ background: 'rgba(124,58,237,0.15)', border: '1px solid rgba(124,58,237,0.25)' }}>
+                        <Store className="w-3.5 h-3.5" style={{ color: '#7C3AED' }} />
                       </div>
                   }
                   <span className="pp-shop-name">{shop.name}</span>
                 </div>
               </Link>
-            )}
+            )} */}
 
             {/* Product name */}
             <h1 className="pp-product-title">{product.name}</h1>
@@ -324,9 +318,9 @@ export default function ProductPage() {
                 disabled={togglingWish}
                 className="pp-btn-wish"
                 style={{
-                  background:   isWishlisted ? 'rgba(239,68,68,0.15)' : 'rgba(13,28,25,0.9)',
-                  borderColor:  isWishlisted ? 'rgba(248,113,113,0.5)' : 'rgba(40,90,72,0.4)',
-                  color:        isWishlisted ? '#f87171'                : 'rgba(176,228,204,0.50)',
+                  background:   isWishlisted ? 'rgba(239,68,68,0.15)' : 'rgba(124,58,237,0.1)',
+                  borderColor:  isWishlisted ? 'rgba(248,113,113,0.5)' : 'rgba(124,58,237,0.25)',
+                  color:        isWishlisted ? '#f87171'                : '#7C3AED',
                 }}
               >
                 <Heart className={cn('w-5 h-5', isWishlisted && 'fill-current')} />
@@ -341,7 +335,7 @@ export default function ProductPage() {
                 { icon: RotateCcw,label: 'Easy Return' },
               ].map(t => (
                 <div key={t.label} className="pp-trust-tile">
-                  <t.icon className="w-3.5 h-3.5" style={{ color: '#408A71' }} />
+                  <t.icon className="w-3.5 h-3.5" style={{ color: '#7C3AED' }} />
                   <span>{t.label}</span>
                 </div>
               ))}
@@ -367,7 +361,7 @@ export default function ProductPage() {
             <div>
               <div className="flex items-center gap-2.5 mb-1">
                 <div className="pp-icon-tile">
-                  <Star className="w-3.5 h-3.5" style={{ color: '#B0E4CC' }} />
+                  <Star className="w-3.5 h-3.5" style={{ color: '#fff' }} />
                 </div>
                 <h2 className="pp-section-title">Customer Reviews</h2>
               </div>
@@ -375,12 +369,12 @@ export default function ProductPage() {
                 <div className="flex items-center gap-2.5 pl-10 flex-wrap">
                   <StarRating value={Math.round(avgRating)} readonly size="sm" />
                   <span className="font-black text-sm" style={{ color: '#facc15' }}>{avgRating}</span>
-                  <span className="text-xs" style={{ color: 'rgba(176,228,204,0.38)' }}>
+                  <span className="text-xs" style={{ color: '#9CA3AF' }}>
                     ({totalReviews} review{totalReviews !== 1 ? 's' : ''})
                   </span>
                 </div>
               ) : (
-                <p className="text-xs pl-10" style={{ color: 'rgba(176,228,204,0.35)' }}>
+                <p className="text-xs pl-10" style={{ color: '#9CA3AF' }}>
                   No reviews yet — be the first!
                 </p>
               )}
@@ -398,16 +392,16 @@ export default function ProductPage() {
               {userReview && (
                 <span className="flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full"
                   style={{
-                    background: 'rgba(74,222,128,0.10)',
-                    border: '1px solid rgba(74,222,128,0.28)',
-                    color: '#4ade80',
+                    background: 'rgba(124,58,237,0.12)',
+                    border: '1px solid rgba(124,58,237,0.25)',
+                    color: '#7C3AED',
                   }}>
                   <CheckCircle className="w-3.5 h-3.5" />
                   You reviewed this
                 </span>
               )}
               {isAuthenticated && !deliveredOrder && !userReview && (
-                <span className="text-xs" style={{ color: 'rgba(176,228,204,0.28)' }}>
+                <span className="text-xs" style={{ color: '#9CA3AF' }}>
                   Purchase &amp; receive to review
                 </span>
               )}
@@ -429,7 +423,7 @@ export default function ProductPage() {
           {reviews.length === 0 ? (
             <div className="pp-empty-reviews">
               <p className="text-3xl">⭐</p>
-              <p className="text-sm font-semibold" style={{ color: 'rgba(176,228,204,0.40)' }}>
+              <p className="text-sm font-semibold" style={{ color: '#7C3AED', opacity: '50%' }}>
                 No reviews yet for this product
               </p>
             </div>
@@ -454,10 +448,10 @@ export default function ProductPage() {
                         }
                       </div>
                       <div>
-                        <p className="text-white font-bold text-sm leading-tight">
+                        <p className="text-gray-900 font-bold text-sm leading-tight">
                           {review.profiles?.full_name ?? 'Customer'}
                         </p>
-                        <p className="text-xs" style={{ color: '#408A71' }}>
+                        <p className="text-xs" style={{ color: '#7C3AED' }}>
                           @{review.profiles?.username ?? '—'}
                         </p>
                       </div>
@@ -466,7 +460,7 @@ export default function ProductPage() {
                     {/* Stars + date */}
                     <div className="text-right shrink-0">
                       <StarRating value={review.rating} readonly size="sm" />
-                      <p className="text-[10px] mt-1" style={{ color: 'rgba(176,228,204,0.28)' }}>
+                      <p className="text-[10px] mt-1" style={{ color: '#9CA3AF' }}>
                         {new Date(review.created_at).toLocaleDateString('en-US', {
                           day: 'numeric', month: 'short', year: 'numeric',
                         })}
@@ -477,7 +471,7 @@ export default function ProductPage() {
                   {/* Review text */}
                   {review.review_text && (
                     <p className="text-sm leading-relaxed mt-3"
-                      style={{ color: 'rgba(176,228,204,0.60)' }}>
+                      style={{ color: '#374151' }}>
                       {review.review_text}
                     </p>
                   )}
@@ -511,11 +505,10 @@ export default function ProductPage() {
 
 /* ── Styles ──────────────────────────────────────────────── */
 const styles = `
-  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;500;600&display=swap');
 
   .pp-root * { box-sizing: border-box; }
-  .pp-root, .pp-root a, .pp-root button { cursor: pointer !important; }
-  .pp-root { font-family: 'Plus Jakarta Sans', sans-serif; }
+  .pp-root { font-family: 'Open Sans', sans-serif; }
 
   .scrollbar-hide { scrollbar-width: none; -ms-overflow-style: none; }
   .scrollbar-hide::-webkit-scrollbar { display: none; }
@@ -536,16 +529,16 @@ const styles = `
 
   /* ── breadcrumb ── */
   .pp-crumb-link {
-    color: rgba(176,228,204,0.38); transition: color 0.15s ease;
+    color: #7C3AED; transition: color 0.15s ease;
   }
-  .pp-crumb-link:hover { color: #408A71; }
+  .pp-crumb-link:hover { color: #6D28D9; }
 
   /* ── main image ── */
   .pp-main-img-wrap {
     position: relative; aspect-ratio: 1/1; border-radius: 22px; overflow: hidden;
-    background: rgba(13,28,25,0.95);
-    border: 1px solid rgba(40,90,72,0.28);
-    box-shadow: 0 12px 40px rgba(9,20,19,0.5);
+    background: rgba(243,232,255,0.5);
+    border: 1px solid rgba(124,58,237,0.2);
+    box-shadow: 0 4px 16px rgba(124,58,237,0.12), 0 2px 8px rgba(124,58,237,0.08);
   }
   .pp-main-img {
     transition: transform 0.5s cubic-bezier(.25,.46,.45,.94);
@@ -563,39 +556,40 @@ const styles = `
   .pp-shop-row {
     display: inline-flex; align-items: center; gap: 8px;
     padding: 5px 12px; border-radius: 99px;
-    background: rgba(40,90,72,0.18);
-    border: 1px solid rgba(64,138,113,0.25);
+    background: rgba(124,58,237,0.12);
+    border: 1px solid rgba(124,58,237,0.25);
     transition: background 0.18s ease;
   }
-  .pp-shop-row:hover { background: rgba(40,90,72,0.30); }
+  .pp-shop-row:hover { background: rgba(124,58,237,0.18); }
   .pp-shop-name {
     font-size: 11px; font-weight: 800;
     text-transform: uppercase; letter-spacing: 0.08em;
-    color: #408A71;
+    color: #7C3AED;
   }
 
   /* ── product title ── */
   .pp-product-title {
-    font-family: 'DM Serif Display', serif;
+    margin-top: 30px;
+    font-family: 'Montserrat', sans-serif;
     font-size: clamp(1.4rem, 3.5vw, 1.9rem);
-    font-weight: 700; color: #fff; line-height: 1.15;
+    font-weight: 700; color: #1F2937; line-height: 1.15;
   }
 
   /* ── price ── */
   .pp-price-block { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
   .pp-price {
     font-size: clamp(1.6rem, 4vw, 2.2rem);
-    font-weight: 900; color: #B0E4CC; line-height: 1;
+    font-weight: 900; color: #7C3AED; line-height: 1;
   }
   .pp-price-original {
     font-size: 1rem; font-weight: 500;
-    color: rgba(176,228,204,0.28); text-decoration: line-through; line-height: 1;
+    color: #D1D5DB; text-decoration: line-through; line-height: 1;
   }
 
   /* ── description ── */
   .pp-description {
     font-size: 0.875rem; line-height: 1.7;
-    color: rgba(176,228,204,0.55);
+    color: #6B7280;
   }
 
   /* ── low stock ── */
@@ -611,85 +605,89 @@ const styles = `
   .pp-btn-cart {
     height: 48px; border-radius: 14px;
     display: flex; align-items: center; justify-content: center; gap: 8px;
-    background: rgba(40,90,72,0.25);
-    border: 1px solid rgba(64,138,113,0.38);
-    color: #B0E4CC; font-size: 0.875rem; font-weight: 800;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: rgba(124,58,237,0.12);
+    border: 1px solid rgba(124,58,237,0.25);
+    color: #7C3AED; font-size: 0.875rem; font-weight: 800;
+    font-family: 'Montserrat', sans-serif;
+    cursor: pointer;
     transition: background 0.18s ease, border-color 0.18s ease, transform 0.12s ease;
   }
   .pp-btn-cart:hover:not(:disabled) {
-    background: rgba(40,90,72,0.45); border-color: rgba(64,138,113,0.6);
+    background: rgba(124,58,237,0.2); border-color: rgba(124,58,237,0.4);
     transform: translateY(-1px);
   }
-  .pp-btn-cart:disabled { opacity: 0.40; cursor: not-allowed !important; }
+  .pp-btn-cart:disabled { opacity: 0.40; cursor: not-allowed; }
 
   .pp-btn-buy {
     height: 48px; border-radius: 14px;
     display: flex; align-items: center; justify-content: center; gap: 8px;
-    background: #408A71; color: #fff;
+    background: #7C3AED; color: #fff;
     font-size: 0.875rem; font-weight: 800;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    border: none;
-    box-shadow: 0 6px 20px rgba(64,138,113,0.30);
+    font-family: 'Montserrat', sans-serif;
+    border: none; cursor: pointer;
+    box-shadow: 0 6px 20px rgba(124,58,237,0.30);
     transition: background 0.18s ease, transform 0.12s ease, box-shadow 0.18s ease;
   }
   .pp-btn-buy:hover:not(:disabled) {
-    background: #4eaa85; transform: translateY(-1px);
-    box-shadow: 0 10px 28px rgba(64,138,113,0.40);
+    background: #6D28D9; transform: translateY(-1px);
+    box-shadow: 0 10px 28px rgba(124,58,237,0.40);
   }
-  .pp-btn-buy:disabled { opacity: 0.40; cursor: not-allowed !important; }
+  .pp-btn-buy:disabled { opacity: 0.40; cursor: not-allowed; }
 
   .pp-btn-wish {
     width: 48px; height: 48px; border-radius: 14px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    border: 1px solid; transition: all 0.2s ease;
+    border: 1px solid; cursor: pointer; transition: all 0.2s ease;
   }
   .pp-btn-wish:hover { opacity: 0.85; transform: scale(1.04); }
-  .pp-btn-wish:disabled { opacity: 0.50; cursor: not-allowed !important; }
+  .pp-btn-wish:disabled { opacity: 0.50; cursor: not-allowed; }
 
   /* ── trust strip ── */
   .pp-trust-tile {
     display: flex; flex-direction: column; align-items: center; gap: 5px;
     padding: 10px 8px; border-radius: 14px; text-align: center;
-    background: rgba(13,28,25,0.8);
-    border: 1px solid rgba(40,90,72,0.22);
+    background: rgba(243,232,255,0.5);
+    border: 1px solid rgba(124,58,237,0.15);
+    box-shadow: 0 2px 8px rgba(124,58,237,0.08);
     font-size: 10px; font-weight: 700; text-transform: uppercase;
-    letter-spacing: 0.07em; color: rgba(176,228,204,0.42);
-    transition: border-color 0.18s ease;
+    letter-spacing: 0.07em; color: #7C3AED;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease;
   }
-  .pp-trust-tile:hover { border-color: rgba(64,138,113,0.38); }
+  .pp-trust-tile:hover { border-color: rgba(124,58,237,0.3); box-shadow: 0 4px 12px rgba(124,58,237,0.12); }
 
   /* ── section title + icon tile ── */
   .pp-icon-tile {
     width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    background: linear-gradient(135deg, #285A48, #1a3d2e);
-    border: 1px solid rgba(64,138,113,0.35);
+    background: linear-gradient(135deg, #7C3AED, #6D28D9);
+    border: 1px solid rgba(124,58,237,0.35);
   }
   .pp-section-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: 1.2rem; font-weight: 700; color: #fff;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.2rem; font-weight: 700; color: #1F2937;
   }
 
   /* ── write review btn ── */
   .pp-btn-review {
     display: flex; align-items: center; gap: 6px;
     padding: 8px 16px; border-radius: 12px;
-    background: rgba(250,204,21,0.10);
-    border: 1px solid rgba(250,204,21,0.28);
-    color: #facc15; font-size: 0.8rem; font-weight: 800;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: rgba(124,58,237,0.12);
+    border: 1px solid rgba(124,58,237,0.25);
+    color: #7C3AED; font-size: 0.8rem; font-weight: 800;
+    font-family: 'Montserrat', sans-serif;
+    cursor: pointer;
     transition: background 0.18s ease;
   }
-  .pp-btn-review:hover { background: rgba(250,204,21,0.18); }
+  .pp-btn-review:hover { background: rgba(124,58,237,0.2); }
 
   /* ── empty reviews ── */
   .pp-empty-reviews {
     display: flex; flex-direction: column; align-items: center;
     justify-content: center; gap: 10px;
     padding: 3rem 1rem; border-radius: 20px; text-align: center;
-    background: rgba(13,28,25,0.85);
-    border: 1px solid rgba(40,90,72,0.22);
+    background: rgba(243,232,255,0.5);
+    border: 1px solid rgba(124,58,237,0.15);
+    box-shadow: 0 4px 16px rgba(124,58,237,0.12);
   }
 
   /* ── review card ── */
@@ -699,19 +697,21 @@ const styles = `
   }
   .pp-review-card {
     padding: 18px 20px; border-radius: 18px;
-    background: linear-gradient(145deg, rgba(13,28,25,0.95), rgba(10,21,18,0.98));
-    border: 1px solid rgba(40,90,72,0.22);
+    background: linear-gradient(145deg, rgba(243,232,255,0.5) 0%, rgba(237,233,254,0.4) 100%);
+    border: 1px solid rgba(124,58,237,0.15);
+    box-shadow: 0 4px 16px rgba(124,58,237,0.12), 0 2px 8px rgba(124,58,237,0.08);
     animation: ppRevIn 0.38s cubic-bezier(.22,1,.36,1) both;
-    transition: border-color 0.2s ease;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
   }
-  .pp-review-card:hover { border-color: rgba(64,138,113,0.35); }
+  .pp-review-card:hover { border-color: rgba(124,58,237,0.25); box-shadow: 0 8px 24px rgba(124,58,237,0.16); }
 
   /* ── reviewer avatar ── */
   .pp-avatar {
     width: 40px; height: 40px; border-radius: 12px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center; overflow: hidden;
-    background: linear-gradient(135deg, #285A48, #1a3d2e);
-    border: 1px solid rgba(64,138,113,0.3);
+    background: linear-gradient(135deg, #7C3AED, #6D28D9);
+    border: 1px solid rgba(124,58,237,0.3);
+    color: #fff; font-weight: 900;
   }
 
   /* ── rating label pill ── */

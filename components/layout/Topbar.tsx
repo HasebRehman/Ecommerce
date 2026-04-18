@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -38,6 +38,31 @@ export default function Topbar() {
     return () => window.removeEventListener('scroll', fn)
   }, [])
 
+  /* Close menu on scroll or any click outside */
+  useEffect(() => {
+    if (!userMenuOpen) return
+
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement
+      // Close if clicking outside the menu and not on the trigger button
+      if (!target.closest('.user-menu-container')) {
+        setUserMenuOpen(false)
+      }
+    }
+
+    const handleScroll = () => {
+      setUserMenuOpen(false)
+    }
+
+    document.addEventListener('click', handleClickOutside, true)
+    window.addEventListener('scroll', handleScroll, { passive: true })
+
+    return () => {
+      document.removeEventListener('click', handleClickOutside, true)
+      window.removeEventListener('scroll', handleScroll)
+    }
+  }, [userMenuOpen])
+
   const handleLogout = async () => {
     try {
       await authService.logout()
@@ -68,7 +93,7 @@ export default function Topbar() {
 
         .tb-root * { box-sizing: border-box; }
         .tb-root, .tb-root a, .tb-root button { cursor: pointer !important; }
-        .tb-root { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .tb-root { font-family: 'Inter', sans-serif; }
 
         /* badge pop */
         @keyframes badgePop {
@@ -91,11 +116,11 @@ export default function Topbar() {
           display: flex; align-items: center; justify-content: center;
           width: 36px; height: 36px; border-radius: 10px;
           transition: background 0.18s ease, color 0.18s ease;
-          color: rgba(176,228,204,0.55);
+          color: rgba(107,114,128,0.8);
         }
         .tb-icon-btn:hover {
-          background: rgba(40,90,72,0.35);
-          color: #B0E4CC;
+          background: rgba(124,58,237,0.10);
+          color: #7C3AED;
         }
 
         /* shimmer on logo */
@@ -104,7 +129,7 @@ export default function Topbar() {
           100% { background-position:  200% center; }
         }
         .logo-shimmer {
-          background: linear-gradient(90deg, #B0E4CC 20%, #408A71 45%, #B0E4CC 70%);
+          background: linear-gradient(90deg, #C4B5FD 20%, #7C3AED 45%, #C4B5FD 70%);
           background-size: 200% auto;
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
@@ -114,24 +139,26 @@ export default function Topbar() {
 
         /* avatar ring pulse when menu open */
         .avatar-ring-open {
-          box-shadow: 0 0 0 2px #408A71, 0 0 12px rgba(64,138,113,0.35);
+          box-shadow: 0 0 0 2px #7C3AED, 0 0 12px rgba(124,58,237,0.35);
         }
       `}</style>
 
       <header className={cn(
         'tb-root fixed top-0 left-0 right-0 transition-all duration-300',
         scrolled
-          ? 'bg-[#091413]/95 backdrop-blur-xl border-b border-[#285A48]/35 shadow-xl shadow-[#091413]/50'
-          : 'bg-[#091413]/80 backdrop-blur-md border-b border-[#285A48]/20'
+          ? 'bg-white/95 backdrop-blur-xl border-b border-[#7C3AED]/35 shadow-lg shadow-[#7C3AED]/8'
+          : 'bg-white/85 backdrop-blur-md border-b border-[#7C3AED]/20'
       )}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-3">
 
           {/* ── Logo ────────────────────────────────────── */}
-          <Link href="/" className="shrink-0">
-            <h1 style={{ fontFamily: "'DM Serif Display', serif" }} className="text-xl font-bold tracking-tight">
-              <span className="text-white">Vendo</span>
-              <span className="logo-shimmer">Sphere</span>
-            </h1>
+          <Link href="/" className="shrink-0 flex items-center">
+            <img
+              src="/logo.png"
+              alt="VendoSphere"
+              className="h-8 sm:h-10 w-auto object-contain"
+              style={{ maxWidth: '160px' }}
+            />
           </Link>
 
           {/* ── Spacer ──────────────────────────────────── */}
@@ -145,7 +172,7 @@ export default function Topbar() {
               <div className="tb-icon-btn relative">
                 <ShoppingCart className="w-5 h-5" />
                 {cartCount > 0 && (
-                  <span className="badge-pop absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-[#408A71] text-white text-[10px] font-black rounded-full flex items-center justify-center leading-none border border-[#091413]">
+                  <span className="badge-pop absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-[#7C3AED] text-white text-[10px] font-black rounded-full flex items-center justify-center leading-none border border-white">
                     {cartCount > 9 ? '9+' : cartCount}
                   </span>
                 )}
@@ -158,7 +185,7 @@ export default function Topbar() {
                 <div className="tb-icon-btn relative">
                   <Heart className="w-5 h-5" />
                   {wishlistCount > 0 && (
-                    <span className="badge-pop absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center leading-none border border-[#091413]">
+                    <span className="badge-pop absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-500 text-white text-[10px] font-black rounded-full flex items-center justify-center leading-none border border-white">
                       {wishlistCount > 9 ? '9+' : wishlistCount}
                     </span>
                   )}
@@ -175,12 +202,12 @@ export default function Topbar() {
             {!isAuthenticated && (
               <div className="flex items-center gap-2 ml-1">
                 <Link href="/login">
-                  <button className="px-4 py-2 text-[#B0E4CC]/65 hover:text-[#B0E4CC] text-sm font-semibold transition-colors rounded-xl hover:bg-[#285A48]/25">
+                  <button className="px-4 py-2 text-[#6b7280] hover:text-[#7C3AED] text-sm font-semibold transition-colors rounded-xl hover:bg-[#7C3AED]/25">
                     Login
                   </button>
                 </Link>
                 <Link href="/signup">
-                  <button className="px-4 py-2 bg-[#408A71] hover:bg-[#4eaa85] text-white text-sm font-bold rounded-xl transition-all duration-200 shadow-lg shadow-[#285A48]/30 hover:scale-[1.03]">
+                  <button className="px-4 py-2 bg-[#7C3AED] hover:bg-[#6D28D9] text-white text-sm font-bold rounded-xl transition-all duration-200 shadow-lg shadow-[#7C3AED]/30 hover:scale-[1.03]">
                     Sign Up
                   </button>
                 </Link>
@@ -189,23 +216,23 @@ export default function Topbar() {
 
             {/* ── Logged in — user menu ────────────────── */}
             {isAuthenticated && (
-              <div className="relative ml-1">
+              <div className="relative ml-1 user-menu-container">
 
                 {/* Avatar trigger */}
                 <button
                   onClick={() => setUserMenuOpen(p => !p)}
                   className={cn(
                     'flex items-center gap-2 pl-1 pr-2.5 py-1 rounded-xl transition-all duration-200',
-                    'border hover:bg-[#285A48]/30',
+                    'border hover:bg-[#EDE9FE]',
                     userMenuOpen
-                      ? 'bg-[#285A48]/30 border-[#408A71]/50'
-                      : 'bg-[#285A48]/15 border-[#285A48]/30 hover:border-[#408A71]/40'
+                      ? 'bg-[#EDE9FE] border-[#7C3AED]/40'
+                      : 'bg-[#FAF5FF] border-[#C4B5FD]/30 hover:border-[#7C3AED]/30'
                   )}
                 >
                   {/* Avatar circle */}
                   <div className={cn(
                     'w-7 h-7 rounded-lg overflow-hidden shrink-0 flex items-center justify-center',
-                    'bg-gradient-to-br from-[#408A71] to-[#285A48] text-white text-xs font-black',
+                    'bg-gradient-to-br from-[#7C3AED] to-[#7C3AED] text-white text-xs font-black',
                     'transition-all duration-200',
                     userMenuOpen && 'avatar-ring-open'
                   )}>
@@ -217,32 +244,40 @@ export default function Topbar() {
                   </div>
 
                   {/* Name — hidden on small screens */}
-                  <span className="hidden sm:block text-[#B0E4CC]/80 text-xs font-semibold max-w-[80px] truncate">
+                  <span className="hidden sm:block text-[#4b5563] text-xs font-semibold max-w-[80px] truncate">
                     {user?.full_name?.split(' ')[0] ?? 'Account'}
                   </span>
 
                   <ChevronDown className={cn(
-                    'w-3 h-3 text-[#408A71] transition-transform duration-200 shrink-0',
+                    'w-3 h-3 text-[#7C3AED] transition-transform duration-200 shrink-0',
                     userMenuOpen && 'rotate-180'
                   )} />
                 </button>
 
-                {/* Backdrop */}
+                {/* Backdrop — closes menu when clicked anywhere outside */}
                 {userMenuOpen && (
-                  <div className="fixed inset-0" onClick={() => setUserMenuOpen(false)} />
+                  <div 
+                    className="fixed inset-0 z-40" 
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setUserMenuOpen(false)
+                    }}
+                    style={{ background: 'transparent', pointerEvents: 'auto' }}
+                  />
                 )}
 
                 {/* Dropdown */}
                 {userMenuOpen && (
-                  <div className="drop-in absolute right-0 top-full mt-2.5 w-56
-                    bg-[#0d1c19] border border-[#285A48]/40 rounded-2xl shadow-2xl shadow-[#091413]/80 overflow-hidden">
+                  <div className="drop-in absolute right-0 top-full mt-2.5 w-56 z-50
+                    bg-white border border-[#C4B5FD]/40 rounded-2xl shadow-2xl shadow-[#7C3AED]/12 overflow-hidden">
 
                     {/* User info header */}
-                    <div className="px-4 py-3.5 border-b border-[#285A48]/30"
-                      style={{ background: 'linear-gradient(135deg, #162420 0%, #0d1c19 100%)' }}>
+                    <div className="px-4 py-3.5 border-b border-[#C4B5FD]/30"
+                      style={{ background: 'linear-gradient(135deg, #EDE9FE 0%, #FAF5FF 100%)' }}>
                       <div className="flex items-center gap-3">
                         <div className="w-9 h-9 rounded-xl overflow-hidden shrink-0 flex items-center justify-center
-                          bg-gradient-to-br from-[#408A71] to-[#285A48] text-white text-sm font-black">
+                          bg-gradient-to-br from-[#7C3AED] to-[#7C3AED] text-white text-sm font-black">
                           {user?.avatar_url ? (
                             <img src={user.avatar_url} alt={user.full_name ?? ''} className="w-full h-full object-cover" />
                           ) : (
@@ -250,8 +285,8 @@ export default function Topbar() {
                           )}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-white text-sm font-bold truncate leading-tight">{user?.full_name}</p>
-                          <span className="inline-block mt-0.5 px-2 py-0.5 rounded-full bg-[#285A48]/50 border border-[#408A71]/25 text-[#B0E4CC]/60 text-[9px] font-black uppercase tracking-widest capitalize">
+                          <p className="text-[#1e1b4b] text-sm font-bold truncate leading-tight">{user?.full_name}</p>
+                          <span className="inline-block mt-0.5 px-2 py-0.5 rounded-full bg-[#EDE9FE] border border-[#C4B5FD]/40 text-[#7C3AED] text-[9px] font-black uppercase tracking-widest capitalize">
                             {roleLabel}
                           </span>
                         </div>
@@ -263,14 +298,14 @@ export default function Topbar() {
 
                       <MenuItem
                         href="/profile"
-                        icon={<User className="w-4 h-4" style={{ color: '#408A71' }} />}
+                        icon={<User className="w-4 h-4" style={{ color: '#7C3AED' }} />}
                         label="My Profile"
                         onClick={() => setUserMenuOpen(false)}
                       />
 
                       <MenuItem
                         href="/orders"
-                        icon={<ShoppingBag className="w-4 h-4" style={{ color: '#B0E4CC' }} />}
+                        icon={<ShoppingBag className="w-4 h-4" style={{ color: '#7C3AED' }} />}
                         label="Order History"
                         onClick={() => setUserMenuOpen(false)}
                       />
@@ -287,7 +322,7 @@ export default function Topbar() {
                       {isRetailer && (
                         <MenuItem
                           href="/dashboard"
-                          icon={<LayoutDashboard className="w-4 h-4" style={{ color: '#408A71' }} />}
+                          icon={<LayoutDashboard className="w-4 h-4" style={{ color: '#7C3AED' }} />}
                           label="Dashboard"
                           onClick={() => setUserMenuOpen(false)}
                         />
@@ -296,17 +331,17 @@ export default function Topbar() {
                       {isCustomer && isAuthenticated && (
                         <MenuItem
                           href="/request-seller"
-                          icon={<TrendingUp className="w-4 h-4" style={{ color: '#B0E4CC' }} />}
+                          icon={<TrendingUp className="w-4 h-4" style={{ color: '#7C3AED' }} />}
                           label="Request to Seller"
                           onClick={() => setUserMenuOpen(false)}
                         />
                       )}
 
                       {/* Logout */}
-                      <div className="border-t border-[#285A48]/25 mt-1 pt-1">
+                      <div className="border-t border-[#7C3AED]/25 mt-1 pt-1">
                         <button
                           onClick={() => { setUserMenuOpen(false); handleLogout() }}
-                          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-red-400/80 hover:text-red-400 hover:bg-red-500/10 text-sm font-semibold transition-all duration-150"
+                          className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-red-500/80 hover:text-red-500 hover:bg-red-50 text-sm font-semibold transition-all duration-150"
                         >
                           <LogOut className="w-4 h-4 shrink-0" />
                           Logout
@@ -333,10 +368,12 @@ function MenuItem({
 }) {
   return (
     <Link href={href} onClick={onClick}>
-      <button className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-[#B0E4CC]/65 hover:text-[#B0E4CC] hover:bg-[#285A48]/30 text-sm font-semibold transition-all duration-150">
+      <button className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-[#6b7280] hover:text-[#7C3AED] hover:bg-[#EDE9FE] text-sm font-semibold transition-all duration-150">
         <span className="shrink-0">{icon}</span>
         {label}
       </button>
     </Link>
   )
 }
+
+

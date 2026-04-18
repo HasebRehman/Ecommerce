@@ -43,6 +43,7 @@ export default function CustomerOrderDetailPage() {
   const [order,      setOrder]      = useState<any>(null)
   const [loading,    setLoading]    = useState(true)
   const [cancelling, setCancelling] = useState(false)
+  const [showCancelModal, setShowCancelModal] = useState(false)
 
   /* ── all logic completely unchanged ── */
   useEffect(() => {
@@ -94,8 +95,8 @@ export default function CustomerOrderDetailPage() {
     <>
       <style>{styles}</style>
       <div className="od-root od-loader">
-        <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#408A71' }} />
-        <span style={{ color: 'rgba(176,228,204,0.40)', fontSize: '0.85rem', fontWeight: 500 }}>
+        <Loader2 className="w-8 h-8 animate-spin text-[#7C3AED]" />
+        <span className="text-sm font-medium text-[#6b7280]">
           Loading order…
         </span>
       </div>
@@ -117,36 +118,55 @@ export default function CustomerOrderDetailPage() {
     <>
       <style>{styles}</style>
 
-      <div className="od-root max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10 space-y-6">
+      <div className="od-root w-full min-h-screen" style={{ background: '#FAF5FF' }}>
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
 
         {/* ── Page header ──────────────────────────── */}
-        <div className="od-fade-up flex items-start gap-3 sm:gap-4">
+        <div className="od-fade-up flex items-start justify-between gap-4">
 
-          {/* Back button */}
-          <button
-            onClick={() => router.push('/orders')}
-            className="od-back-btn shrink-0 mt-0.5"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
+          <div className="flex items-start gap-3 sm:gap-4 flex-1">
+            {/* Back button */}
+            <button
+              onClick={() => router.push('/orders')}
+              className="od-back-btn shrink-0 mt-0.5"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
 
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-3 flex-wrap mb-1">
-              <h1 className="od-title">Order Details</h1>
-              <span
-                className="od-status-badge"
-                style={{ background: cfg.bg, border: `1px solid ${cfg.border}`, color: cfg.color }}
-              >
-                <Icon className="w-3 h-3" />
-                {cfg.label}
-              </span>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-3 flex-wrap mb-2">
+                <h1 className="od-title">Order Details</h1>
+                <span
+                  className="od-status-badge"
+                  style={{ background: cfg.bg, border: `1px solid ${cfg.border}`, color: cfg.color }}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  {cfg.label}
+                </span>
+              </div>
+              <p className="text-[#6b7280] text-sm font-medium">{cfg.desc}</p>
             </div>
-            <p style={{ color: 'rgba(176,228,204,0.40)', fontSize: '0.8rem' }}>{cfg.desc}</p>
           </div>
+
+          {/* Cancel button on right */}
+          {order.status === 'pending' && (
+            <button
+              onClick={() => setShowCancelModal(true)}
+              disabled={cancelling}
+              className="od-cancel-btn flex items-center gap-2 shrink-0 mt-1"
+            >
+              {cancelling
+                ? <Loader2 className="w-4 h-4 animate-spin" />
+                : <XCircle className="w-4 h-4" />
+              }
+              <span className="hidden sm:inline">Cancel Order</span>
+              <span className="sm:hidden">Cancel</span>
+            </button>
+          )}
         </div>
 
         {/* ── Meta tiles ───────────────────────────── */}
-        <div className="od-fade-up grid grid-cols-2 sm:grid-cols-4 gap-3" style={{ animationDelay: '55ms' }}>
+        <div className="od-fade-up grid grid-cols-2 sm:grid-cols-4 gap-4" style={{ animationDelay: '55ms' }}>
           {[
             { icon: Hash,       label: 'Order ID',  value: '#' + order.id.slice(0, 8).toUpperCase() },
             { icon: Calendar,   label: 'Placed On', value: new Date(order.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' }) },
@@ -154,23 +174,23 @@ export default function CustomerOrderDetailPage() {
             { icon: CreditCard, label: 'Payment',   value: addr.payment_method?.replace(/_/g, ' ') ?? '—' },
           ].map((m, i) => (
             <div key={m.label} className="od-meta-tile">
-              <div className="flex items-center gap-1.5 mb-2">
-                <m.icon className="w-3.5 h-3.5 shrink-0" style={{ color: '#408A71' }} />
-                <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'rgba(176,228,204,0.38)' }}>
+              <div className="flex items-center gap-2 mb-3">
+                <m.icon className="w-4 h-4 shrink-0 text-[#7C3AED]" />
+                <p className="text-xs font-bold uppercase tracking-wider text-[#9ca3af]">
                   {m.label}
                 </p>
               </div>
-              <p className="text-white font-bold text-sm capitalize truncate">{m.value}</p>
+              <p className="text-[#1e1b4b] font-bold text-sm capitalize truncate">{m.value}</p>
             </div>
           ))}
         </div>
 
         {/* ── Progress tracker ─────────────────────── */}
         {!isTerminal && (
-          <div className="od-fade-up od-card p-5 sm:p-6" style={{ animationDelay: '110ms' }}>
-            <div className="flex items-center gap-2.5 mb-6">
-              <div className="od-icon-tile"><Truck className="w-3.5 h-3.5" style={{ color: '#B0E4CC' }} /></div>
-              <p className="text-white font-bold text-sm">Order Progress</p>
+          <div className="od-fade-up od-card p-6 sm:p-8" style={{ animationDelay: '110ms' }}>
+            <div className="flex items-center gap-3 mb-8">
+              <div className="od-icon-tile"><Truck className="w-4 h-4 text-white" /></div>
+              <p className="text-[#1e1b4b] font-bold text-base">Order Progress</p>
             </div>
 
             <div className="flex items-center">
@@ -184,23 +204,23 @@ export default function CustomerOrderDetailPage() {
                     <div className="flex flex-col items-center gap-2">
                       {/* Step circle */}
                       <div
-                        className="w-9 h-9 rounded-2xl flex items-center justify-center border-2 transition-all duration-300"
+                        className="w-10 h-10 rounded-2xl flex items-center justify-center border-2 transition-all duration-300"
                         style={{
-                          background:  done ? '#285A48' : 'rgba(13,28,25,0.8)',
-                          borderColor: done ? '#408A71' : 'rgba(40,90,72,0.3)',
-                          boxShadow:   current ? `0 0 12px rgba(64,138,113,0.4)` : 'none',
+                          background:  done ? 'rgba(124,58,237,0.1)' : '#f3f4f6',
+                          borderColor: done ? '#7C3AED' : '#e5e7eb',
+                          boxShadow:   current ? `0 0 12px rgba(124,58,237,0.3)` : 'none',
                         }}
                       >
                         {done
-                          ? <CheckCircle className="w-4 h-4" style={{ color: current ? '#B0E4CC' : '#408A71' }} />
-                          : <span className="text-xs font-black" style={{ color: 'rgba(176,228,204,0.25)' }}>{i + 1}</span>
+                          ? <CheckCircle className="w-5 h-5" style={{ color: current ? '#7C3AED' : '#7C3AED' }} />
+                          : <span className="text-xs font-bold text-[#9ca3af]">{i + 1}</span>
                         }
                       </div>
                       {/* Label */}
                       <p
-                        className="text-[10px] font-bold capitalize whitespace-nowrap hidden sm:block"
+                        className="text-xs font-bold capitalize whitespace-nowrap hidden sm:block"
                         style={{
-                          color: current ? '#B0E4CC' : done ? '#408A71' : 'rgba(176,228,204,0.25)',
+                          color: current ? '#7C3AED' : done ? '#7C3AED' : '#d1d5db',
                         }}
                       >
                         {s}
@@ -209,8 +229,8 @@ export default function CustomerOrderDetailPage() {
 
                     {/* Connector line */}
                     {i < STATUS_FLOW.length - 1 && (
-                      <div className="flex-1 h-0.5 mx-2 mb-5 sm:mb-6 rounded-full transition-all duration-500"
-                        style={{ background: stepIndex > i ? '#408A71' : 'rgba(40,90,72,0.25)' }} />
+                      <div className="flex-1 h-1 mx-2 mb-6 sm:mb-8 rounded-full transition-all duration-500"
+                        style={{ background: stepIndex > i ? '#7C3AED' : '#e5e7eb' }} />
                     )}
                   </div>
                 )
@@ -222,60 +242,43 @@ export default function CustomerOrderDetailPage() {
         {/* ── Terminal banner ──────────────────────── */}
         {isTerminal && (
           <div
-            className="od-fade-up flex items-center gap-4 p-4 sm:p-5 rounded-2xl border"
+            className="od-fade-up flex items-center gap-4 p-5 sm:p-6 rounded-2xl border"
             style={{ background: cfg.bg, borderColor: cfg.border, animationDelay: '110ms' }}
           >
-            <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+            <div className="w-11 h-11 rounded-xl flex items-center justify-center shrink-0"
               style={{ background: `${cfg.dot}20`, border: `1px solid ${cfg.dot}40` }}>
               <Icon className="w-5 h-5" style={{ color: cfg.color }} />
             </div>
             <div>
               <p className="font-bold text-sm" style={{ color: cfg.color }}>{cfg.label}</p>
-              <p className="text-sm mt-0.5" style={{ color: `${cfg.color}99` }}>{cfg.desc}</p>
+              <p className="text-sm mt-1" style={{ color: `${cfg.color}99` }}>{cfg.desc}</p>
             </div>
           </div>
         )}
 
         {/* ── Cancel button ────────────────────────── */}
-        {order.status === 'pending' && (
-          <div className="od-fade-up flex justify-end" style={{ animationDelay: '130ms' }}>
-            <button
-              onClick={handleCancelOrder}
-              disabled={cancelling}
-              className="od-cancel-btn flex items-center gap-2"
-            >
-              {cancelling
-                ? <Loader2 className="w-4 h-4 animate-spin" />
-                : <XCircle className="w-4 h-4" />
-              }
-              Cancel Order
-            </button>
-          </div>
-        )}
-
-        {/* ── Main grid ────────────────────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
 
           {/* ══ Left — Shop + Items ══════════════════ */}
-          <div className="lg:col-span-3 space-y-4">
+          <div className="lg:col-span-3 space-y-6">
 
             {/* Shop card */}
             {shop && (
-              <div className="od-fade-up od-card flex items-center gap-4 p-4" style={{ animationDelay: '160ms' }}>
-                <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0"
-                  style={{ border: '1px solid rgba(40,90,72,0.35)', background: '#162420' }}>
+              <div className="od-fade-up od-card flex items-center gap-4 p-5 sm:p-6" style={{ animationDelay: '160ms' }}>
+                <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0"
+                  style={{ border: '1px solid rgba(196,181,253,0.3)', background: '#EDE9FE' }}>
                   {shop.logo_url
                     ? <img src={shop.logo_url} alt={shop.name} className="w-full h-full object-cover" />
                     : <div className="w-full h-full flex items-center justify-center">
-                        <Store className="w-5 h-5" style={{ color: '#408A71' }} />
+                        <Store className="w-6 h-6 text-[#7C3AED]" />
                       </div>
                   }
                 </div>
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-widest mb-0.5" style={{ color: 'rgba(176,228,204,0.35)' }}>
+                  <p className="text-xs font-bold uppercase tracking-wider mb-1 text-[#9ca3af]">
                     Sold by
                   </p>
-                  <p className="text-white font-bold text-sm">{shop.name}</p>
+                  <p className="text-[#1e1b4b] font-bold text-base">{shop.name}</p>
                 </div>
               </div>
             )}
@@ -284,15 +287,15 @@ export default function CustomerOrderDetailPage() {
             <div className="od-fade-up od-card overflow-hidden" style={{ animationDelay: '200ms' }}>
 
               {/* Card header */}
-              <div className="flex items-center gap-2.5 px-5 py-4"
-                style={{ borderBottom: '1px solid rgba(40,90,72,0.22)' }}>
+              <div className="flex items-center gap-3 px-6 py-5"
+                style={{ borderBottom: '1px solid rgba(196,181,253,0.2)' }}>
                 <div className="od-icon-tile">
-                  <ShoppingBag className="w-3.5 h-3.5" style={{ color: '#B0E4CC' }} />
+                  <ShoppingBag className="w-4 h-4 text-white" />
                 </div>
-                <p className="text-white font-bold text-sm">
+                <p className="text-[#1e1b4b] font-bold text-base">
                   Items Ordered
-                  <span className="ml-1.5 px-2 py-0.5 rounded-full text-[10px] font-black"
-                    style={{ background: 'rgba(40,90,72,0.3)', color: '#408A71' }}>
+                  <span className="ml-2 px-3 py-1 rounded-full text-xs font-bold"
+                    style={{ background: 'rgba(124,58,237,0.1)', color: '#7C3AED' }}>
                     {items.length}
                   </span>
                 </p>
@@ -303,38 +306,37 @@ export default function CustomerOrderDetailPage() {
                 {items.map((item: any, idx: number) => (
                   <div
                     key={item.id}
-                    className="od-item-row flex items-center gap-3 sm:gap-4 px-5 py-4"
+                    className="od-item-row flex items-center gap-4 px-6 py-5"
                     style={{ animationDelay: `${200 + idx * 45}ms` }}
                   >
                     {/* Product image */}
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl overflow-hidden shrink-0"
-                      style={{ border: '1px solid rgba(40,90,72,0.28)', background: '#162420' }}>
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden shrink-0"
+                      style={{ border: '1px solid rgba(196,181,253,0.2)', background: '#EDE9FE' }}>
                       {item.products?.images?.[0]
                         ? <img src={item.products.images[0]} alt={item.products.name} className="w-full h-full object-cover" />
-                        : <div className="w-full h-full flex items-center justify-center">
-                            <Package className="w-5 h-5" style={{ color: '#285A48' }} />
+                        : <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#7C3AED] to-[#6D28D9]">
+                            <Package className="w-6 h-6 text-white" />
                           </div>
                       }
                     </div>
 
                     {/* Info */}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold line-clamp-2 leading-snug"
-                        style={{ color: 'rgba(176,228,204,0.82)' }}>
+                      <p className="text-base font-semibold line-clamp-2 leading-snug text-[#1e1b4b]">
                         {item.products?.name ?? 'Product'}
                       </p>
                       {item.products?.sku && (
-                        <p className="text-[10px] font-medium mt-0.5" style={{ color: 'rgba(176,228,204,0.28)' }}>
+                        <p className="text-xs font-medium mt-1 text-[#9ca3af]">
                           SKU: {item.products.sku}
                         </p>
                       )}
-                      <p className="text-xs mt-1 font-medium" style={{ color: 'rgba(176,228,204,0.42)' }}>
+                      <p className="text-sm mt-2 font-medium text-[#6b7280]">
                         Rs. {item.price?.toLocaleString()} × {item.quantity}
                       </p>
                     </div>
 
                     {/* Row total */}
-                    <p className="text-white font-black text-sm shrink-0">
+                    <p className="text-[#1e1b4b] font-bold text-base shrink-0">
                       Rs. {(item.price * item.quantity)?.toLocaleString()}
                     </p>
                   </div>
@@ -342,22 +344,22 @@ export default function CustomerOrderDetailPage() {
               </div>
 
               {/* Price breakdown */}
-              <div className="px-5 py-4 space-y-2.5"
-                style={{ borderTop: '1px solid rgba(40,90,72,0.22)', background: 'rgba(9,20,19,0.4)' }}>
+              <div className="px-6 py-5 space-y-3"
+                style={{ borderTop: '1px solid rgba(196,181,253,0.2)', background: 'rgba(124,58,237,0.02)' }}>
                 <div className="flex justify-between text-sm">
-                  <span style={{ color: 'rgba(176,228,204,0.45)' }}>Subtotal</span>
-                  <span style={{ color: 'rgba(176,228,204,0.7)' }}>Rs. {order.total_amount?.toLocaleString()}</span>
+                  <span className="text-[#6b7280]">Subtotal</span>
+                  <span className="text-[#1e1b4b] font-semibold">Rs. {order.total_amount?.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-sm items-center">
-                  <span style={{ color: 'rgba(176,228,204,0.45)' }}>Delivery</span>
-                  <span className="flex items-center gap-1 text-xs font-black" style={{ color: '#408A71' }}>
-                    <Truck className="w-3 h-3" /> Free
+                  <span className="text-[#6b7280]">Delivery</span>
+                  <span className="flex items-center gap-1.5 text-xs font-bold text-[#7C3AED]">
+                    <Truck className="w-3.5 h-3.5" /> Free
                   </span>
                 </div>
                 <div className="od-divider" />
                 <div className="flex justify-between items-center">
-                  <span className="text-white font-bold text-sm">Total Paid</span>
-                  <span className="text-lg font-black" style={{ color: '#B0E4CC' }}>
+                  <span className="text-[#1e1b4b] font-bold text-base">Total Paid</span>
+                  <span className="text-xl font-bold text-[#7C3AED]">
                     Rs. {order.total_amount?.toLocaleString()}
                   </span>
                 </div>
@@ -366,16 +368,16 @@ export default function CustomerOrderDetailPage() {
           </div>
 
           {/* ══ Right — Customer + Delivery + Payment ══ */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className="lg:col-span-2 space-y-6">
 
             {/* Customer details */}
-            <div className="od-fade-up od-card p-5 space-y-4" style={{ animationDelay: '220ms' }}>
-              <div className="flex items-center gap-2.5">
-                <div className="od-icon-tile"><User className="w-3.5 h-3.5" style={{ color: '#B0E4CC' }} /></div>
-                <p className="text-white font-bold text-sm">Customer Details</p>
+            <div className="od-fade-up od-card p-6 space-y-5" style={{ animationDelay: '220ms' }}>
+              <div className="flex items-center gap-3">
+                <div className="od-icon-tile"><User className="w-4 h-4 text-white" /></div>
+                <p className="text-[#1e1b4b] font-bold text-base">Customer Details</p>
               </div>
               <div className="od-divider" />
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div>
                   <p className="od-field-label">Full Name</p>
                   <p className="od-field-value">{addr.full_name || '—'}</p>
@@ -383,7 +385,7 @@ export default function CustomerOrderDetailPage() {
                 <div>
                   <p className="od-field-label">Phone</p>
                   <div className="flex items-center gap-2">
-                    <Phone className="w-3.5 h-3.5 shrink-0" style={{ color: '#408A71' }} />
+                    <Phone className="w-4 h-4 shrink-0 text-[#7C3AED]" />
                     <p className="od-field-value">{addr.phone || '—'}</p>
                   </div>
                 </div>
@@ -391,7 +393,7 @@ export default function CustomerOrderDetailPage() {
                   <div>
                     <p className="od-field-label">Email</p>
                     <div className="flex items-center gap-2">
-                      <Mail className="w-3.5 h-3.5 shrink-0" style={{ color: '#408A71' }} />
+                      <Mail className="w-4 h-4 shrink-0 text-[#7C3AED]" />
                       <p className="od-field-value break-all">{addr.email}</p>
                     </div>
                   </div>
@@ -400,19 +402,19 @@ export default function CustomerOrderDetailPage() {
             </div>
 
             {/* Delivery address */}
-            <div className="od-fade-up od-card p-5 space-y-4" style={{ animationDelay: '265ms' }}>
-              <div className="flex items-center gap-2.5">
-                <div className="od-icon-tile"><MapPin className="w-3.5 h-3.5" style={{ color: '#B0E4CC' }} /></div>
-                <p className="text-white font-bold text-sm">Delivery Address</p>
+            <div className="od-fade-up od-card p-6 space-y-5" style={{ animationDelay: '265ms' }}>
+              <div className="flex items-center gap-3">
+                <div className="od-icon-tile"><MapPin className="w-4 h-4 text-white" /></div>
+                <p className="text-[#1e1b4b] font-bold text-base">Delivery Address</p>
               </div>
               <div className="od-divider" />
-              <div className="space-y-1">
+              <div className="space-y-2">
                 <p className="od-field-value">{addr.address || '—'}</p>
-                <p className="text-sm" style={{ color: 'rgba(176,228,204,0.45)' }}>{addr.city}</p>
+                <p className="text-sm text-[#6b7280]">{addr.city}</p>
                 {addr.notes && (
-                  <div className="mt-3 pt-3" style={{ borderTop: '1px solid rgba(40,90,72,0.2)' }}>
-                    <p className="od-field-label mb-1">Delivery Notes</p>
-                    <p className="text-xs leading-relaxed" style={{ color: 'rgba(176,228,204,0.50)' }}>
+                  <div className="mt-4 pt-4" style={{ borderTop: '1px solid rgba(196,181,253,0.2)' }}>
+                    <p className="od-field-label mb-2">Delivery Notes</p>
+                    <p className="text-sm leading-relaxed text-[#6b7280]">
                       {addr.notes}
                     </p>
                   </div>
@@ -421,27 +423,27 @@ export default function CustomerOrderDetailPage() {
             </div>
 
             {/* Payment method */}
-            <div className="od-fade-up od-card p-5 space-y-4" style={{ animationDelay: '310ms' }}>
-              <div className="flex items-center gap-2.5">
-                <div className="od-icon-tile"><CreditCard className="w-3.5 h-3.5" style={{ color: '#B0E4CC' }} /></div>
-                <p className="text-white font-bold text-sm">Payment Method</p>
+            <div className="od-fade-up od-card p-6 space-y-5" style={{ animationDelay: '310ms' }}>
+              <div className="flex items-center gap-3">
+                <div className="od-icon-tile"><CreditCard className="w-4 h-4 text-white" /></div>
+                <p className="text-[#1e1b4b] font-bold text-base">Payment Method</p>
               </div>
               <div className="od-divider" />
               <div
-                className="flex items-center gap-3 p-3.5 rounded-xl"
+                className="flex items-center gap-3 p-4"
                 style={{
-                  background: 'rgba(40,90,72,0.18)',
-                  border: '1px solid rgba(64,138,113,0.28)',
+                  background: 'rgba(124,58,237,0.05)',
+                  border: '1px solid rgba(196,181,253,0.2)',
+                  borderRadius: '12px',
                 }}
               >
-                <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
                   style={{
-                    background: 'linear-gradient(135deg, #285A48, #1a3d2e)',
-                    border: '1px solid rgba(64,138,113,0.35)',
+                    background: 'linear-gradient(135deg, #7C3AED, #6D28D9)',
                   }}>
-                  <PayIcon className="w-4 h-4" style={{ color: '#B0E4CC' }} />
+                  <PayIcon className="w-5 h-5 text-white" />
                 </div>
-                <p className="text-white font-bold text-sm capitalize">
+                <p className="text-[#1e1b4b] font-bold text-base capitalize">
                   {addr.payment_method?.replace(/_/g, ' ') ?? '—'}
                 </p>
               </div>
@@ -449,31 +451,86 @@ export default function CustomerOrderDetailPage() {
 
             {/* Order notes */}
             {order.notes && (
-              <div className="od-fade-up od-card p-5 space-y-4" style={{ animationDelay: '355ms' }}>
-                <div className="flex items-center gap-2.5">
-                  <div className="od-icon-tile"><FileText className="w-3.5 h-3.5" style={{ color: '#B0E4CC' }} /></div>
-                  <p className="text-white font-bold text-sm">Order Notes</p>
+              <div className="od-fade-up od-card p-6 space-y-5" style={{ animationDelay: '355ms' }}>
+                <div className="flex items-center gap-3">
+                  <div className="od-icon-tile"><FileText className="w-4 h-4 text-white" /></div>
+                  <p className="text-[#1e1b4b] font-bold text-base">Order Notes</p>
                 </div>
                 <div className="od-divider" />
-                <p className="text-sm leading-relaxed" style={{ color: 'rgba(176,228,204,0.55)' }}>
+                <p className="text-sm leading-relaxed text-[#6b7280]">
                   {order.notes}
                 </p>
               </div>
             )}
           </div>
         </div>
+
+        </div>
       </div>
+
+      {/* ── Cancel Confirmation Modal ──────────────────────── */}
+      {showCancelModal && (
+        <div className="od-modal-overlay" onClick={() => setShowCancelModal(false)}>
+          <div className="od-modal-content" onClick={e => e.stopPropagation()}>
+            <div className="od-modal-header">
+              <div className="od-modal-icon">
+                <AlertCircle className="w-6 h-6 text-red-500" />
+              </div>
+              <h2 className="od-modal-title">Cancel Order?</h2>
+              <p className="od-modal-subtitle">Are you sure you want to cancel this order? This action cannot be undone.</p>
+            </div>
+
+            <div className="od-modal-actions">
+              <button
+                onClick={() => setShowCancelModal(false)}
+                className="od-modal-btn od-modal-btn-secondary"
+              >
+                Keep Order
+              </button>
+              <button
+                onClick={async () => {
+                  setShowCancelModal(false)
+                  setCancelling(true)
+                  try {
+                    await api.put(`/api/store/orders/${order.id}`, { action: 'cancel' })
+                    setOrder((prev: any) => ({ ...prev, status: 'cancelled_by_customer' }))
+                    toast.success('Order cancelled successfully')
+                  } catch (err: any) {
+                    toast.error(err.message || 'Failed to cancel order')
+                  } finally {
+                    setCancelling(false)
+                  }
+                }}
+                disabled={cancelling}
+                className="od-modal-btn od-modal-btn-danger"
+              >
+                {cancelling ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Cancelling...
+                  </>
+                ) : (
+                  <>
+                    <XCircle className="w-4 h-4" />
+                    Cancel Order
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }
 
 /* ── Styles ──────────────────────────────────────────────── */
 const styles = `
-  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700&family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700&display=swap');
 
   .od-root * { box-sizing: border-box; }
-  .od-root, .od-root a, .od-root button { cursor: pointer !important; }
-  .od-root { font-family: 'Plus Jakarta Sans', sans-serif; }
+  .od-root { font-family: 'Open Sans', sans-serif; }
+  .od-root button, .od-root a, .od-root [role="button"], .od-root label, .od-root [class*="cursor-pointer"] { cursor: pointer !important; }
 
   /* ── fade-up ── */
   @keyframes odFadeUp {
@@ -491,82 +548,87 @@ const styles = `
 
   /* ── page title ── */
   .od-title {
-    font-family: 'DM Serif Display', serif;
-    font-size: clamp(1.3rem, 3vw, 1.75rem);
-    font-weight: 700; color: #fff; line-height: 1.1;
+    font-family: 'Montserrat', sans-serif;
+    font-size: clamp(1.75rem, 3vw, 2.5rem);
+    font-weight: 800; color: #1e1b4b; line-height: 1.1;
   }
 
   /* ── status badge ── */
   .od-status-badge {
-    display: inline-flex; align-items: center; gap: 5px;
-    padding: 4px 11px; border-radius: 99px;
-    font-size: 11px; font-weight: 800; letter-spacing: 0.02em;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 14px; border-radius: 99px;
+    font-size: 12px; font-weight: 700; letter-spacing: 0.02em;
   }
 
   /* ── back button ── */
   .od-back-btn {
-    width: 36px; height: 36px; border-radius: 12px;
+    width: 40px; height: 40px; border-radius: 12px;
     display: flex; align-items: center; justify-content: center;
-    background: rgba(40,90,72,0.20);
-    border: 1px solid rgba(40,90,72,0.35);
-    color: rgba(176,228,204,0.55);
-    transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+    background: rgba(196,181,253,0.1);
+    border: 1px solid rgba(196,181,253,0.3);
+    color: #7C3AED;
+    transition: all 0.2s ease;
   }
   .od-back-btn:hover {
-    background: rgba(40,90,72,0.35);
-    border-color: rgba(64,138,113,0.50);
-    color: #B0E4CC;
+    background: rgba(196,181,253,0.2);
+    border-color: rgba(124,58,237,0.5);
+    color: #6D28D9;
   }
 
   /* ── meta tile ── */
   .od-meta-tile {
-    background: linear-gradient(145deg, rgba(13,28,25,0.95), rgba(10,21,18,0.98));
-    border: 1px solid rgba(40,90,72,0.25);
-    border-radius: 16px; padding: 14px 16px;
-    transition: border-color 0.2s ease;
+    background: white;
+    border: 1px solid rgba(196,181,253,0.3);
+    border-radius: 16px; padding: 16px 18px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 16px rgba(124,58,237,0.12), 0 2px 8px rgba(124,58,237,0.08);
   }
-  .od-meta-tile:hover { border-color: rgba(64,138,113,0.38); }
+  .od-meta-tile:hover { 
+    border-color: rgba(124,58,237,0.5);
+    box-shadow: 0 8px 24px rgba(124,58,237,0.15);
+  }
 
   /* ── card ── */
   .od-card {
-    background: linear-gradient(145deg, rgba(13,28,25,0.95), rgba(10,21,18,0.98));
-    border: 1px solid rgba(40,90,72,0.25);
+    background: white;
+    border: 1px solid rgba(196,181,253,0.3);
     border-radius: 20px;
+    box-shadow: 0 4px 16px rgba(124,58,237,0.12), 0 2px 8px rgba(124,58,237,0.08);
   }
 
   /* ── icon tile ── */
   .od-icon-tile {
-    width: 28px; height: 28px; border-radius: 8px;
+    width: 32px; height: 32px; border-radius: 10px;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    background: linear-gradient(135deg, #285A48, #1a3d2e);
-    border: 1px solid rgba(64,138,113,0.35);
+    background: linear-gradient(135deg, #7C3AED, #6D28D9);
+    border: 1px solid rgba(124,58,237,0.3);
   }
 
   /* ── gradient divider ── */
   .od-divider {
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(40,90,72,0.4), transparent);
+    background: linear-gradient(90deg, transparent, rgba(196,181,253,0.3), transparent);
   }
 
   /* ── cancel button ── */
   .od-cancel-btn {
-    padding: 9px 18px; border-radius: 14px;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    font-size: 0.825rem; font-weight: 800;
-    background: rgba(248,113,113,0.08);
-    border: 1px solid rgba(248,113,113,0.28);
-    color: #f87171;
-    transition: background 0.18s ease, border-color 0.18s ease;
+    padding: 10px 20px; border-radius: 14px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 0.875rem; font-weight: 700;
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.3);
+    color: #ef4444;
+    transition: all 0.2s ease;
   }
   .od-cancel-btn:hover:not(:disabled) {
-    background: rgba(248,113,113,0.16);
-    border-color: rgba(248,113,113,0.45);
+    background: rgba(239,68,68,0.2);
+    border-color: rgba(239,68,68,0.5);
   }
-  .od-cancel-btn:disabled { opacity: 0.5; cursor: not-allowed !important; }
+  .od-cancel-btn:disabled { opacity: 0.6; cursor: not-allowed !important; }
 
   /* ── item row divider ── */
   .od-items-list > .od-item-row {
-    border-bottom: 1px solid rgba(40,90,72,0.14);
+    border-bottom: 1px solid rgba(196,181,253,0.15);
   }
   .od-items-list > .od-item-row:last-child { border-bottom: none; }
 
@@ -579,11 +641,109 @@ const styles = `
 
   /* ── field label / value ── */
   .od-field-label {
-    font-size: 10px; font-weight: 800;
-    text-transform: uppercase; letter-spacing: 0.09em;
-    color: rgba(176,228,204,0.35); margin-bottom: 3px;
+    font-size: 11px; font-weight: 800;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: #9ca3af; margin-bottom: 4px;
   }
   .od-field-value {
-    font-size: 0.875rem; font-weight: 600; color: #fff;
+    font-size: 0.95rem; font-weight: 600; color: #1e1b4b;
+  }
+
+  /* ── Modal Styles ── */
+  .od-modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 50;
+    padding: 1rem;
+    backdrop-filter: blur(4px);
+  }
+
+  .od-modal-content {
+    background: white;
+    border-radius: 20px;
+    border: 1px solid rgba(196,181,253,0.3);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    max-width: 420px;
+    width: 100%;
+    overflow: hidden;
+    animation: odModalSlideUp 0.3s cubic-bezier(.22,1,.36,1);
+  }
+
+  @keyframes odModalSlideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .od-modal-header {
+    padding: 2rem 1.5rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(196,181,253,0.2);
+  }
+
+  .od-modal-icon {
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.2);
+    margin: 0 auto 1rem;
+  }
+
+  .od-modal-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.25rem; font-weight: 800;
+    color: #1e1b4b;
+    margin-bottom: 0.5rem;
+  }
+
+  .od-modal-subtitle {
+    font-size: 0.95rem;
+    color: #6b7280;
+    line-height: 1.5;
+  }
+
+  .od-modal-actions {
+    display: flex; gap: 1rem;
+    padding: 1.5rem;
+  }
+
+  .od-modal-btn {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border-radius: 12px;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 700;
+    font-size: 0.875rem;
+    border: none;
+    display: flex; align-items: center; justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .od-modal-btn-secondary {
+    background: rgba(196,181,253,0.1);
+    border: 1px solid rgba(196,181,253,0.3);
+    color: #7C3AED;
+  }
+
+  .od-modal-btn-secondary:hover {
+    background: rgba(196,181,253,0.2);
+    border-color: rgba(124,58,237,0.5);
+  }
+
+  .od-modal-btn-danger {
+    background: #ef4444;
+    color: white;
+  }
+
+  .od-modal-btn-danger:hover:not(:disabled) {
+    background: #dc2626;
+  }
+
+  .od-modal-btn-danger:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
   }
 `    

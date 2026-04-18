@@ -89,7 +89,7 @@ export default function StoreProductCard({ product, onQuickBuy }: Props) {
 
         .pc-root * { box-sizing: border-box; }
         .pc-root, .pc-root button, .pc-root a { cursor: pointer !important; }
-        .pc-root { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .pc-root { font-family: 'Inter', sans-serif; }
 
         /* ── card lift on hover ── */
         .pc-card {
@@ -99,7 +99,7 @@ export default function StoreProductCard({ product, onQuickBuy }: Props) {
         }
         .pc-card:hover {
           transform: translateY(-5px);
-          box-shadow: 0 20px 48px rgba(9,20,19,0.75), 0 0 0 1px rgba(64,138,113,0.35);
+          box-shadow: 0 20px 48px rgba(124,58,237,0.12), 0 0 0 1px rgba(124,58,237,0.25);
         }
 
         /* ── image zoom ── */
@@ -179,10 +179,10 @@ export default function StoreProductCard({ product, onQuickBuy }: Props) {
         'pc-root pc-card group relative flex flex-col rounded-2xl overflow-hidden',
         'border',
         isOutOfStock
-          ? 'bg-[#0a1512] border-[#285A48]/15 opacity-70'
+          ? 'bg-[#0a1512] border-[#7C3AED]/15 opacity-70'
           : isWishlisted
-            ? 'bg-[#0d1c19] border-red-500/30 pc-wishlisted-glow'
-            : 'bg-[#0d1c19] border-[#285A48]/25'
+            ? 'bg-white border-red-500/30 pc-wishlisted-glow'
+            : 'bg-white border-[#C4B5FD]/30'
       )}>
 
         {/* ╔══════════════════════════════════════════╗
@@ -202,9 +202,9 @@ export default function StoreProductCard({ product, onQuickBuy }: Props) {
                 )}
               />
             ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-[#162420]">
-                <Store className="w-10 h-10 text-[#285A48]" />
-                <span className="text-[#285A48] text-[10px] font-bold uppercase tracking-widest">No Image</span>
+              <div className="w-full h-full flex flex-col items-center justify-center gap-2 bg-[#EDE9FE]">
+                <Store className="w-10 h-10 text-[#7C3AED]" />
+                <span className="text-[#7C3AED] text-[10px] font-bold uppercase tracking-widest">No Image</span>
               </div>
             )}
           </Link>
@@ -212,25 +212,25 @@ export default function StoreProductCard({ product, onQuickBuy }: Props) {
           {/* Dark overlay on hover for contrast */}
           <div
             className="pc-overlay absolute inset-0 pointer-events-none"
-            style={{ background: 'linear-gradient(to top, rgba(9,20,19,0.85) 0%, rgba(9,20,19,0.15) 55%, transparent 100%)' }}
+            style={{ background: 'linear-gradient(to top, rgba(237,233,254,0.85) 0%, rgba(237,233,254,0.15) 55%, transparent 100%)' }}
           />
 
           {/* Permanent soft bottom scrim */}
           <div
             className="absolute inset-x-0 bottom-0 h-16 pointer-events-none"
-            style={{ background: 'linear-gradient(to top, rgba(9,20,19,0.6), transparent)' }}
+            style={{ background: 'linear-gradient(to top, rgba(237,233,254,0.5), transparent)' }}
           />
 
           {/* ── Category chip (top-left when no badge) ── */}
           {product.categories?.name && !product.discount_price && !isOutOfStock && (
-            <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-[#285A48]/80 backdrop-blur-sm border border-[#408A71]/30 text-[#B0E4CC] text-[9px] font-black uppercase tracking-widest pointer-events-none">
+            <div className="absolute top-2.5 left-2.5 px-2.5 py-1 rounded-full bg-[#7C3AED]/80 backdrop-blur-sm border border-[#7C3AED]/30 text-[#7C3AED] text-[9px] font-black uppercase tracking-widest pointer-events-none">
               {product.categories.name}
             </div>
           )}
 
           {/* ── Out of stock badge ── */}
           {isOutOfStock && (
-            <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#091413]/85 backdrop-blur-md border border-red-500/30 text-red-400 text-[10px] font-black tracking-wide shadow-lg pointer-events-none">
+            <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#FAF5FF]/85 backdrop-blur-md border border-red-500/30 text-red-400 text-[10px] font-black tracking-wide shadow-lg pointer-events-none">
               <PackageX className="w-3 h-3 shrink-0" />
               Out of Stock
             </div>
@@ -254,7 +254,7 @@ export default function StoreProductCard({ product, onQuickBuy }: Props) {
               togglingWish && 'opacity-50 pointer-events-none',
               isWishlisted
                 ? 'pc-wish-active bg-red-500 border-red-400/60 text-white heart-burst'
-                : 'bg-[#091413]/75 border-[#285A48]/50 text-[#B0E4CC]/60 hover:bg-red-500/15 hover:border-red-500/50 hover:text-red-400'
+                : 'bg-[#FAF5FF]/75 border-[#7C3AED]/50 text-[#6b7280] hover:bg-red-500/15 hover:border-red-500/50 hover:text-red-400'
             )}
             aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
           >
@@ -273,8 +273,8 @@ export default function StoreProductCard({ product, onQuickBuy }: Props) {
               className={cn(
                 'pc-btn flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl',
                 'text-[11px] font-black tracking-wide uppercase',
-                'bg-[#285A48] hover:bg-[#408A71] text-[#B0E4CC] hover:text-white',
-                'border border-[#408A71]/30 hover:border-[#408A71]/60',
+                'bg-[#7C3AED] hover:bg-[#7C3AED] text-white hover:text-white',
+                'border border-[#7C3AED]/30 hover:border-[#7C3AED]/60',
                 'shadow-lg backdrop-blur-sm',
                 addingCart && 'opacity-50'
               )}
@@ -292,8 +292,8 @@ export default function StoreProductCard({ product, onQuickBuy }: Props) {
                 'text-[11px] font-black tracking-wide uppercase',
                 'shadow-lg backdrop-blur-sm border',
                 isOutOfStock
-                  ? 'bg-[#162420]/80 border-[#285A48]/20 text-[#B0E4CC]/25 cursor-not-allowed'
-                  : 'bg-[#408A71] hover:bg-[#4eaa85] text-white border-[#408A71]/50 hover:border-transparent'
+                  ? 'bg-[#EDE9FE]/80 border-[#7C3AED]/20 text-[#d1d5db] cursor-not-allowed'
+                  : 'bg-[#7C3AED] hover:bg-[#6D28D9] text-white border-[#7C3AED]/50 hover:border-transparent'
               )}
             >
               <Zap className="w-3.5 h-3.5 shrink-0" />
@@ -312,7 +312,7 @@ export default function StoreProductCard({ product, onQuickBuy }: Props) {
             <Link href={`/shop/${product.shop.id}`}>
               <div className="flex items-center gap-1.5 w-fit group/shop">
                 {/* Shop logo or fallback */}
-                <div className="relative w-5 h-5 rounded-full overflow-hidden border border-[#408A71]/30 shrink-0 bg-[#162420]">
+                <div className="relative w-5 h-5 rounded-full overflow-hidden border border-[#7C3AED]/30 shrink-0 bg-[#EDE9FE]">
                   {product.shop?.logo_url ? (
                     <img
                       src={product.shop.logo_url}
@@ -321,11 +321,11 @@ export default function StoreProductCard({ product, onQuickBuy }: Props) {
                     />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      <Store className="w-2.5 h-2.5 text-[#408A71]" />
+                      <Store className="w-2.5 h-2.5 text-[#7C3AED]" />
                     </div>
                   )}
                 </div>
-                <span className="text-[#408A71] group-hover/shop:text-[#B0E4CC] text-[10px] font-bold uppercase tracking-widest truncate max-w-[110px] transition-colors">
+                <span className="text-[#7C3AED] group-hover/shop:text-[#6D28D9] text-[10px] font-bold uppercase tracking-widest truncate max-w-[110px] transition-colors">
                   {product.shop?.name}
                 </span>
               </div>
@@ -337,8 +337,8 @@ export default function StoreProductCard({ product, onQuickBuy }: Props) {
             <p className={cn(
               'text-sm font-semibold line-clamp-2 leading-snug transition-colors duration-200',
               isOutOfStock
-                ? 'text-[#B0E4CC]/30'
-                : 'text-[#B0E4CC]/75 hover:text-[#B0E4CC]'
+                ? 'text-[#9ca3af]'
+                : 'text-[#374151] hover:text-[#7C3AED]'
             )}>
               {product.name}
             </p>
@@ -349,20 +349,20 @@ export default function StoreProductCard({ product, onQuickBuy }: Props) {
             <div className="flex flex-col gap-0.5">
               {isOutOfStock ? (
                 <>
-                  <span className="text-[#B0E4CC]/25 font-black text-base line-through leading-none">
+                  <span className="text-[#d1d5db] font-black text-base line-through leading-none">
                     Rs. {displayPrice.toLocaleString()}
                   </span>
-                  <span className="text-red-400/70 text-[9px] font-black uppercase tracking-widest">
+                  <span className="text-red-400 text-[9px] font-black uppercase tracking-widest">
                     Unavailable
                   </span>
                 </>
               ) : (
                 <>
-                  <span className="text-[#B0E4CC] font-black text-base leading-none">
+                  <span className="text-[#1e1b4b] font-black text-base leading-none">
                     Rs. {displayPrice.toLocaleString()}
                   </span>
                   {product.discount_price && (
-                    <span className="text-[#B0E4CC]/30 text-[11px] line-through leading-none">
+                    <span className="text-[#9ca3af] text-[11px] line-through leading-none">
                       Rs. {product.price.toLocaleString()}
                     </span>
                   )}
@@ -386,8 +386,8 @@ export default function StoreProductCard({ product, onQuickBuy }: Props) {
               'pc-btn w-full mt-1 flex items-center justify-center gap-2 py-2.5 rounded-xl',
               'text-[11px] font-black uppercase tracking-wide border transition-all',
               isOutOfStock
-                ? 'bg-[#162420]/60 border-[#285A48]/15 text-[#B0E4CC]/20 cursor-not-allowed'
-                : 'bg-[#285A48]/20 hover:bg-[#408A71] border-[#285A48]/40 hover:border-[#408A71] text-[#B0E4CC]/70 hover:text-white',
+                ? 'bg-[#EDE9FE]/60 border-[#7C3AED]/15 text-[#e5e7eb] cursor-not-allowed'
+                : 'bg-[#7C3AED]/20 hover:bg-[#7C3AED] border-[#7C3AED]/40 hover:border-[#7C3AED] text-[#4b5563] hover:text-white',
               addingCart && 'opacity-50'
             )}
           >

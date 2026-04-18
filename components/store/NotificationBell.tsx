@@ -11,15 +11,15 @@ import { useNotificationStore } from '@/store/notificationStore'
 import api from '@/lib/axios'
 import { cn } from '@/lib/utils'
 
-/* ── Notification type config — updated to site palette ── */
+/* ── Notification type config — updated to site palette (purple/violet) ── */
 const TYPE_CONFIG: Record<string, { icon: any; color: string; bg: string; dot: string }> = {
-  order_placed:          { icon: ShoppingBag, color: '#B0E4CC',  bg: 'rgba(40,90,72,0.25)',    dot: '#B0E4CC'  },
-  confirmed:             { icon: CheckCircle, color: '#408A71',  bg: 'rgba(64,138,113,0.18)',  dot: '#408A71'  },
-  shipped:               { icon: Truck,       color: '#c084fc',  bg: 'rgba(192,132,252,0.12)', dot: '#c084fc'  },
-  delivered:             { icon: Package,     color: '#4ade80',  bg: 'rgba(74,222,128,0.12)',  dot: '#4ade80'  },
-  cancelled_by_seller:   { icon: XCircle,     color: '#f87171',  bg: 'rgba(248,113,113,0.12)', dot: '#f87171'  },
-  cancelled_by_customer: { icon: XCircle,     color: '#fb923c',  bg: 'rgba(251,146,60,0.12)',  dot: '#fb923c'  },
-  order:                 { icon: ShoppingBag, color: '#B0E4CC',  bg: 'rgba(40,90,72,0.25)',    dot: '#B0E4CC'  },
+  order_placed:          { icon: ShoppingBag, color: '#6D28D9',  bg: 'rgba(109,40,217,0.12)',   dot: '#6D28D9'  },
+  confirmed:             { icon: CheckCircle, color: '#6D28D9',  bg: 'rgba(109,40,217,0.12)',   dot: '#6D28D9'  },
+  shipped:               { icon: Truck,       color: '#6D28D9',  bg: 'rgba(109,40,217,0.12)',   dot: '#6D28D9'  },
+  delivered:             { icon: Package,     color: '#6D28D9',  bg: 'rgba(109,40,217,0.12)',   dot: '#6D28D9'  },
+  cancelled_by_seller:   { icon: XCircle,     color: '#991B1B',  bg: 'rgba(153,27,27,0.12)',    dot: '#991B1B'  },
+  cancelled_by_customer: { icon: XCircle,     color: '#92400E',  bg: 'rgba(146,64,14,0.12)',    dot: '#92400E'  },
+  order:                 { icon: ShoppingBag, color: '#6D28D9',  bg: 'rgba(109,40,217,0.12)',   dot: '#6D28D9'  },
 }
 
 const POLL_MS = 4000
@@ -121,8 +121,8 @@ export default function NotificationBell() {
           className={cn(
             'nb-bell relative flex items-center justify-center w-9 h-9 rounded-xl transition-all duration-200',
             open
-              ? 'bg-[#285A48]/50 border border-[#408A71]/50 text-[#B0E4CC]'
-              : 'bg-[#0e1e1b] border border-[#285A48]/30 text-[rgba(176,228,204,0.55)] hover:border-[#408A71]/55 hover:text-[#B0E4CC]'
+              ? 'bg-[#7C3AED]/50 border border-[#7C3AED]/50 text-white'
+              : 'bg-white/10 border border-[#C4B5FD]/30 text-[#6D28D9] hover:border-[#7C3AED]/55 hover:text-[#6D28D9]'
           )}
         >
           <Bell className={cn('w-4 h-4 transition-transform duration-300', open && 'nb-bell-active')} />
@@ -131,7 +131,7 @@ export default function NotificationBell() {
           {unread > 0 && (
             <span className="nb-badge absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1
               bg-red-500 text-white text-[10px] font-black rounded-full
-              flex items-center justify-center leading-none border border-[#091413]">
+              flex items-center justify-center leading-none border border-white">
               {unread > 9 ? '9+' : unread}
             </span>
           )}
@@ -139,22 +139,22 @@ export default function NotificationBell() {
 
         {/* ── Dropdown panel ── */}
         {open && (
-          <div className="nb-panel absolute right-0 top-full mt-2.5 w-[340px] sm:w-80 z-50 overflow-hidden">
+          <div className="nb-panel absolute right-0 top-full mt-2.5 w-[340px] sm:w-80 md:w-96 z-50 overflow-hidden">
 
             {/* Header */}
             <div className="nb-header flex items-center justify-between px-4 py-3.5">
               <div className="flex items-center gap-2.5">
                 {/* Icon tile */}
                 <div className="nb-icon-tile">
-                  <Bell className="w-3.5 h-3.5" style={{ color: '#B0E4CC' }} />
+                  <Bell className="w-3.5 h-3.5" style={{ color: '#7C3AED' }} />
                 </div>
-                <p className="text-white font-bold text-sm">Notifications</p>
+                <p className="text-[#1e1b4b] font-bold text-sm">Notifications</p>
                 {unread > 0 && (
                   <span className="flex items-center px-2 py-0.5 rounded-full text-[10px] font-black"
                     style={{
-                      background: 'rgba(239,68,68,0.15)',
-                      border: '1px solid rgba(239,68,68,0.3)',
-                      color: '#f87171',
+                      background: 'rgba(124,58,237,0.15)',
+                      border: '1px solid rgba(124,58,237,0.3)',
+                      color: '#7C3AED',
                     }}>
                     {unread} new
                   </span>
@@ -171,13 +171,13 @@ export default function NotificationBell() {
             <div className="nb-divider" />
 
             {/* Body */}
-            <div className="nb-scroll max-h-[360px] overflow-y-auto">
+            <div className="nb-scroll max-h-[420px] overflow-y-auto">
 
               {/* Loading */}
               {loading && (
                 <div className="flex flex-col items-center justify-center py-10 gap-3">
                   <div className="nb-spinner" />
-                  <span className="text-xs font-medium" style={{ color: 'rgba(176,228,204,0.35)' }}>
+                  <span className="text-xs font-medium" style={{ color: 'rgba(124,58,237,0.35)' }}>
                     Loading…
                   </span>
                 </div>
@@ -187,18 +187,18 @@ export default function NotificationBell() {
               {!loading && notifications.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-12 gap-2 px-4">
                   <div className="nb-empty-icon">
-                    <Bell className="w-6 h-6" style={{ color: '#285A48' }} />
+                    <Bell className="w-6 h-6" style={{ color: '#EDE9FE' }} />
                   </div>
-                  <p className="text-white font-semibold text-sm">No notifications yet</p>
+                  <p className="text-[#1e1b4b] font-semibold text-sm">No notifications yet</p>
                   <p className="text-center text-xs leading-relaxed"
-                    style={{ color: 'rgba(176,228,204,0.35)' }}>
+                    style={{ color: 'rgba(124,58,237,0.45)' }}>
                     You'll see order updates here as they happen
                   </p>
                 </div>
               )}
 
-              {/* Notification items */}
-              {!loading && notifications.map((notif, idx) => {
+              {/* Notification items — show only latest 10 */}
+              {!loading && notifications.slice(0, 10).map((notif, idx) => {
                 const cfg  = TYPE_CONFIG[notif.type] ?? TYPE_CONFIG.order
                 const Icon = cfg.icon
                 const isUnread = !notif.is_read
@@ -209,7 +209,7 @@ export default function NotificationBell() {
                     // onClick={() => handleClick(notif)}
                     className="nb-notif-row"
                     style={{
-                      background: isUnread ? 'rgba(40,90,72,0.10)' : 'transparent',
+                      background: isUnread ? 'rgba(124,58,237,0.08)' : 'transparent',
                       animationDelay: `${idx * 40}ms`,
                     }}
                   >
@@ -229,7 +229,7 @@ export default function NotificationBell() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
                         <p className="text-sm font-semibold leading-tight truncate"
-                          style={{ color: isUnread ? '#fff' : 'rgba(176,228,204,0.65)' }}>
+                          style={{ color: isUnread ? '#4C1D95' : '#6D28D9' }}>
                           {notif.title}
                         </p>
                         {isUnread && (
@@ -238,11 +238,11 @@ export default function NotificationBell() {
                         )}
                       </div>
                       <p className="text-xs mt-0.5 line-clamp-2 leading-relaxed"
-                        style={{ color: 'rgba(176,228,204,0.42)' }}>
+                        style={{ color: '#5B21B6' }}>
                         {notif.message}
                       </p>
                       <p className="text-[10px] mt-1.5 font-medium"
-                        style={{ color: 'rgba(176,228,204,0.28)' }}>
+                        style={{ color: '#7C3AED' }}>
                         {new Date(notif.created_at).toLocaleDateString('en-US', {
                           day: 'numeric', month: 'short',
                           hour: '2-digit', minute: '2-digit',
@@ -278,11 +278,11 @@ export default function NotificationBell() {
 
 /* ── Shared styles ───────────────────────────────────────── */
 const styles = `
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Open+Sans:wght@400;500;600;700&display=swap');
 
   .nb-root * { box-sizing: border-box; }
   .nb-root, .nb-root button { cursor: pointer !important; }
-  .nb-root { font-family: 'Plus Jakarta Sans', sans-serif; }
+  .nb-root { font-family: 'Open Sans', sans-serif; }
 
   /* ── bell ring animation on unread ── */
   @keyframes nbRing {
@@ -310,57 +310,57 @@ const styles = `
   }
   .nb-panel {
     animation: nbDropIn 0.2s cubic-bezier(.22,1,.36,1) both;
-    background: linear-gradient(145deg, rgba(13,28,25,0.98), rgba(9,20,19,1));
-    border: 1px solid rgba(40,90,72,0.35);
+    background: linear-gradient(145deg, rgba(250,245,255,0.98), rgba(237,233,254,1));
+    border: 1px solid rgba(196,181,253,0.35);
     border-radius: 20px;
-    box-shadow: 0 24px 56px rgba(9,20,19,0.85), 0 0 0 1px rgba(64,138,113,0.08);
+    box-shadow: 0 24px 56px rgba(124,58,237,0.12), 0 0 0 1px rgba(124,58,237,0.08);
     backdrop-filter: blur(20px);
   }
 
   /* ── header ── */
   .nb-header {
-    background: linear-gradient(135deg, rgba(22,36,32,0.6), rgba(13,28,25,0.4));
+    background: linear-gradient(135deg, rgba(237,233,254,0.6), rgba(250,245,255,0.4));
   }
 
   /* ── icon tile ── */
   .nb-icon-tile {
     width: 26px; height: 26px; border-radius: 8px;
     display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    background: linear-gradient(135deg, #285A48, #1a3d2e);
-    border: 1px solid rgba(64,138,113,0.35);
+    background: linear-gradient(135deg, #EDE9FE, #F3EEFF);
+    border: 1px solid rgba(124,58,237,0.35);
   }
 
   /* ── close btn ── */
   .nb-close-btn {
-    background: rgba(40,90,72,0.15);
-    border: 1px solid rgba(40,90,72,0.3);
-    color: rgba(176,228,204,0.45);
+    background: rgba(124,58,237,0.10);
+    border: 1px solid rgba(124,58,237,0.2);
+    color: rgba(124,58,237,0.45);
     transition: background 0.15s ease, color 0.15s ease;
   }
   .nb-close-btn:hover {
-    background: rgba(40,90,72,0.3);
-    color: #B0E4CC;
+    background: rgba(124,58,237,0.15);
+    color: #7C3AED;
   }
 
   /* ── gradient divider ── */
   .nb-divider {
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(40,90,72,0.4), transparent);
+    background: linear-gradient(90deg, transparent, rgba(124,58,237,0.2), transparent);
   }
 
   /* ── custom scrollbar ── */
-  .nb-scroll { scrollbar-width: thin; scrollbar-color: rgba(40,90,72,0.4) transparent; }
+  .nb-scroll { scrollbar-width: thin; scrollbar-color: rgba(124,58,237,0.3) transparent; }
   .nb-scroll::-webkit-scrollbar { width: 4px; }
   .nb-scroll::-webkit-scrollbar-track { background: transparent; }
   .nb-scroll::-webkit-scrollbar-thumb {
-    background: rgba(40,90,72,0.4); border-radius: 99px;
+    background: rgba(124,58,237,0.3); border-radius: 99px;
   }
 
   /* ── spinner ── */
   .nb-spinner {
     width: 26px; height: 26px; border-radius: 50%;
-    border: 2px solid rgba(64,138,113,0.2);
-    border-top-color: #408A71;
+    border: 2px solid rgba(124,58,237,0.15);
+    border-top-color: #7C3AED;
     animation: spin 0.7s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -369,8 +369,8 @@ const styles = `
   .nb-empty-icon {
     width: 52px; height: 52px; border-radius: 16px; margin-bottom: 6px;
     display: flex; align-items: center; justify-content: center;
-    background: rgba(22,36,32,0.7);
-    border: 1px solid rgba(40,90,72,0.3);
+    background: rgba(124,58,237,0.08);
+    border: 1px solid rgba(124,58,237,0.2);
   }
 
   /* ── notification row ── */
@@ -382,12 +382,13 @@ const styles = `
     position: relative;
     display: flex; align-items: flex-start; gap: 12px;
     padding: 12px 16px;
-    border-bottom: 1px solid rgba(40,90,72,0.15);
+    border-bottom: 1px solid rgba(124,58,237,0.1);
     transition: background 0.15s ease;
     animation: nbRowIn 0.28s cubic-bezier(.22,1,.36,1) both;
+    cursor: default;
   }
   .nb-notif-row:last-child { border-bottom: none; }
-  .nb-notif-row:hover { background: rgba(40,90,72,0.12) !important; cursor: pointer !important; }
+  .nb-notif-row:hover { background: rgba(124,58,237,0.08) !important; }
 
   /* ── notif icon circle ── */
   .nb-notif-icon {
@@ -398,10 +399,40 @@ const styles = `
 
   /* ── footer btn ── */
   .nb-footer-btn {
-    color: #408A71;
+    color: #7C3AED;
     transition: color 0.15s ease;
   }
-  .nb-footer-btn:hover { color: #B0E4CC; }
+  .nb-footer-btn:hover { color: #6D28D9; }
   .nb-footer-btn:hover .nb-arrow { transform: translateX(3px); }
   .nb-arrow { transition: transform 0.2s ease; }
+
+  /* ── Responsive adjustments ── */
+  @media (max-width: 640px) {
+    .nb-panel {
+      width: 320px !important;
+      max-width: calc(100vw - 16px);
+    }
+    .nb-scroll {
+      max-height: 360px !important;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .nb-panel {
+      width: 300px !important;
+      max-width: calc(100vw - 12px);
+      border-radius: 16px;
+    }
+    .nb-header {
+      padding: 12px 14px !important;
+    }
+    .nb-notif-row {
+      padding: 10px 12px !important;
+      gap: 10px !important;
+    }
+    .nb-notif-icon {
+      width: 30px !important;
+      height: 30px !important;
+    }
+  }
 `

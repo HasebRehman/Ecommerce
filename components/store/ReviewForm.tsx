@@ -177,11 +177,10 @@ export default function ReviewForm({ productId, orderId, productName, onSubmitte
 
 /* ── Styles ──────────────────────────────────────────────── */
 const styles = `
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;500;600&display=swap');
 
   .rf-root * { box-sizing: border-box; }
-  .rf-root, .rf-root button { cursor: pointer !important; }
-  .rf-root { font-family: 'Plus Jakarta Sans', sans-serif; }
+  .rf-root { font-family: 'Open Sans', sans-serif; }
 
   /* ── card ── */
   @keyframes rfFadeUp {
@@ -189,12 +188,12 @@ const styles = `
     to   { opacity: 1; transform: translateY(0); }
   }
   .rf-card {
-    background: linear-gradient(145deg, rgba(13,28,25,0.97), rgba(10,21,18,0.99));
-    border: 1px solid rgba(64,138,113,0.35);
+    background: linear-gradient(145deg, rgba(243,232,255,0.6) 0%, rgba(237,233,254,0.5) 100%);
+    border: 1px solid rgba(124,58,237,0.2);
     border-radius: 20px;
     padding: 20px;
     display: flex; flex-direction: column; gap: 18px;
-    box-shadow: 0 8px 32px rgba(9,20,19,0.5);
+    box-shadow: 0 8px 32px rgba(124,58,237,0.15);
     animation: rfFadeUp 0.35s cubic-bezier(.22,1,.36,1) both;
   }
 
@@ -202,25 +201,26 @@ const styles = `
   .rf-icon-tile {
     width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
     display: flex; align-items: center; justify-content: center;
-    background: linear-gradient(135deg, #285A48, #1a3d2e);
-    border: 1px solid rgba(64,138,113,0.38);
+    background: linear-gradient(135deg, #7C3AED, #6D28D9);
+    border: 1px solid rgba(124,58,237,0.35);
   }
 
   /* ── close btn ── */
   .rf-close-btn {
     width: 28px; height: 28px; border-radius: 9px;
     display: flex; align-items: center; justify-content: center;
-    background: rgba(40,90,72,0.18);
-    border: 1px solid rgba(40,90,72,0.30);
-    color: rgba(176,228,204,0.45);
+    background: rgba(124,58,237,0.1);
+    border: 1px solid rgba(124,58,237,0.2);
+    color: #7C3AED;
+    cursor: pointer;
     transition: background 0.15s ease, color 0.15s ease;
   }
-  .rf-close-btn:hover { background: rgba(40,90,72,0.32); color: #B0E4CC; }
+  .rf-close-btn:hover { background: rgba(124,58,237,0.15); color: #6D28D9; }
 
   /* ── divider ── */
   .rf-divider {
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(40,90,72,0.4), transparent);
+    background: linear-gradient(90deg, transparent, rgba(124,58,237,0.2), transparent);
     margin: -4px 0;
   }
 
@@ -229,7 +229,8 @@ const styles = `
     display: inline-block;
     font-size: 10px; font-weight: 800;
     text-transform: uppercase; letter-spacing: 0.09em;
-    color: rgba(176,228,204,0.45);
+    color: #7C3AED;
+    font-family: 'Montserrat', sans-serif;
   }
   .rf-required {
     color: #f87171; margin-left: 3px; font-weight: 900;
@@ -239,9 +240,9 @@ const styles = `
     font-size: 10px; font-weight: 800;
     text-transform: uppercase; letter-spacing: 0.08em;
     padding: 2px 8px; border-radius: 99px;
-    background: rgba(40,90,72,0.2);
-    border: 1px solid rgba(40,90,72,0.3);
-    color: rgba(176,228,204,0.35);
+    background: rgba(124,58,237,0.12);
+    border: 1px solid rgba(124,58,237,0.25);
+    color: #7C3AED;
   }
 
   /* ── rating pill ── */
@@ -255,7 +256,7 @@ const styles = `
   /* ── star fill track ── */
   .rf-star-track {
     height: 3px; border-radius: 99px;
-    background: rgba(40,90,72,0.25);
+    background: rgba(124,58,237,0.15);
     overflow: hidden; margin-top: 2px;
   }
   .rf-star-fill {
@@ -265,54 +266,55 @@ const styles = `
 
   /* ── textarea ── */
   .rf-textarea {
-    background: rgba(9,20,19,0.75);
-    border: 1px solid rgba(40,90,72,0.38);
+    background: rgba(243,232,255,0.5);
+    border: 1px solid rgba(124,58,237,0.2);
     border-radius: 14px;
     padding: 0.7rem 0.9rem;
-    color: #B0E4CC;
+    color: #374151;
     font-size: 0.85rem; line-height: 1.6;
-    font-family: 'Plus Jakarta Sans', sans-serif;
-    outline: none; caret-color: #408A71;
+    font-family: 'Open Sans', sans-serif;
+    outline: none; caret-color: #7C3AED;
     transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
   }
-  .rf-textarea::placeholder { color: rgba(176,228,204,0.20); }
+  .rf-textarea::placeholder { color: #D1D5DB; }
   .rf-textarea:focus {
-    border-color: #408A71;
-    background: rgba(9,20,19,0.95);
-    box-shadow: 0 0 0 3px rgba(64,138,113,0.13);
+    border-color: #7C3AED;
+    background: rgba(243,232,255,0.7);
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.13);
   }
 
   /* ── cancel btn ── */
   .rf-btn-cancel {
     height: 42px; border-radius: 13px;
-    background: rgba(40,90,72,0.18);
-    border: 1px solid rgba(40,90,72,0.32);
-    color: rgba(176,228,204,0.55);
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: rgba(124,58,237,0.1);
+    border: 1px solid rgba(124,58,237,0.2);
+    color: #7C3AED;
+    font-family: 'Montserrat', sans-serif;
     font-size: 0.825rem; font-weight: 700;
+    cursor: pointer;
     transition: background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
   }
   .rf-btn-cancel:hover {
-    background: rgba(40,90,72,0.30);
-    border-color: rgba(64,138,113,0.45);
-    color: #B0E4CC;
+    background: rgba(124,58,237,0.15);
+    border-color: rgba(124,58,237,0.3);
+    color: #6D28D9;
   }
 
   /* ── submit btn ── */
   .rf-btn-submit {
     height: 42px; border-radius: 13px;
-    background: #408A71; color: #fff;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: #7C3AED; color: #fff;
+    font-family: 'Montserrat', sans-serif;
     font-size: 0.825rem; font-weight: 800;
-    border: none;
-    box-shadow: 0 4px 16px rgba(64,138,113,0.28);
+    border: none; cursor: pointer;
+    box-shadow: 0 4px 16px rgba(124,58,237,0.28);
     transition: background 0.18s ease, transform 0.12s ease, box-shadow 0.18s ease, opacity 0.18s ease;
   }
   .rf-btn-submit:hover:not(:disabled) {
-    background: #4eaa85;
+    background: #6D28D9;
     transform: translateY(-1px);
-    box-shadow: 0 8px 22px rgba(64,138,113,0.38);
+    box-shadow: 0 8px 22px rgba(124,58,237,0.38);
   }
   .rf-btn-submit:active:not(:disabled) { transform: translateY(0); }
-  .rf-btn-submit:disabled { opacity: 0.40; cursor: not-allowed !important; }
+  .rf-btn-submit:disabled { opacity: 0.40; cursor: not-allowed; }
 `

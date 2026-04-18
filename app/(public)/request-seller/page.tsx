@@ -115,33 +115,35 @@ export default function RequestSellerPage() {
     <>
       <style>{styles}</style>
 
-      <div className="rs-root">
+      <div className="rs-root w-full min-h-screen" style={{ background: '#FAF5FF' }}>
 
         {/* Already a retailer */}
         {isRetailer && (
-          <div className="rs-center-state">
-            <div className="rs-hero-icon">
-              <Store className="w-10 h-10" style={{ color: '#B0E4CC' }} />
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+            <div className="rs-center-state">
+              <div className="rs-hero-icon">
+                <Store className="w-10 h-10 text-white" />
+              </div>
+              <div className="rs-badge-approved">
+                <CheckCircle className="w-3.5 h-3.5" />
+                Active Retailer
+              </div>
+              <h1 className="rs-title">You are already a Retailer!</h1>
+              <p className="rs-subtitle">Access your dashboard to manage your shops and orders</p>
+              <button onClick={() => router.push('/dashboard')} className="rs-btn-primary rs-btn-auto">
+                <LayoutDashboard className="w-4 h-4" />
+                Go to Dashboard
+                <ArrowRight className="w-4 h-4" />
+              </button>
             </div>
-            <div className="rs-badge-approved">
-              <CheckCircle className="w-3.5 h-3.5" />
-              Active Retailer
-            </div>
-            <h1 className="rs-title">You are already a Retailer!</h1>
-            <p className="rs-subtitle">Access your dashboard to manage your shops and orders</p>
-            <button onClick={() => router.push('/dashboard')} className="rs-btn-primary rs-btn-auto">
-              <LayoutDashboard className="w-4 h-4" />
-              Go to Dashboard
-              <ArrowRight className="w-4 h-4" />
-            </button>
           </div>
         )}
 
         {/* Loading */}
         {!isRetailer && loading && (
           <div className="rs-loader">
-            <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#408A71' }} />
-            <span style={{ color: 'rgba(176,228,204,0.40)', fontSize: '0.85rem', fontWeight: 500 }}>
+            <Loader2 className="w-8 h-8 animate-spin text-[#7C3AED]" />
+            <span className="text-sm font-medium text-[#6b7280]">
               Loading...
             </span>
           </div>
@@ -149,167 +151,169 @@ export default function RequestSellerPage() {
 
         {/* Main content */}
         {!isRetailer && !loading && (
-          <div className="max-w-xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
+            <div className="max-w-2xl mx-auto">
 
-            {/* Hero */}
-            <div className="rs-fade-up text-center mb-10">
-              <div className="rs-hero-icon mx-auto mb-5">
-                <TrendingUp className="w-10 h-10" style={{ color: '#B0E4CC' }} />
+              {/* Hero */}
+              <div className="rs-fade-up text-center mb-12">
+                <div className="rs-hero-icon mx-auto mb-6">
+                  <TrendingUp className="w-10 h-10 text-white" />
+                </div>
+                <h1 className="rs-title mb-3">Become a Retailer</h1>
+                <p className="rs-subtitle">
+                  Join hundreds of local sellers on VendoSphere and start earning today
+                </p>
               </div>
-              <h1 className="rs-title mb-2">Become a Retailer</h1>
-              <p className="rs-subtitle">
-                Join hundreds of local sellers on VendoSphere and start earning today
-              </p>
-            </div>
 
-            {/* Benefits */}
-            <div className="rs-fade-up space-y-2.5 mb-8" style={{ animationDelay: '70ms' }}>
-              {BENEFITS.map((b, i) => (
-                <div key={b.title} className="rs-benefit-card" style={{ animationDelay: `${80 + i * 55}ms` }}>
-                  <div className="rs-benefit-icon shrink-0">
-                    <b.icon className="w-5 h-5" style={{ color: '#B0E4CC' }} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white font-bold text-sm">{b.title}</p>
-                    <p className="text-xs mt-0.5" style={{ color: 'rgba(176,228,204,0.45)' }}>{b.desc}</p>
-                  </div>
-                  <ArrowRight className="w-4 h-4 shrink-0" style={{ color: 'rgba(64,138,113,0.45)' }} />
-                </div>
-              ))}
-            </div>
-
-            {/* CTA / Status */}
-            <div className="rs-fade-up" style={{ animationDelay: '320ms' }}>
-
-              {/* Not logged in */}
-              {!isAuthenticated && (
-                <button onClick={() => router.push('/login')} className="rs-btn-primary">
-                  Login to Request Access
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              )}
-
-              {/* Permanently blocked */}
-              {isAuthenticated && isBlocked && (
-                <div className="rs-status-card" style={{
-                  background:  'rgba(248,113,113,0.08)',
-                  borderColor: 'rgba(248,113,113,0.25)',
-                }}>
-                  <div className="flex items-start gap-4">
-                    <div className="rs-status-icon shrink-0" style={{
-                      background: 'rgba(248,113,113,0.12)',
-                      border:     '1px solid rgba(248,113,113,0.30)',
-                    }}>
-                      <Ban className="w-5 h-5" style={{ color: '#f87171' }} />
+              {/* Benefits */}
+              <div className="rs-fade-up space-y-4 mb-10" style={{ animationDelay: '70ms' }}>
+                {BENEFITS.map((b, i) => (
+                  <div key={b.title} className="rs-benefit-card" style={{ animationDelay: `${80 + i * 55}ms` }}>
+                    <div className="rs-benefit-icon shrink-0">
+                      <b.icon className="w-5 h-5 text-white" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-black text-base" style={{ color: '#f87171' }}>
-                        Request Limit Reached
-                      </p>
-                      <p className="text-sm mt-1 leading-relaxed" style={{ color: 'rgba(176,228,204,0.55)' }}>
-                        You have not been approved by the admin team to become a seller.
-                        You can no longer send requests.
-                      </p>
+                      <p className="text-[#1e1b4b] font-bold text-base">{b.title}</p>
+                      <p className="text-sm mt-1 text-[#6b7280]">{b.desc}</p>
                     </div>
+                    <ArrowRight className="w-4 h-4 shrink-0 text-[#7C3AED]/40" />
                   </div>
-                  <div className="rs-divider" />
-                  <p className="text-xs text-center" style={{ color: 'rgba(248,113,113,0.55)' }}>
-                    3 requests submitted · All rejected · No further requests allowed
-                  </p>
-                </div>
-              )}
+                ))}
+              </div>
 
-              {/* Has existing request */}
-              {isAuthenticated && request && statusConfig && !isBlocked && (
-                <div className="rs-status-card" style={{ background: statusConfig.bg, borderColor: statusConfig.border }}>
-                  <div className="flex items-start gap-4">
-                    <div className="rs-status-icon shrink-0" style={{
-                      background: `${statusConfig.color}18`,
-                      border:     `1px solid ${statusConfig.color}35`,
-                    }}>
-                      {(() => { const Icon = statusConfig.icon; return <Icon className="w-5 h-5" style={{ color: statusConfig.color }} /> })()}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-black text-base" style={{ color: statusConfig.color }}>
-                        {statusConfig.label}
-                      </p>
-                      <p className="text-sm mt-0.5" style={{ color: 'rgba(176,228,204,0.55)' }}>
-                        {statusConfig.desc}
-                      </p>
-                    </div>
-                  </div>
+              {/* CTA / Status */}
+              <div className="rs-fade-up" style={{ animationDelay: '320ms' }}>
 
-                  <div className="rs-divider" />
-
-                  <div className="flex items-center justify-between flex-wrap gap-3">
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <p className="text-xs" style={{ color: 'rgba(176,228,204,0.35)' }}>
-                        Submitted:{' '}
-                        <span style={{ color: 'rgba(176,228,204,0.60)' }}>
-                          {new Date(request.created_at).toLocaleDateString('en-US', {
-                            day: 'numeric', month: 'short', year: 'numeric',
-                          })}
-                        </span>
-                      </p>
-                      {attemptLabel && (
-                        <span className="text-xs px-2 py-0.5 rounded-full font-bold" style={{
-                          background: 'rgba(64,138,113,0.15)',
-                          border:     '1px solid rgba(64,138,113,0.30)',
-                          color:      '#4ade80',
-                        }}>
-                          {attemptLabel} request
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{
-                      background: 'rgba(64,138,113,0.12)',
-                      border:     '1px solid rgba(64,138,113,0.25)',
-                    }}>
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse shrink-0" />
-                      <span className="text-xs font-bold" style={{ color: '#408A71' }}>
-                        Live updates enabled
-                      </span>
-                    </div>
-                  </div>
-
-                  {canResubmit && (
-                    <>
-                      <p className="text-xs text-center" style={{ color: 'rgba(176,228,204,0.35)' }}>
-                        {attemptsLeft} attempt{attemptsLeft !== 1 ? 's' : ''} remaining
-                      </p>
-                      <button onClick={handleSubmit} disabled={submitting} className="rs-btn-primary mt-1">
-                        {submitting
-                          ? <Loader2 className="w-4 h-4 animate-spin" />
-                          : <><TrendingUp className="w-4 h-4" /> Submit New Request</>
-                        }
-                      </button>
-                    </>
-                  )}
-
-                  {request.status === 'approved' && (
-                    <button onClick={() => router.push('/dashboard')} className="rs-btn-primary mt-2">
-                      <LayoutDashboard className="w-4 h-4" />
-                      Go to Dashboard
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-              )}
-
-              {/* No request yet */}
-              {isAuthenticated && !request && (
-                <div className="space-y-3">
-                  <button onClick={handleSubmit} disabled={submitting} className="rs-btn-primary">
-                    {submitting
-                      ? <Loader2 className="w-5 h-5 animate-spin" />
-                      : <><TrendingUp className="w-5 h-5" /> Request Seller Access</>
-                    }
+                {/* Not logged in */}
+                {!isAuthenticated && (
+                  <button onClick={() => router.push('/login')} className="rs-btn-primary">
+                    Login to Request Access
+                    <ArrowRight className="w-4 h-4" />
                   </button>
-                  <p className="text-center text-xs" style={{ color: 'rgba(176,228,204,0.30)' }}>
-                    Free to request · Usually approved within 24 hours
-                  </p>
-                </div>
-              )}
+                )}
+
+                {/* Permanently blocked */}
+                {isAuthenticated && isBlocked && (
+                  <div className="rs-status-card" style={{
+                    background:  'rgba(239,68,68,0.08)',
+                    borderColor: 'rgba(239,68,68,0.25)',
+                  }}>
+                    <div className="flex items-start gap-4">
+                      <div className="rs-status-icon shrink-0" style={{
+                        background: 'rgba(239,68,68,0.12)',
+                        border:     '1px solid rgba(239,68,68,0.30)',
+                      }}>
+                        <Ban className="w-5 h-5 text-red-500" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-base text-red-500">
+                          Request Limit Reached
+                        </p>
+                        <p className="text-sm mt-2 leading-relaxed text-[#6b7280]">
+                          You have not been approved by the admin team to become a seller.
+                          You can no longer send requests.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="rs-divider" />
+                    <p className="text-xs text-center text-red-500/60">
+                      3 requests submitted · All rejected · No further requests allowed
+                    </p>
+                  </div>
+                )}
+
+                {/* Has existing request */}
+                {isAuthenticated && request && statusConfig && !isBlocked && (
+                  <div className="rs-status-card" style={{ background: statusConfig.bg, borderColor: statusConfig.border }}>
+                    <div className="flex items-start gap-4">
+                      <div className="rs-status-icon shrink-0" style={{
+                        background: `${statusConfig.color}18`,
+                        border:     `1px solid ${statusConfig.color}35`,
+                      }}>
+                        {(() => { const Icon = statusConfig.icon; return <Icon className="w-5 h-5" style={{ color: statusConfig.color }} /> })()}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-base" style={{ color: statusConfig.color }}>
+                          {statusConfig.label}
+                        </p>
+                        <p className="text-sm mt-1 text-[#6b7280]">
+                          {statusConfig.desc}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="rs-divider" />
+
+                    <div className="flex items-center justify-between flex-wrap gap-3">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <p className="text-xs text-[#9ca3af]">
+                          Submitted:{' '}
+                          <span className="text-[#6b7280]">
+                            {new Date(request.created_at).toLocaleDateString('en-US', {
+                              day: 'numeric', month: 'short', year: 'numeric',
+                            })}
+                          </span>
+                        </p>
+                        {attemptLabel && (
+                          <span className="text-xs px-3 py-1 rounded-full font-bold" style={{
+                            background: 'rgba(124,58,237,0.1)',
+                            border:     '1px solid rgba(124,58,237,0.3)',
+                            color:      '#7C3AED',
+                          }}>
+                            {attemptLabel} request
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2 px-3 py-1.5 rounded-full" style={{
+                        background: 'rgba(124,58,237,0.1)',
+                        border:     '1px solid rgba(124,58,237,0.2)',
+                      }}>
+                        <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse shrink-0" />
+                        <span className="text-xs font-bold text-[#7C3AED]">
+                          Live updates enabled
+                        </span>
+                      </div>
+                    </div>
+
+                    {canResubmit && (
+                      <>
+                        <p className="text-xs text-center text-[#9ca3af]">
+                          {attemptsLeft} attempt{attemptsLeft !== 1 ? 's' : ''} remaining
+                        </p>
+                        <button onClick={handleSubmit} disabled={submitting} className="rs-btn-primary mt-3">
+                          {submitting
+                            ? <Loader2 className="w-4 h-4 animate-spin" />
+                            : <><TrendingUp className="w-4 h-4" /> Submit New Request</>
+                          }
+                        </button>
+                      </>
+                    )}
+
+                    {request.status === 'approved' && (
+                      <button onClick={() => router.push('/dashboard')} className="rs-btn-primary mt-3">
+                        <LayoutDashboard className="w-4 h-4" />
+                        Go to Dashboard
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* No request yet */}
+                {isAuthenticated && !request && (
+                  <div className="space-y-3">
+                    <button onClick={handleSubmit} disabled={submitting} className="rs-btn-primary">
+                      {submitting
+                        ? <Loader2 className="w-5 h-5 animate-spin" />
+                        : <><TrendingUp className="w-5 h-5" /> Request Seller Access</>
+                      }
+                    </button>
+                    <p className="text-center text-xs text-[#9ca3af]">
+                      Free to request · Usually approved within 24 hours
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
@@ -319,8 +323,11 @@ export default function RequestSellerPage() {
 }
 
 const styles = `
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700&family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700&display=swap');
+
   .rs-root * { box-sizing: border-box; }
-  .rs-root { font-family: 'Plus Jakarta Sans', sans-serif; }
+  .rs-root { font-family: 'Open Sans', sans-serif; }
+  .rs-root button, .rs-root a, .rs-root [role="button"], .rs-root label, .rs-root [class*="cursor-pointer"] { cursor: pointer !important; }
 
   @keyframes rsFadeUp {
     from { opacity: 0; transform: translateY(16px); }
@@ -335,88 +342,100 @@ const styles = `
   }
 
   .rs-center-state {
-    max-width: 28rem; margin: 0 auto;
-    padding: 5rem 1rem; text-align: center;
-    display: flex; flex-direction: column; align-items: center; gap: 12px;
+    max-w-md; margin: 0 auto;
+    padding: 3rem 1rem; text-align: center;
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
   }
 
   .rs-hero-icon {
-    width: 80px; height: 80px; border-radius: 24px;
+    width: 88px; height: 88px; border-radius: 24px;
     display: flex; align-items: center; justify-content: center;
-    background: linear-gradient(135deg, #285A48 0%, #1a3d2e 100%);
-    border: 1px solid rgba(64,138,113,0.38);
-    box-shadow: 0 12px 32px rgba(9,20,19,0.65);
+    background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+    border: 1px solid rgba(124,58,237,0.3);
+    box-shadow: 0 12px 32px rgba(124,58,237,0.2);
     flex-shrink: 0;
   }
 
   .rs-badge-approved {
     display: inline-flex; align-items: center; gap: 6px;
-    padding: 5px 14px; border-radius: 99px;
+    padding: 6px 16px; border-radius: 99px;
     background: rgba(74,222,128,0.12);
     border: 1px solid rgba(74,222,128,0.3);
     color: #4ade80;
-    font-size: 11px; font-weight: 800;
+    font-size: 12px; font-weight: 800;
   }
 
   .rs-title {
-    font-size: clamp(1.5rem, 4vw, 2rem);
-    font-weight: 700; color: #fff; line-height: 1.1; margin: 0;
+    font-family: 'Montserrat', sans-serif;
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 800; color: #1e1b4b; line-height: 1.1; margin: 0;
   }
   .rs-subtitle {
-    font-size: 0.875rem; line-height: 1.6;
-    color: rgba(176,228,204,0.45); margin: 0;
+    font-size: 1rem; line-height: 1.6;
+    color: #6b7280; margin: 0;
   }
 
   .rs-benefit-card {
-    display: flex; align-items: center; gap: 14px;
-    padding: 14px 16px; border-radius: 18px;
-    background: linear-gradient(145deg, rgba(13,28,25,0.95), rgba(10,21,18,0.98));
-    border: 1px solid rgba(40,90,72,0.25);
-    transition: border-color 0.2s ease, transform 0.2s ease;
+    display: flex; align-items: center; gap: 16px;
+    padding: 18px 20px; border-radius: 18px;
+    background: white;
+    border: 1px solid rgba(196,181,253,0.3);
+    box-shadow: 0 4px 16px rgba(124,58,237,0.12), 0 2px 8px rgba(124,58,237,0.08);
+    transition: all 0.2s ease;
   }
   .rs-benefit-card:hover {
-    border-color: rgba(64,138,113,0.42);
-    transform: translateX(3px);
+    border-color: rgba(124,58,237,0.5);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(124,58,237,0.15);
   }
 
   .rs-benefit-icon {
-    width: 44px; height: 44px; border-radius: 14px;
+    width: 48px; height: 48px; border-radius: 14px;
     display: flex; align-items: center; justify-content: center;
-    background: rgba(40,90,72,0.25);
-    border: 1px solid rgba(64,138,113,0.25);
+    background: linear-gradient(135deg, #7C3AED, #6D28D9);
+    border: 1px solid rgba(124,58,237,0.3);
     flex-shrink: 0;
   }
 
   .rs-btn-primary {
     width: 100%;
     display: flex; align-items: center; justify-content: center; gap: 8px;
-    padding: 0.875rem 1.5rem;
-    background: #408A71; color: #fff;
-    font-size: 0.9rem; font-weight: 800;
+    padding: 12px 20px;
+    background: #7C3AED; color: #fff;
+    font-size: 0.95rem; font-weight: 700;
     border: none; border-radius: 16px;
-    box-shadow: 0 6px 22px rgba(64,138,113,0.30);
-    transition: background 0.18s ease, transform 0.12s ease;
+    box-shadow: 0 4px 14px rgba(124,58,237,0.25);
+    transition: all 0.2s ease;
     cursor: pointer;
   }
   .rs-btn-primary:hover:not(:disabled) {
-    background: #4eaa85; transform: translateY(-1px);
+    background: #6D28D9; transform: translateY(-1px);
+    box-shadow: 0 8px 25px rgba(124,58,237,0.35);
   }
-  .rs-btn-primary:disabled { opacity: 0.50; cursor: not-allowed; }
-  .rs-btn-auto { width: auto; padding: 0.75rem 2rem; }
+  .rs-btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+  .rs-btn-auto { width: auto; padding: 10px 24px; }
 
   .rs-status-card {
     border-radius: 20px; border-width: 1px; border-style: solid;
-    padding: 20px;
+    padding: 24px;
     display: flex; flex-direction: column; gap: 16px;
+    background: white;
+    box-shadow: 0 4px 16px rgba(124,58,237,0.12), 0 2px 8px rgba(124,58,237,0.08);
   }
 
   .rs-status-icon {
-    width: 44px; height: 44px; border-radius: 14px;
+    width: 48px; height: 48px; border-radius: 14px;
     display: flex; align-items: center; justify-content: center;
   }
 
   .rs-divider {
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(40,90,72,0.4), transparent);
+    background: linear-gradient(90deg, transparent, rgba(196,181,253,0.3), transparent);
+  }
+
+  @media (max-width: 768px) {
+    .rs-benefit-card { padding: 16px 18px; }
+    .rs-btn-primary { padding: 10px 16px; font-size: 0.875rem; }
+    .rs-status-card { padding: 18px; }
   }
 `

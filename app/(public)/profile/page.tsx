@@ -13,14 +13,14 @@ import { useAuthStore } from '@/store/authStore'
 import { profileService } from '@/lib/services/profile.service'
 import { cn } from '@/lib/utils'
 
-/* ── Role config — colours updated to match site palette ── */
+/* ── Role config — updated to match site purple theme ── */
 const ROLE_CONFIG: Record<string, { label: string; color: string; bg: string; dot: string; icon: any }> = {
-  super_admin:      { label: 'Super Admin',      color: 'text-red-400',          bg: 'bg-red-500/10 border-red-500/30',              dot: '#f87171', icon: Shield },
-  platform_admin:   { label: 'Platform Admin',   color: 'text-orange-400',       bg: 'bg-orange-500/10 border-orange-500/30',         dot: '#fb923c', icon: Shield },
-  operations_admin: { label: 'Operations Admin', color: 'text-yellow-400',       bg: 'bg-yellow-500/10 border-yellow-500/30',         dot: '#facc15', icon: Shield },
-  business_owner:   { label: 'Retailer',         color: 'text-[#408A71]',        bg: 'bg-[#285A48]/25 border-[#408A71]/30',           dot: '#408A71', icon: Store },
-  customer:         { label: 'Customer',         color: 'text-[#B0E4CC]',        bg: 'bg-[#285A48]/20 border-[#408A71]/25',           dot: '#B0E4CC', icon: ShoppingBag },
-  courier:          { label: 'Courier',          color: 'text-purple-400',       bg: 'bg-purple-500/10 border-purple-500/30',         dot: '#c084fc', icon: User },
+  super_admin:      { label: 'Super Admin',      color: 'text-red-500',          bg: 'bg-red-500/10 border-red-500/30',              dot: '#ef4444', icon: Shield },
+  platform_admin:   { label: 'Platform Admin',   color: 'text-orange-500',       bg: 'bg-orange-500/10 border-orange-500/30',         dot: '#f97316', icon: Shield },
+  operations_admin: { label: 'Operations Admin', color: 'text-yellow-500',       bg: 'bg-yellow-500/10 border-yellow-500/30',         dot: '#eab308', icon: Shield },
+  business_owner:   { label: 'Retailer',         color: 'text-[#7C3AED]',        bg: 'bg-[#7C3AED]/10 border-[#7C3AED]/30',           dot: '#7C3AED', icon: Store },
+  customer:         { label: 'Customer',         color: 'text-[#C4B5FD]',        bg: 'bg-[#C4B5FD]/20 border-[#C4B5FD]/40',           dot: '#C4B5FD', icon: ShoppingBag },
+  courier:          { label: 'Courier',          color: 'text-[#8B5CF6]',        bg: 'bg-[#8B5CF6]/10 border-[#8B5CF6]/30',           dot: '#8B5CF6', icon: User },
 }
 
 async function uploadToCloudinary(file: File, folder: string): Promise<string> {
@@ -206,8 +206,8 @@ export default function ProfilePage() {
     return (
       <div className="flex items-center justify-center py-32">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#408A71' }} />
-          <span className="text-sm font-medium" style={{ color: 'rgba(176,228,204,0.45)', fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+          <Loader2 className="w-8 h-8 animate-spin text-[#7C3AED]" />
+          <span className="text-sm font-medium text-[#6b7280] font-body">
             Loading profile…
           </span>
         </div>
@@ -224,491 +224,522 @@ export default function ProfilePage() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,500;1,600;1,700&family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,300;1,400;1,500;1,600;1,700&display=swap');
+        
+        .font-display { font-family: 'Montserrat', sans-serif; }
+        .font-body    { font-family: 'Open Sans', sans-serif; }
 
         .pp-root * { box-sizing: border-box; }
-        .pp-root, .pp-root button, .pp-root a { cursor: pointer !important; }
-        .pp-root { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .pp-root { font-family: 'Open Sans', sans-serif; }
+        .pp-root button, .pp-root a, .pp-root [role="button"], .pp-root label, .pp-root [class*="cursor-pointer"] { cursor: pointer !important; }
 
         /* ── Field shared styles ── */
         .pp-field {
           width: 100%;
-          background: rgba(22,36,32,0.6);
-          border: 1px solid rgba(40,90,72,0.35);
-          border-radius: 12px;
-          padding: 0.6rem 0.875rem;
-          color: #B0E4CC;
+          background: white;
+          border: 1px solid rgba(196,181,253,0.4);
+          border-radius: 16px;
+          padding: 0.875rem 1rem;
+          color: #1e1b4b;
           font-size: 0.875rem;
-          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-family: 'Open Sans', sans-serif;
           outline: none;
           transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-          caret-color: #408A71;
+          caret-color: #7C3AED;
         }
-        .pp-field::placeholder { color: rgba(176,228,204,0.22); }
+        .pp-field::placeholder { color: #9ca3af; }
         .pp-field:focus {
-          border-color: #408A71;
-          background: rgba(22,36,32,0.95);
-          box-shadow: 0 0 0 3px rgba(64,138,113,0.15);
+          border-color: #7C3AED;
+          background: white;
+          box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
         }
         .pp-field:disabled {
-          background: rgba(13,28,25,0.5);
-          border-color: rgba(40,90,72,0.18);
-          color: rgba(176,228,204,0.35);
+          background: #f9fafb;
+          border-color: rgba(196,181,253,0.25);
+          color: #6b7280;
           cursor: not-allowed !important;
         }
         .pp-field.error {
-          border-color: rgba(239,68,68,0.5);
+          border-color: rgba(239,68,68,0.6);
         }
         .pp-field.error:focus {
-          border-color: rgba(239,68,68,0.7);
-          box-shadow: 0 0 0 3px rgba(239,68,68,0.15);
+          border-color: rgba(239,68,68,0.8);
+          box-shadow: 0 0 0 3px rgba(239,68,68,0.1);
         }
 
         /* ── Section card ── */
         .pp-card {
-          background: linear-gradient(145deg, rgba(13,28,25,0.95) 0%, rgba(10,21,18,0.98) 100%);
-          border: 1px solid rgba(40,90,72,0.28);
-          border-radius: 20px;
+          background: white;
+          border: 1px solid rgba(196,181,253,0.3);
+          border-radius: 24px;
+          box-shadow: 0 4px 20px rgba(124,58,237,0.08);
         }
 
         /* ── Divider ── */
         .pp-divider {
           height: 1px;
-          background: linear-gradient(90deg, transparent, rgba(40,90,72,0.4), transparent);
+          background: linear-gradient(90deg, transparent, rgba(196,181,253,0.4), transparent);
         }
 
         /* ── Animate sections in ── */
         @keyframes ppFadeUp {
-          from { opacity: 0; transform: translateY(16px); }
+          from { opacity: 0; transform: translateY(20px); }
           to   { opacity: 1; transform: translateY(0); }
         }
-        .pp-s1 { animation: ppFadeUp 0.4s 0.00s both; }
-        .pp-s2 { animation: ppFadeUp 0.4s 0.07s both; }
-        .pp-s3 { animation: ppFadeUp 0.4s 0.14s both; }
-        .pp-s4 { animation: ppFadeUp 0.4s 0.21s both; }
+        .pp-s1 { animation: ppFadeUp 0.5s 0.0s both; }
+        .pp-s2 { animation: ppFadeUp 0.5s 0.1s both; }
+        .pp-s3 { animation: ppFadeUp 0.5s 0.2s both; }
+        .pp-s4 { animation: ppFadeUp 0.5s 0.3s both; }
 
         /* ── Label ── */
         .pp-label {
           display: flex; align-items: center; gap: 6px;
-          font-size: 0.7rem; font-weight: 700;
-          text-transform: uppercase; letter-spacing: 0.09em;
-          color: rgba(176,228,204,0.45);
-          margin-bottom: 0.4rem;
+          font-size: 0.75rem; font-weight: 700;
+          text-transform: uppercase; letter-spacing: 0.05em;
+          color: #6b7280;
+          margin-bottom: 0.5rem;
         }
 
         /* ── Primary action button ── */
         .pp-btn-primary {
-          display: flex; align-items: center; gap: 6px;
-          padding: 0.55rem 1.1rem;
-          background: #408A71; color: #fff;
-          font-size: 0.8rem; font-weight: 800;
-          border-radius: 12px; border: none;
-          font-family: 'Plus Jakarta Sans', sans-serif;
-          transition: background 0.18s ease, transform 0.12s ease, box-shadow 0.18s ease;
-          box-shadow: 0 4px 14px rgba(64,138,113,0.3);
+          display: flex; align-items: center; gap: 8px;
+          padding: 0.75rem 1.5rem;
+          background: #7C3AED; color: white;
+          font-size: 0.875rem; font-weight: 700;
+          border-radius: 16px; border: none;
+          font-family: 'Open Sans', sans-serif;
+          transition: all 0.2s ease;
+          box-shadow: 0 4px 14px rgba(124,58,237,0.25);
         }
         .pp-btn-primary:hover:not(:disabled) {
-          background: #4eaa85;
+          background: #6D28D9;
           transform: translateY(-1px);
-          box-shadow: 0 8px 20px rgba(64,138,113,0.38);
+          box-shadow: 0 8px 25px rgba(124,58,237,0.35);
         }
         .pp-btn-primary:active:not(:disabled) { transform: translateY(0); }
-        .pp-btn-primary:disabled { opacity: 0.55; cursor: not-allowed !important; }
+        .pp-btn-primary:disabled { opacity: 0.6; cursor: not-allowed !important; }
 
         /* ── Ghost button ── */
         .pp-btn-ghost {
-          display: flex; align-items: center; gap: 6px;
-          padding: 0.55rem 1.1rem;
-          background: rgba(40,90,72,0.2);
-          border: 1px solid rgba(40,90,72,0.35);
-          color: rgba(176,228,204,0.6);
-          font-size: 0.8rem; font-weight: 700;
-          border-radius: 12px;
-          font-family: 'Plus Jakarta Sans', sans-serif;
-          transition: background 0.18s ease, color 0.18s ease;
+          display: flex; align-items: center; gap: 8px;
+          padding: 0.75rem 1.5rem;
+          background: rgba(196,181,253,0.1);
+          border: 1px solid rgba(196,181,253,0.3);
+          color: #7C3AED;
+          font-size: 0.875rem; font-weight: 700;
+          border-radius: 16px;
+          font-family: 'Open Sans', sans-serif;
+          transition: all 0.2s ease;
         }
-        .pp-btn-ghost:hover { background: rgba(40,90,72,0.35); color: #B0E4CC; }
+        .pp-btn-ghost:hover { 
+          background: rgba(196,181,253,0.2); 
+          border-color: rgba(124,58,237,0.4);
+        }
 
         /* ── Info stat tile ── */
         .pp-stat {
-          background: rgba(22,36,32,0.7);
-          border: 1px solid rgba(40,90,72,0.25);
-          border-radius: 14px;
-          padding: 1rem;
-          transition: border-color 0.2s ease;
+          background: rgba(196,181,253,0.05);
+          border: 1px solid rgba(196,181,253,0.2);
+          border-radius: 16px;
+          padding: 1.25rem;
+          transition: all 0.2s ease;
         }
-        .pp-stat:hover { border-color: rgba(64,138,113,0.4); }
+        .pp-stat:hover { 
+          border-color: rgba(124,58,237,0.3);
+          box-shadow: 0 4px 12px rgba(124,58,237,0.1);
+        }
 
         /* Banner upload btn */
         .pp-banner-btn {
           display: flex; align-items: center; gap: 8px;
-          padding: 0.5rem 1rem;
-          background: rgba(9,20,19,0.65);
+          padding: 0.75rem 1.25rem;
+          background: rgba(255,255,255,0.9);
           backdrop-filter: blur(12px);
-          border: 1px solid rgba(176,228,204,0.2);
-          color: #B0E4CC;
-          font-size: 0.78rem; font-weight: 700;
-          border-radius: 12px;
-          transition: background 0.18s ease;
+          border: 1px solid rgba(196,181,253,0.3);
+          color: #7C3AED;
+          font-size: 0.875rem; font-weight: 700;
+          border-radius: 16px;
+          transition: all 0.2s ease;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
-        .pp-banner-btn:hover { background: rgba(40,90,72,0.6); }
+        .pp-banner-btn:hover { 
+          background: white;
+          border-color: #7C3AED;
+          transform: translateY(-1px);
+        }
 
         /* ✅ Error message */
         .pp-error {
           display: flex; align-items: center; gap: 6px;
-          color: #f87171;
+          color: #ef4444;
           font-size: 0.75rem;
           font-weight: 600;
-          margin-top: 0.375rem;
+          margin-top: 0.5rem;
+        }
+
+        /* Responsive improvements */
+        @media (max-width: 768px) {
+          .pp-root {
+            padding-left: 1rem;
+            padding-right: 1rem;
+          }
+          .pp-card {
+            border-radius: 20px;
+          }
+          .pp-field {
+            padding: 0.75rem;
+            border-radius: 12px;
+          }
+          .pp-btn-primary, .pp-btn-ghost {
+            padding: 0.625rem 1.25rem;
+            border-radius: 12px;
+          }
         }
       `}</style>
 
-      <div className="pp-root max-w-3xl mx-auto px-4 sm:px-6 py-10 space-y-5">
+      <div className="pp-root w-full min-h-screen" style={{ background: '#FAF5FF' }}>
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
 
-        {/* ══ Page header ══════════════════════════════ */}
-        <div className="pp-s1 flex items-center justify-between gap-4 flex-wrap">
-          <div>
-            <h1 style={{ fontFamily: "'DM Serif Display', serif" }}
-              className="text-2xl sm:text-3xl font-bold text-white leading-tight">
-              My Profile
-            </h1>
-            <p className="text-sm mt-0.5" style={{ color: 'rgba(176,228,204,0.42)' }}>
-              Manage your personal information
-            </p>
-          </div>
-
-          {!editing ? (
-            <button onClick={() => setEditing(true)} className="pp-btn-primary">
-              <Edit3 className="w-3.5 h-3.5" />
-              Edit Profile
-            </button>
-          ) : (
-            <div className="flex items-center gap-2">
-              <button onClick={handleCancel} className="pp-btn-ghost">
-                <X className="w-3.5 h-3.5" />
-                Cancel
-              </button>
-              <button onClick={handleSave} disabled={saving} className="pp-btn-primary">
-                {saving
-                  ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  : <Save className="w-3.5 h-3.5" />}
-                Save Changes
-              </button>
+          {/* ══ Page header ══════════════════════════════ */}
+          <div className="pp-s1 flex items-center justify-between gap-4 flex-wrap">
+            <div>
+              <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-[#1e1b4b] leading-tight">
+                My Profile
+              </h1>
+              <p className="text-base sm:text-lg mt-2 text-[#6b7280]">
+                Manage your personal information and account settings
+              </p>
             </div>
-          )}
-        </div>
 
-        {/* ══ Profile card (banner + avatar + name) ═══ */}
-        <div className="pp-s2 pp-card overflow-hidden">
-
-          {/* ── Banner ── */}
-          <div className="relative h-36 sm:h-44 overflow-hidden"
-            style={{
-              background: 'linear-gradient(135deg, #285A48 0%, #162420 60%, #091413 100%)',
-            }}>
-            {formData.banner_url && (
-              <img src={formData.banner_url} alt="Banner" className="w-full h-full object-cover" />
-            )}
-
-            {/* Decorative rings */}
-            {!formData.banner_url && (
-              <>
-                <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full border border-[#408A71]/15 pointer-events-none" />
-                <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full border border-[#408A71]/10 pointer-events-none" />
-              </>
-            )}
-
-            {/* Editing overlay */}
-            {editing && (
-              <div className="absolute inset-0 flex items-center justify-center gap-3"
-                style={{ background: 'rgba(9,20,19,0.55)', backdropFilter: 'blur(2px)' }}>
-                <button
-                  onClick={() => bannerRef.current?.click()}
-                  disabled={uploadingBanner}
-                  className="pp-banner-btn"
-                >
-                  {uploadingBanner
-                    ? <Loader2 className="w-4 h-4 animate-spin" />
-                    : <Camera className="w-4 h-4" />}
-                  {formData.banner_url ? 'Change Banner' : 'Add Banner'}
+            {!editing ? (
+              <button onClick={() => setEditing(true)} className="pp-btn-primary">
+                <Edit3 className="w-4 h-4" />
+                Edit Profile
+              </button>
+            ) : (
+              <div className="flex items-center gap-3">
+                <button onClick={handleCancel} className="pp-btn-ghost">
+                  <X className="w-4 h-4" />
+                  Cancel
                 </button>
-                {formData.banner_url && (
-                  <button
-                    onClick={() => setFormData(p => ({ ...p, banner_url: '' }))}
-                    className="pp-banner-btn"
-                    style={{ borderColor: 'rgba(239,68,68,0.35)', color: '#f87171' }}
-                  >
-                    <X className="w-4 h-4" />
-                    Remove
-                  </button>
-                )}
+                <button onClick={handleSave} disabled={saving} className="pp-btn-primary">
+                  {saving
+                    ? <Loader2 className="w-4 h-4 animate-spin" />
+                    : <Save className="w-4 h-4" />}
+                  Save Changes
+                </button>
               </div>
             )}
-            <input ref={bannerRef} type="file" accept="image/*" onChange={handleBannerUpload} className="hidden" />
-
-            {/* Bottom fade */}
-            <div className="absolute inset-x-0 bottom-0 h-12 pointer-events-none"
-              style={{ background: 'linear-gradient(to top, rgba(13,28,25,0.9), transparent)' }} />
           </div>
 
-          {/* ── Avatar + name row ── */}
-          <div className="px-5 sm:px-6 pb-6">
-            <div className="flex items-end justify-between -mt-10 sm:-mt-12 mb-5 gap-3">
+          {/* ══ Profile card (banner + avatar + name) ═══ */}
+          <div className="pp-s2 pp-card overflow-hidden">
 
-              {/* Avatar */}
-              <div className="relative shrink-0">
-                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shadow-2xl"
-                  style={{ border: '3px solid #091413' }}>
-                  {formData.avatar_url ? (
-                    <img src={formData.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center"
-                      style={{ background: 'linear-gradient(135deg, #285A48 0%, #1a3d2e 100%)' }}>
-                      <span className="text-[#B0E4CC] text-2xl sm:text-3xl font-black">{initials}</span>
+            {/* ── Banner ── */}
+            <div className="relative h-48 sm:h-56 lg:h-64 overflow-hidden"
+              style={{
+                background: 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 50%, #5B21B6 100%)',
+              }}>
+              {formData.banner_url && (
+                <img src={formData.banner_url} alt="Banner" className="w-full h-full object-cover" />
+              )}
+
+              {/* Decorative elements */}
+              {!formData.banner_url && (
+                <>
+                  <div className="absolute -top-20 -right-20 w-64 h-64 rounded-full border border-white/10 pointer-events-none" />
+                  <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full border border-white/15 pointer-events-none" />
+                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-white/5 pointer-events-none" />
+                </>
+              )}
+
+              {/* Editing overlay */}
+              {editing && (
+                <div className="absolute inset-0 flex items-center justify-center gap-4"
+                  style={{ background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(4px)' }}>
+                  <button
+                    onClick={() => bannerRef.current?.click()}
+                    disabled={uploadingBanner}
+                    className="pp-banner-btn"
+                  >
+                    {uploadingBanner
+                      ? <Loader2 className="w-4 h-4 animate-spin" />
+                      : <Camera className="w-4 h-4" />}
+                    {formData.banner_url ? 'Change Banner' : 'Add Banner'}
+                  </button>
+                  {formData.banner_url && (
+                    <button
+                      onClick={() => setFormData(p => ({ ...p, banner_url: '' }))}
+                      className="pp-banner-btn"
+                      style={{ borderColor: 'rgba(239,68,68,0.4)', color: '#ef4444' }}
+                    >
+                      <X className="w-4 h-4" />
+                      Remove
+                    </button>
+                  )}
+                </div>
+              )}
+              <input ref={bannerRef} type="file" accept="image/*" onChange={handleBannerUpload} className="hidden" />
+
+              {/* Bottom fade */}
+              <div className="absolute inset-x-0 bottom-0 h-16 pointer-events-none"
+                style={{ background: 'linear-gradient(to top, rgba(255,255,255,0.1), transparent)' }} />
+            </div>
+
+            {/* ── Avatar + name row ── */}
+            <div className="px-6 sm:px-8 lg:px-10 pb-8">
+              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between -mt-16 sm:-mt-20 mb-6 gap-4">
+
+                {/* Avatar */}
+                <div className="relative shrink-0 self-center sm:self-auto">
+                  <div className="w-28 h-28 sm:w-32 sm:h-32 lg:w-36 lg:h-36 rounded-3xl overflow-hidden shadow-2xl"
+                    style={{ border: '4px solid white' }}>
+                    {formData.avatar_url ? (
+                      <img src={formData.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center"
+                        style={{ background: 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)' }}>
+                        <span className="text-white text-3xl sm:text-4xl lg:text-5xl font-black">{initials}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {editing && (
+                    <div className="absolute -bottom-3 left-1/2 transform -translate-x-1/2 flex gap-2">
+                      <button
+                        onClick={() => avatarRef.current?.click()}
+                        disabled={uploadingAvatar}
+                        title="Upload photo"
+                        className="w-10 h-10 rounded-2xl flex items-center justify-center text-white shadow-lg transition-all bg-[#7C3AED] hover:bg-[#6D28D9] hover:scale-105"
+                      >
+                        {uploadingAvatar
+                          ? <Loader2 className="w-4 h-4 animate-spin" />
+                          : <Camera className="w-4 h-4" />}
+                      </button>
+                      {formData.avatar_url && (
+                        <button
+                          onClick={() => setFormData(p => ({ ...p, avatar_url: '' }))}
+                          title="Remove photo"
+                          className="w-10 h-10 bg-red-500 hover:bg-red-600 hover:scale-105 rounded-2xl flex items-center justify-center text-white shadow-lg transition-all"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
+                  )}
+                  <input ref={avatarRef} type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+                </div>
+
+                {/* Role badge */}
+                <span className={cn(
+                  'flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold border self-center sm:self-auto mb-2',
+                  roleConfig.bg, roleConfig.color
+                )}>
+                  <RoleIcon className="w-4 h-4" />
+                  {roleConfig.label}
+                </span>
+              </div>
+
+              {/* Name / username / bio */}
+              <div className="space-y-2 text-center sm:text-left">
+                <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-bold text-[#1e1b4b] leading-tight">
+                  {formData.full_name || (
+                    <span className="text-[#9ca3af] italic text-xl">
+                      No name set
+                    </span>
+                  )}
+                </h2>
+                {formData.username && (
+                  <p className="text-lg font-semibold text-[#7C3AED]">
+                    @{formData.username}
+                  </p>
+                )}
+                {formData.bio && (
+                  <p className="text-base leading-relaxed pt-2 text-[#6b7280] max-w-2xl">
+                    {formData.bio}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ══ Main Content Grid ══════════════════════ */}
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+            
+            {/* ══ Personal information form ════════════════ */}
+            <div className="pp-s3 pp-card p-6 sm:p-8 space-y-6 xl:col-span-2">
+
+              {/* Section title */}
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
+                  style={{
+                    background: 'linear-gradient(135deg, #7C3AED, #6D28D9)',
+                  }}>
+                  <User className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="font-display text-xl font-bold text-[#1e1b4b]">Personal Information</h3>
+              </div>
+
+              <div className="pp-divider" />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                {/* Full Name */}
+                <div>
+                  <label className="pp-label">
+                    <User className="w-3.5 h-3.5" /> Full Name
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.full_name}
+                    onChange={e => setFormData(p => ({ ...p, full_name: e.target.value }))}
+                    disabled={!editing}
+                    placeholder="Your full name"
+                    className="pp-field"
+                  />
+                </div>
+
+                {/* ✅ Username with validation */}
+                <div>
+                  <label className="pp-label">
+                    <AtSign className="w-3.5 h-3.5" /> Username <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.username}
+                    onChange={e => handleUsernameChange(e.target.value)}
+                    disabled={!editing}
+                    placeholder="yourname"
+                    className={cn('pp-field', usernameError && 'error')}
+                  />
+                  {usernameError && (
+                    <p className="pp-error">
+                      <AlertCircle className="w-4 h-4" />
+                      {usernameError}
+                    </p>
                   )}
                 </div>
 
-                {editing && (
-                  <div className="absolute -bottom-2 left-0 right-0 flex justify-center gap-1.5">
-                    <button
-                      onClick={() => avatarRef.current?.click()}
-                      disabled={uploadingAvatar}
-                      title="Upload photo"
-                      className="w-7 h-7 rounded-xl flex items-center justify-center text-white shadow-lg transition-all"
-                      style={{ background: '#408A71' }}
-                      onMouseEnter={e => (e.currentTarget.style.background = '#4eaa85')}
-                      onMouseLeave={e => (e.currentTarget.style.background = '#408A71')}
-                    >
-                      {uploadingAvatar
-                        ? <Loader2 className="w-3 h-3 animate-spin" />
-                        : <Camera className="w-3 h-3" />}
-                    </button>
-                    {formData.avatar_url && (
-                      <button
-                        onClick={() => setFormData(p => ({ ...p, avatar_url: '' }))}
-                        title="Remove photo"
-                        className="w-7 h-7 bg-red-500 hover:bg-red-600 rounded-xl flex items-center justify-center text-white shadow-lg transition-colors"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    )}
+                {/* Email — always read-only */}
+                <div>
+                  <label className="pp-label">
+                    <Mail className="w-3.5 h-3.5" /> Email Address
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="email"
+                      value={email}
+                      disabled
+                      className="pp-field pr-12"
+                    />
+                    <CheckCircle
+                      className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none text-[#7C3AED]"
+                    />
                   </div>
-                )}
-                <input ref={avatarRef} type="file" accept="image/*" onChange={handleAvatarUpload} className="hidden" />
+                </div>
+
+                {/* Phone */}
+                <div>
+                  <label className="pp-label">
+                    <Phone className="w-3.5 h-3.5" /> Phone
+                  </label>
+                  <input
+                    type="tel"
+                    value={formData.phone}
+                    onChange={e => setFormData(p => ({ ...p, phone: e.target.value }))}
+                    disabled={!editing}
+                    placeholder="+92 300 0000000"
+                    className="pp-field"
+                  />
+                </div>
               </div>
 
-              {/* Role badge */}
-              <span className={cn(
-                'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border mb-1 shrink-0',
-                roleConfig.bg, roleConfig.color
-              )}>
-                <RoleIcon className="w-3 h-3" />
-                {roleConfig.label}
-              </span>
-            </div>
-
-            {/* Name / username / bio */}
-            <div className="space-y-1">
-              <h2 className="text-lg sm:text-xl font-extrabold text-white leading-tight"
-                style={{ fontFamily: "'DM Serif Display', serif" }}>
-                {formData.full_name || (
-                  <span style={{ color: 'rgba(176,228,204,0.28)', fontStyle: 'italic', fontSize: '1rem' }}>
-                    No name set
-                  </span>
-                )}
-              </h2>
-              {formData.username && (
-                <p className="text-sm font-medium" style={{ color: '#408A71' }}>
-                  @{formData.username}
-                </p>
-              )}
-              {formData.bio && (
-                <p className="text-sm leading-relaxed pt-1" style={{ color: 'rgba(176,228,204,0.55)' }}>
-                  {formData.bio}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* ══ Personal information form ════════════════ */}
-        <div className="pp-s3 pp-card p-5 sm:p-6 space-y-5">
-
-          {/* Section title */}
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-              style={{
-                background: 'linear-gradient(135deg, #285A48, #1a3d2e)',
-                border: '1px solid rgba(64,138,113,0.35)',
-              }}>
-              <User className="w-4 h-4" style={{ color: '#B0E4CC' }} />
-            </div>
-            <h3 className="text-white font-bold text-base">Personal Information</h3>
-          </div>
-
-          <div className="pp-divider" />
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-            {/* Full Name */}
-            <div>
-              <label className="pp-label">
-                <User className="w-3 h-3" /> Full Name
-              </label>
-              <input
-                type="text"
-                value={formData.full_name}
-                onChange={e => setFormData(p => ({ ...p, full_name: e.target.value }))}
-                disabled={!editing}
-                placeholder="Your full name"
-                className="pp-field"
-              />
-            </div>
-
-            {/* ✅ Username with validation */}
-            <div>
-              <label className="pp-label">
-                <AtSign className="w-3 h-3" /> Username <span style={{ color: '#f87171' }}>*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.username}
-                onChange={e => handleUsernameChange(e.target.value)}
-                disabled={!editing}
-                placeholder="yourname"
-                className={cn('pp-field', usernameError && 'error')}
-              />
-              {usernameError && (
-                <p className="pp-error">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  {usernameError}
-                </p>
-              )}
-            </div>
-
-            {/* Email — always read-only */}
-            <div>
-              <label className="pp-label">
-                <Mail className="w-3 h-3" /> Email Address
-              </label>
-              <div className="relative">
-                <input
-                  type="email"
-                  value={email}
-                  disabled
-                  className="pp-field"
-                  style={{ paddingRight: '2.5rem' }}
+              {/* Bio */}
+              <div>
+                <label className="pp-label">
+                  <FileText className="w-3.5 h-3.5" /> Bio
+                </label>
+                <textarea
+                  value={formData.bio}
+                  onChange={e => setFormData(p => ({ ...p, bio: e.target.value }))}
+                  disabled={!editing}
+                  placeholder="Tell people a little about yourself…"
+                  rows={4}
+                  maxLength={200}
+                  className="pp-field resize-none"
                 />
-                <CheckCircle
-                  className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
-                  style={{ color: '#408A71' }}
-                />
+                {editing && (
+                  <p className="text-right text-xs mt-2 text-[#9ca3af]">
+                    {formData.bio.length}/200
+                  </p>
+                )}
               </div>
             </div>
 
-            {/* Phone */}
-            <div>
-              <label className="pp-label">
-                <Phone className="w-3 h-3" /> Phone
-              </label>
-              <input
-                type="tel"
-                value={formData.phone}
-                onChange={e => setFormData(p => ({ ...p, phone: e.target.value }))}
-                disabled={!editing}
-                placeholder="+92 300 0000000"
-                className="pp-field"
-              />
-            </div>
-          </div>
+            {/* ══ Account details sidebar ══════════════════════════ */}
+            <div className="pp-s4 pp-card p-6 sm:p-8 space-y-6 xl:col-span-1">
 
-          {/* Bio */}
-          <div>
-            <label className="pp-label">
-              <FileText className="w-3 h-3" /> Bio
-            </label>
-            <textarea
-              value={formData.bio}
-              onChange={e => setFormData(p => ({ ...p, bio: e.target.value }))}
-              disabled={!editing}
-              placeholder="Tell people a little about yourself…"
-              rows={3}
-              maxLength={200}
-              className="pp-field resize-none"
-            />
-            {editing && (
-              <p className="text-right text-xs mt-1" style={{ color: 'rgba(176,228,204,0.28)' }}>
-                {formData.bio.length}/200
-              </p>
-            )}
-          </div>
-        </div>
-
-        {/* ══ Account details ══════════════════════════ */}
-        <div className="pp-s4 pp-card p-5 sm:p-6 space-y-5">
-
-          {/* Section title */}
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-              style={{
-                background: 'linear-gradient(135deg, #285A48, #1a3d2e)',
-                border: '1px solid rgba(64,138,113,0.35)',
-              }}>
-              <Shield className="w-4 h-4" style={{ color: '#B0E4CC' }} />
-            </div>
-            <h3 className="text-white font-bold text-base">Account Details</h3>
-          </div>
-
-          <div className="pp-divider" />
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-
-            {/* Account type */}
-            <div className="pp-stat">
-              <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'rgba(176,228,204,0.35)' }}>
-                Account Type
-              </p>
-              <div className="flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full shrink-0" style={{ background: roleConfig.dot }} />
-                <p className={cn('font-bold text-sm', roleConfig.color)}>{roleConfig.label}</p>
-              </div>
-            </div>
-
-            {/* Member since */}
-            <div className="pp-stat">
-              <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'rgba(176,228,204,0.35)' }}>
-                Member Since
-              </p>
-              <p className="text-white font-bold text-sm">
-                {createdAt
-                  ? new Date(createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-                  : '—'}
-              </p>
-            </div>
-
-            {/* Email verified */}
-            <div className="pp-stat sm:col-span-2">
-              <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'rgba(176,228,204,0.35)' }}>
-                Email Address
-              </p>
-              <div className="flex items-center gap-2 flex-wrap">
-                <p className="text-white font-semibold text-sm break-all">{email}</p>
-                <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wide shrink-0"
+              {/* Section title */}
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
                   style={{
-                    background: 'rgba(64,138,113,0.15)',
-                    border: '1px solid rgba(64,138,113,0.3)',
-                    color: '#408A71',
+                    background: 'linear-gradient(135deg, #7C3AED, #6D28D9)',
                   }}>
-                  <CheckCircle className="w-3 h-3" />
-                  Verified
-                </span>
+                  <Shield className="w-5 h-5 text-white" />
+                </div>
+                <h3 className="font-display text-xl font-bold text-[#1e1b4b]">Account Details</h3>
+              </div>
+
+              <div className="pp-divider" />
+
+              <div className="space-y-6">
+
+                {/* Account type */}
+                <div className="pp-stat">
+                  <p className="text-xs font-bold uppercase tracking-wider mb-3 text-[#9ca3af]">
+                    Account Type
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <span className="w-3 h-3 rounded-full shrink-0" style={{ background: roleConfig.dot }} />
+                    <p className={cn('font-bold text-base', roleConfig.color)}>{roleConfig.label}</p>
+                  </div>
+                </div>
+
+                {/* Member since */}
+                <div className="pp-stat">
+                  <p className="text-xs font-bold uppercase tracking-wider mb-3 text-[#9ca3af]">
+                    Member Since
+                  </p>
+                  <p className="text-[#1e1b4b] font-bold text-base">
+                    {createdAt
+                      ? new Date(createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+                      : '—'}
+                  </p>
+                </div>
+
+                {/* Email verified status */}
+                <div className="pp-stat">
+                  <p className="text-xs font-bold uppercase tracking-wider mb-3 text-[#9ca3af]">
+                    Verification Status
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <span className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wide"
+                      style={{
+                        background: 'rgba(124,58,237,0.1)',
+                        border: '1px solid rgba(124,58,237,0.3)',
+                        color: '#7C3AED',
+                      }}>
+                      <CheckCircle className="w-3.5 h-3.5" />
+                      Email Verified
+                    </span>
+                  </div>
+                </div>
+
               </div>
             </div>
-
           </div>
-        </div>
 
+        </div>
       </div>
     </>
   )

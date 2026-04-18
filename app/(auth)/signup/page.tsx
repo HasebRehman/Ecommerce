@@ -5,18 +5,11 @@ import { useForm } from 'react-hook-form'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { toast } from 'sonner'
-import { Eye, EyeOff, Loader2, UserPlus, User, Mail, Lock, CheckCircle2 } from 'lucide-react'
-
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { Eye, EyeOff, Loader2, User, Mail, Lock, CheckCircle2 } from 'lucide-react'
 
 import { signupSchema, type SignupFormData } from '@/lib/validations/auth.schema'
 import { authService } from '@/lib/services/auth.service'
 import { createResolver } from '@/lib/validations/resolver'
-
-/* ── Card / Header / Content / Footer are inlined so we can
-      fully control the look without shadcn Card overrides ── */
 
 export default function SignupPage() {
   const router = useRouter()
@@ -24,11 +17,7 @@ export default function SignupPage() {
   const [showConfirm,  setShowConfirm]  = useState(false)
   const [isLoading,    setIsLoading]    = useState(false)
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<SignupFormData>({
+  const { register, handleSubmit, formState: { errors } } = useForm<SignupFormData>({
     resolver: createResolver(signupSchema),
   })
 
@@ -49,223 +38,209 @@ export default function SignupPage() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        .sp * { box-sizing: border-box; }
+        .sp { font-family: 'Inter', sans-serif; width: 100%; }
 
-        .sp-root * { box-sizing: border-box; }
-        .sp-root, .sp-root button, .sp-root a { cursor: pointer !important; }
-        .sp-root { font-family: 'Plus Jakarta Sans', sans-serif; }
-
-        /* ── Input focus ring ── */
-        .sp-input {
-          width: 100%;
-          background: rgba(22,36,32,0.7);
-          border: 1px solid rgba(40,90,72,0.45);
-          border-radius: 12px;
-          padding: 0.65rem 0.875rem 0.65rem 2.6rem;
-          color: #B0E4CC;
-          font-size: 0.875rem;
-          font-family: 'Plus Jakarta Sans', sans-serif;
-          outline: none;
-          transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-          caret-color: #408A71;
-        }
-        .sp-input::placeholder { color: rgba(176,228,204,0.28); }
-        .sp-input:focus {
-          border-color: #408A71;
-          background: rgba(22,36,32,0.95);
-          box-shadow: 0 0 0 3px rgba(64,138,113,0.18);
-        }
-        .sp-input-error {
-          border-color: rgba(239,68,68,0.55) !important;
-          box-shadow: 0 0 0 3px rgba(239,68,68,0.10) !important;
-        }
-        .sp-input-pr { padding-right: 2.75rem; }
-
-        /* ── Submit button ── */
-        .sp-btn {
-          width: 100%;
-          padding: 0.8rem 1.5rem;
-          background: #408A71;
-          color: #fff;
-          font-weight: 800;
-          font-size: 0.875rem;
-          letter-spacing: 0.04em;
-          border-radius: 14px;
-          border: none;
-          display: flex; align-items: center; justify-content: center; gap: 0.5rem;
-          transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
-          box-shadow: 0 6px 20px rgba(64,138,113,0.35);
-          font-family: 'Plus Jakarta Sans', sans-serif;
-        }
-        .sp-btn:hover:not(:disabled) {
-          background: #4eaa85;
-          transform: translateY(-1px);
-          box-shadow: 0 10px 28px rgba(64,138,113,0.45);
-        }
-        .sp-btn:active:not(:disabled) { transform: translateY(0); }
-        .sp-btn:disabled { opacity: 0.6; cursor: not-allowed !important; }
-
-        /* ── Label ── */
         .sp-label {
           display: block;
-          font-size: 0.75rem;
+          font-size: 0.8rem;
+          font-weight: 600;
+          color: #374151;
+          margin-bottom: 0.28rem;
+        }
+
+        .sp-input {
+          width: 100%;
+          background: #FAFAFA;
+          border: 1.5px solid #E5E7EB;
+          border-radius: 10px;
+          padding: 0.55rem 0.8rem 0.55rem 2.4rem;
+          color: #1e1b4b;
+          font-size: 0.855rem;
+          font-family: 'Inter', sans-serif;
+          outline: none;
+          transition: border-color 0.18s, box-shadow 0.18s, background 0.18s;
+          caret-color: #7C3AED;
+        }
+        .sp-input::placeholder { color: #9CA3AF; }
+        .sp-input:focus {
+          border-color: #7C3AED;
+          background: white;
+          box-shadow: 0 0 0 3px rgba(124,58,237,0.10);
+        }
+        .sp-input-err {
+          border-color: #EF4444 !important;
+          box-shadow: 0 0 0 3px rgba(239,68,68,0.08) !important;
+        }
+        .sp-input-pr { padding-right: 2.5rem; }
+
+        .sp-icon {
+          position: absolute;
+          left: 0.75rem;
+          top: 50%;
+          transform: translateY(-50%);
+          pointer-events: none;
+          color: #A78BFA;
+          width: 15px;
+          height: 15px;
+          flex-shrink: 0;
+        }
+
+        .sp-eye {
+          position: absolute;
+          right: 0.75rem;
+          top: 50%;
+          transform: translateY(-50%);
+          background: none;
+          border: none;
+          padding: 0;
+          color: #9CA3AF;
+          display: flex;
+          align-items: center;
+          transition: color 0.15s;
+          cursor: pointer !important;
+        }
+        .sp-eye:hover { color: #7C3AED; }
+
+        .sp-btn {
+          width: 100%;
+          padding: 0.78rem;
+          background: #7C3AED;
+          color: white;
           font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.08em;
-          color: rgba(176,228,204,0.55);
-          margin-bottom: 0.45rem;
-          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-size: 0.9rem;
+          border-radius: 10px;
+          border: none;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.4rem;
+          transition: background 0.18s, transform 0.12s, box-shadow 0.18s;
+          box-shadow: 0 4px 14px rgba(124,58,237,0.28);
+          font-family: 'Inter', sans-serif;
         }
-
-        /* ── Divider ── */
-        .sp-divider {
-          height: 1px;
-          background: linear-gradient(90deg, transparent, rgba(40,90,72,0.5), transparent);
+        .sp-btn:hover:not(:disabled) {
+          background: #6D28D9;
+          transform: translateY(-1px);
+          box-shadow: 0 6px 20px rgba(124,58,237,0.36);
         }
+        .sp-btn:active:not(:disabled) { transform: translateY(0); }
+        .sp-btn:disabled { opacity: 0.55; cursor: not-allowed !important; }
 
-        /* ── Animate in ── */
-        @keyframes fieldIn {
+        @keyframes spFadeUp {
           from { opacity: 0; transform: translateY(10px); }
           to   { opacity: 1; transform: translateY(0); }
         }
-        .field-1 { animation: fieldIn 0.35s 0.05s both; }
-        .field-2 { animation: fieldIn 0.35s 0.10s both; }
-        .field-3 { animation: fieldIn 0.35s 0.15s both; }
-        .field-4 { animation: fieldIn 0.35s 0.20s both; }
-        .field-5 { animation: fieldIn 0.35s 0.25s both; }
+        .sp .a1 { animation: spFadeUp 0.32s 0.00s both; }
+        .sp .a2 { animation: spFadeUp 0.32s 0.05s both; }
+        .sp .a3 { animation: spFadeUp 0.32s 0.09s both; }
+        .sp .a4 { animation: spFadeUp 0.32s 0.13s both; }
+        .sp .a5 { animation: spFadeUp 0.32s 0.17s both; }
+        .sp .a6 { animation: spFadeUp 0.32s 0.21s both; }
+        .sp .a7 { animation: spFadeUp 0.32s 0.25s both; }
       `}</style>
 
-      <div className="sp-root">
-        {/* ── Header ──────────────────────────────────── */}
-        <div className="px-6 pt-7 pb-5">
-          <div className="flex items-center gap-3 mb-1">
-            <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-              style={{
-                background: 'linear-gradient(135deg, #285A48 0%, #1a3d2e 100%)',
-                border: '1px solid rgba(64,138,113,0.4)',
-                boxShadow: '0 4px 14px rgba(9,20,19,0.5)',
-              }}>
-              <UserPlus className="w-4 h-4" style={{ color: '#B0E4CC' }} />
-            </div>
-            <div>
-              <h2 className="text-white font-extrabold text-xl leading-tight">
-                Create Account
-              </h2>
-              <p style={{ color: 'rgba(176,228,204,0.45)', fontSize: '0.78rem' }}>
-                Join VendoSphere — it's free to get started
-              </p>
-            </div>
-          </div>
+      <div className="sp">
+
+        {/* Heading */}
+        <div className="a1" style={{ marginBottom: '0.2rem' }}>
+          <h2 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#1e1b4b', lineHeight: 1.2 }}>
+            Create Account
+          </h2>
+        </div>
+        <div className="a2" style={{ marginBottom: '1rem' }}>
+          <p style={{ fontSize: '0.85rem', color: '#6b7280' }}>
+            Join VendoSphere — it&apos;s free to get started
+          </p>
         </div>
 
-        <div className="sp-divider mx-6" />
-
-        {/* ── Form ────────────────────────────────────── */}
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="px-6 pt-5 pb-2 space-y-4">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
 
             {/* Full Name */}
-            <div className="field-1">
+            <div className="a3">
               <label htmlFor="full_name" className="sp-label">Full Name</label>
-              <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
-                  style={{ color: 'rgba(64,138,113,0.6)' }} />
+              <div style={{ position: 'relative' }}>
+                <User className="sp-icon" />
                 <input
                   id="full_name"
-                  placeholder="Hassan Ahmed"
-                  className={`sp-input ${errors.full_name ? 'sp-input-error' : ''}`}
+                  placeholder="Haseeb Rehman"
+                  className={`sp-input${errors.full_name ? ' sp-input-err' : ''}`}
                   {...register('full_name')}
                 />
               </div>
               {errors.full_name && (
-                <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1">
-                  <span className="w-1 h-1 rounded-full bg-red-400 shrink-0" />
+                <p style={{ color: '#EF4444', fontSize: '0.72rem', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                  <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#EF4444', flexShrink: 0, display: 'inline-block' }} />
                   {errors.full_name.message}
                 </p>
               )}
             </div>
 
             {/* Email */}
-            <div className="field-2">
+            <div className="a3">
               <label htmlFor="email" className="sp-label">Email Address</label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
-                  style={{ color: 'rgba(64,138,113,0.6)' }} />
+              <div style={{ position: 'relative' }}>
+                <Mail className="sp-icon" />
                 <input
                   id="email"
                   type="email"
-                  placeholder="hassan@example.com"
-                  className={`sp-input ${errors.email ? 'sp-input-error' : ''}`}
+                  placeholder="haseeb@gmail.com"
+                  className={`sp-input${errors.email ? ' sp-input-err' : ''}`}
                   {...register('email')}
                 />
               </div>
               {errors.email && (
-                <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1">
-                  <span className="w-1 h-1 rounded-full bg-red-400 shrink-0" />
+                <p style={{ color: '#EF4444', fontSize: '0.72rem', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                  <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#EF4444', flexShrink: 0, display: 'inline-block' }} />
                   {errors.email.message}
                 </p>
               )}
             </div>
 
             {/* Password */}
-            <div className="field-3">
+            <div className="a4">
               <label htmlFor="password" className="sp-label">Password</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
-                  style={{ color: 'rgba(64,138,113,0.6)' }} />
+              <div style={{ position: 'relative' }}>
+                <Lock className="sp-icon" />
                 <input
                   id="password"
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Min 8 chars, 1 uppercase, 1 number"
-                  className={`sp-input sp-input-pr ${errors.password ? 'sp-input-error' : ''}`}
+                  className={`sp-input sp-input-pr${errors.password ? ' sp-input-err' : ''}`}
                   {...register('password')}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
-                  style={{ color: 'rgba(176,228,204,0.4)' }}
-                  onMouseEnter={e => (e.currentTarget.style.color = '#B0E4CC')}
-                  onMouseLeave={e => (e.currentTarget.style.color = 'rgba(176,228,204,0.4)')}
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                <button type="button" className="sp-eye" onClick={() => setShowPassword(p => !p)} aria-label="Toggle password">
+                  {showPassword ? <EyeOff style={{ width: 15, height: 15 }} /> : <Eye style={{ width: 15, height: 15 }} />}
                 </button>
               </div>
               {errors.password && (
-                <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1">
-                  <span className="w-1 h-1 rounded-full bg-red-400 shrink-0" />
+                <p style={{ color: '#EF4444', fontSize: '0.72rem', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                  <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#EF4444', flexShrink: 0, display: 'inline-block' }} />
                   {errors.password.message}
                 </p>
               )}
             </div>
 
             {/* Confirm Password */}
-            <div className="field-4">
+            <div className="a5">
               <label htmlFor="confirm_password" className="sp-label">Confirm Password</label>
-              <div className="relative">
-                <CheckCircle2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
-                  style={{ color: 'rgba(64,138,113,0.6)' }} />
+              <div style={{ position: 'relative' }}>
+                <CheckCircle2 className="sp-icon" />
                 <input
                   id="confirm_password"
                   type={showConfirm ? 'text' : 'password'}
                   placeholder="Repeat your password"
-                  className={`sp-input sp-input-pr ${errors.confirm_password ? 'sp-input-error' : ''}`}
+                  className={`sp-input sp-input-pr${errors.confirm_password ? ' sp-input-err' : ''}`}
                   {...register('confirm_password')}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirm(!showConfirm)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 transition-colors"
-                  style={{ color: 'rgba(176,228,204,0.4)' }}
-                  onMouseEnter={e => (e.currentTarget.style.color = '#B0E4CC')}
-                  onMouseLeave={e => (e.currentTarget.style.color = 'rgba(176,228,204,0.4)')}
-                >
-                  {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                <button type="button" className="sp-eye" onClick={() => setShowConfirm(p => !p)} aria-label="Toggle confirm">
+                  {showConfirm ? <EyeOff style={{ width: 15, height: 15 }} /> : <Eye style={{ width: 15, height: 15 }} />}
                 </button>
               </div>
               {errors.confirm_password && (
-                <p className="text-red-400 text-xs mt-1.5 flex items-center gap-1">
-                  <span className="w-1 h-1 rounded-full bg-red-400 shrink-0" />
+                <p style={{ color: '#EF4444', fontSize: '0.72rem', marginTop: '0.25rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                  <span style={{ width: 4, height: 4, borderRadius: '50%', background: '#EF4444', flexShrink: 0, display: 'inline-block' }} />
                   {errors.confirm_password.message}
                 </p>
               )}
@@ -273,39 +248,35 @@ export default function SignupPage() {
 
           </div>
 
-          {/* ── Footer ──────────────────────────────────── */}
-          <div className="px-6 pt-4 pb-7 flex flex-col gap-4 field-5">
-
+          {/* Submit */}
+          <div className="a6" style={{ marginTop: '0.9rem' }}>
             <button type="submit" disabled={isLoading} className="sp-btn">
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Creating account…
-                </>
-              ) : (
-                <>
-                  <UserPlus className="w-4 h-4" />
-                  Create Account
-                </>
-              )}
+              {isLoading
+                ? <><Loader2 style={{ width: 15, height: 15, animation: 'spin 1s linear infinite' }} /> Creating account...</>
+                : 'Create Account'
+              }
             </button>
-
-            {/* Sign in link */}
-            <p className="text-center text-sm" style={{ color: 'rgba(176,228,204,0.40)' }}>
-              Already have an account?{' '}
-              <Link
-                href="/login"
-                className="font-bold transition-colors"
-                style={{ color: '#408A71' }}
-                onMouseEnter={e => (e.currentTarget.style.color = '#B0E4CC')}
-                onMouseLeave={e => (e.currentTarget.style.color = '#408A71')}
-              >
-                Sign in
-              </Link>
-            </p>
-
           </div>
         </form>
+
+        {/* Login link */}
+        <p className="a7" style={{ textAlign: 'center', fontSize: '0.82rem', color: '#6b7280', marginTop: '0.75rem' }}>
+          Already have an account?{' '}
+          <Link
+            href="/login"
+            style={{ fontWeight: 600, color: '#7C3AED', textDecoration: 'none' }}
+            onMouseEnter={e => (e.currentTarget.style.color = '#6D28D9')}
+            onMouseLeave={e => (e.currentTarget.style.color = '#7C3AED')}
+          >
+            Login
+          </Link>
+        </p>
+
+        {/* Copyright */}
+        {/* <p style={{ textAlign: 'center', fontSize: '0.7rem', color: '#9CA3AF', marginTop: '1.75rem' }}>
+          &copy; {new Date().getFullYear()} VendoSphere. All rights reserved.
+        </p> */}
+
       </div>
     </>
   )

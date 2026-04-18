@@ -28,9 +28,9 @@ const LABELS = ['Home', 'Office', 'Other']
 
 /* label accent colours — all on-brand */
 const LABEL_STYLE: Record<string, { bg: string; color: string }> = {
-  Home:   { bg: 'rgba(64,138,113,0.15)',  color: '#408A71' },
-  Office: { bg: 'rgba(176,228,204,0.12)', color: '#B0E4CC' },
-  Other:  { bg: 'rgba(40,90,72,0.25)',    color: 'rgba(176,228,204,0.55)' },
+  Home:   { bg: 'rgba(124,58,237,0.15)',  color: '#7C3AED' },
+  Office: { bg: 'rgba(109,40,217,0.12)', color: '#6D28D9' },
+  Other:  { bg: 'rgba(124,58,237,0.1)',    color: 'rgba(124,58,237,0.6)' },
 }
 
 export default function AddressSelector({ onSelect, selected }: Props) {
@@ -115,8 +115,8 @@ export default function AddressSelector({ onSelect, selected }: Props) {
     <>
       <style>{sharedStyles}</style>
       <div className="as-root flex items-center gap-2.5 px-1 py-3">
-        <Loader2 className="w-4 h-4 animate-spin shrink-0" style={{ color: '#408A71' }} />
-        <span className="text-sm font-medium" style={{ color: 'rgba(176,228,204,0.42)' }}>
+        <Loader2 className="w-4 h-4 animate-spin shrink-0" style={{ color: '#7C3AED' }} />
+        <span className="text-sm font-medium" style={{ color: '#9CA3AF' }}>
           Loading addresses…
         </span>
       </div>
@@ -138,18 +138,18 @@ export default function AddressSelector({ onSelect, selected }: Props) {
             {/* Icon tile */}
             <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
               style={{
-                background: 'linear-gradient(135deg, #285A48, #1a3d2e)',
-                border: '1px solid rgba(64,138,113,0.35)',
+                background: 'linear-gradient(135deg, #7C3AED, #6D28D9)',
+                border: '1px solid rgba(124,58,237,0.35)',
               }}>
-              <MapPin className="w-3.5 h-3.5" style={{ color: '#B0E4CC' }} />
+              <MapPin className="w-3.5 h-3.5" style={{ color: '#fff' }} />
             </div>
-            <span className="text-white font-bold text-sm">Delivery Address</span>
+            <span className="text-gray-900 font-bold text-sm" style={{ fontFamily: "'Montserrat', sans-serif" }}>Delivery Address</span>
             {selected && !collapsed && (
               <span className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wide px-2 py-0.5 rounded-full"
                 style={{
-                  background: 'rgba(64,138,113,0.15)',
-                  border: '1px solid rgba(64,138,113,0.3)',
-                  color: '#408A71',
+                  background: 'rgba(124,58,237,0.15)',
+                  border: '1px solid rgba(124,58,237,0.25)',
+                  color: '#7C3AED',
                 }}>
                 <Check className="w-2.5 h-2.5" />
                 Selected
@@ -158,7 +158,7 @@ export default function AddressSelector({ onSelect, selected }: Props) {
           </div>
 
           <div className="w-6 h-6 rounded-lg flex items-center justify-center transition-colors"
-            style={{ background: 'rgba(40,90,72,0.25)', color: 'rgba(176,228,204,0.5)' }}>
+            style={{ background: 'rgba(124,58,237,0.1)', color: '#9CA3AF' }}>
             {collapsed
               ? <ChevronDown className="w-3.5 h-3.5" />
               : <ChevronUp className="w-3.5 h-3.5" />}
@@ -169,11 +169,11 @@ export default function AddressSelector({ onSelect, selected }: Props) {
         {collapsed && selected && (
           <div className="as-summary-card px-4 py-3 rounded-2xl"
             style={{
-              background: 'rgba(22,36,32,0.7)',
-              border: '1px solid rgba(40,90,72,0.3)',
+              background: 'rgba(243,232,255,0.5)',
+              border: '1px solid rgba(124,58,237,0.15)',
             }}>
             <div className="flex items-center gap-2 mb-0.5">
-              <span className="text-white font-semibold text-sm">{selected.full_name}</span>
+              <span className="text-gray-900 font-semibold text-sm">{selected.full_name}</span>
               <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
                 style={{
                   background: LABEL_STYLE[selected.label]?.bg ?? LABEL_STYLE.Other.bg,
@@ -182,7 +182,7 @@ export default function AddressSelector({ onSelect, selected }: Props) {
                 {selected.label}
               </span>
             </div>
-            <p className="text-xs" style={{ color: 'rgba(176,228,204,0.45)' }}>
+            <p className="text-xs" style={{ color: '#6B7280' }}>
               {selected.phone} · {selected.address}, {selected.city}
             </p>
           </div>
@@ -201,19 +201,19 @@ export default function AddressSelector({ onSelect, selected }: Props) {
                   onClick={() => onSelect(addr)}
                   className="as-addr-card flex items-start gap-3 p-3.5 rounded-2xl transition-all"
                   style={{
-                    background: isSelected ? 'rgba(40,90,72,0.22)' : 'rgba(13,28,25,0.85)',
+                    background: isSelected ? 'rgba(124,58,237,0.1)' : 'rgba(243,232,255,0.4)',
                     border: isSelected
-                      ? '1px solid rgba(64,138,113,0.55)'
-                      : '1px solid rgba(40,90,72,0.22)',
+                      ? '1px solid rgba(124,58,237,0.3)'
+                      : '1px solid rgba(124,58,237,0.15)',
                     animationDelay: `${idx * 50}ms`,
                   }}
                 >
                   {/* Radio circle */}
                   <div className="shrink-0 mt-0.5 w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all"
                     style={{
-                      borderColor: isSelected ? '#408A71' : 'rgba(40,90,72,0.5)',
-                      background:  isSelected ? '#408A71' : 'transparent',
-                      boxShadow:   isSelected ? '0 0 8px rgba(64,138,113,0.4)' : 'none',
+                      borderColor: isSelected ? '#7C3AED' : 'rgba(124,58,237,0.3)',
+                      background:  isSelected ? '#7C3AED' : 'transparent',
+                      boxShadow:   isSelected ? '0 0 8px rgba(124,58,237,0.4)' : 'none',
                     }}>
                     {isSelected && <Check className="w-2.5 h-2.5 text-white" />}
                   </div>
@@ -221,7 +221,7 @@ export default function AddressSelector({ onSelect, selected }: Props) {
                   {/* Address info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-0.5">
-                      <span className="text-white text-sm font-semibold">{addr.full_name}</span>
+                      <span className="text-gray-900 text-sm font-semibold">{addr.full_name}</span>
 
                       {/* Label pill */}
                       <span className="text-[10px] font-black px-2 py-0.5 rounded-full"
@@ -246,10 +246,10 @@ export default function AddressSelector({ onSelect, selected }: Props) {
                       )}
                     </div>
 
-                    <p className="text-xs" style={{ color: 'rgba(176,228,204,0.45)' }}>
+                    <p className="text-xs" style={{ color: '#6B7280' }}>
                       {addr.phone}
                     </p>
-                    <p className="text-xs mt-0.5" style={{ color: 'rgba(176,228,204,0.55)' }}>
+                    <p className="text-xs mt-0.5" style={{ color: '#9CA3AF' }}>
                       {addr.address}, {addr.city}
                     </p>
                   </div>
@@ -263,6 +263,7 @@ export default function AddressSelector({ onSelect, selected }: Props) {
                       background: 'rgba(239,68,68,0.08)',
                       color: 'rgba(248,113,113,0.5)',
                       border: '1px solid transparent',
+                      cursor: 'pointer',
                     }}
                     onMouseEnter={e => {
                       const b = e.currentTarget as HTMLButtonElement
@@ -290,21 +291,22 @@ export default function AddressSelector({ onSelect, selected }: Props) {
                 onClick={() => setShowForm(true)}
                 className="as-add-btn w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl text-sm font-bold transition-all"
                 style={{
-                  background: 'rgba(13,28,25,0.6)',
-                  border: '1px dashed rgba(40,90,72,0.45)',
-                  color: 'rgba(176,228,204,0.45)',
+                  background: 'rgba(243,232,255,0.5)',
+                  border: '1px dashed rgba(124,58,237,0.3)',
+                  color: '#7C3AED',
+                  cursor: 'pointer',
                 }}
                 onMouseEnter={e => {
                   const b = e.currentTarget as HTMLButtonElement
-                  b.style.borderColor = 'rgba(64,138,113,0.6)'
-                  b.style.color       = '#408A71'
-                  b.style.background  = 'rgba(40,90,72,0.15)'
+                  b.style.borderColor = 'rgba(124,58,237,0.5)'
+                  b.style.color       = '#6D28D9'
+                  b.style.background  = 'rgba(124,58,237,0.1)'
                 }}
                 onMouseLeave={e => {
                   const b = e.currentTarget as HTMLButtonElement
-                  b.style.borderColor = 'rgba(40,90,72,0.45)'
-                  b.style.color       = 'rgba(176,228,204,0.45)'
-                  b.style.background  = 'rgba(13,28,25,0.6)'
+                  b.style.borderColor = 'rgba(124,58,237,0.3)'
+                  b.style.color       = '#7C3AED'
+                  b.style.background  = 'rgba(243,232,255,0.5)'
                 }}
               >
                 <Plus className="w-4 h-4" />
@@ -316,31 +318,31 @@ export default function AddressSelector({ onSelect, selected }: Props) {
             {showForm && (
               <div className="rounded-2xl overflow-hidden"
                 style={{
-                  background: 'rgba(13,28,25,0.92)',
-                  border: '1px solid rgba(40,90,72,0.35)',
+                  background: 'rgba(243,232,255,0.6)',
+                  border: '1px solid rgba(124,58,237,0.2)',
                 }}>
 
                 {/* Form header */}
                 <div className="flex items-center justify-between px-4 py-3.5"
-                  style={{ borderBottom: '1px solid rgba(40,90,72,0.25)' }}>
+                  style={{ borderBottom: '1px solid rgba(124,58,237,0.15)' }}>
                   <div className="flex items-center gap-2">
                     <div className="w-6 h-6 rounded-lg flex items-center justify-center"
                       style={{
-                        background: 'linear-gradient(135deg, #285A48, #1a3d2e)',
-                        border: '1px solid rgba(64,138,113,0.3)',
+                        background: 'linear-gradient(135deg, #7C3AED, #6D28D9)',
+                        border: '1px solid rgba(124,58,237,0.3)',
                       }}>
-                      <Plus className="w-3 h-3" style={{ color: '#B0E4CC' }} />
+                      <Plus className="w-3 h-3" style={{ color: '#fff' }} />
                     </div>
-                    <p className="text-white text-sm font-bold">New Address</p>
+                    <p className="text-gray-900 text-sm font-bold" style={{ fontFamily: "'Montserrat', sans-serif" }}>New Address</p>
                   </div>
                   {addresses.length > 0 && (
                     <button
                       type="button"
                       onClick={() => setShowForm(false)}
                       className="text-xs font-bold px-2.5 py-1 rounded-lg transition-colors"
-                      style={{ color: 'rgba(176,228,204,0.45)', background: 'rgba(40,90,72,0.2)' }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#B0E4CC' }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = 'rgba(176,228,204,0.45)' }}
+                      style={{ color: '#7C3AED', background: 'rgba(124,58,237,0.1)', cursor: 'pointer' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = '#6D28D9' }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = '#7C3AED' }}
                     >
                       Cancel
                     </button>
@@ -360,12 +362,13 @@ export default function AddressSelector({ onSelect, selected }: Props) {
                           onClick={() => setForm(f => ({ ...f, label: l }))}
                           className="flex-1 py-1.5 rounded-xl text-xs font-black uppercase tracking-wide transition-all"
                           style={{
-                            background: active ? '#408A71' : 'rgba(40,90,72,0.2)',
-                            color:      active ? '#fff'    : 'rgba(176,228,204,0.45)',
+                            background: active ? '#7C3AED' : 'rgba(124,58,237,0.1)',
+                            color:      active ? '#fff'    : '#7C3AED',
                             border: active
-                              ? '1px solid rgba(64,138,113,0.6)'
-                              : '1px solid rgba(40,90,72,0.3)',
-                            boxShadow: active ? '0 4px 12px rgba(64,138,113,0.25)' : 'none',
+                              ? '1px solid rgba(124,58,237,0.6)'
+                              : '1px solid rgba(124,58,237,0.2)',
+                            boxShadow: active ? '0 4px 12px rgba(124,58,237,0.25)' : 'none',
+                            cursor: 'pointer',
                           }}
                         >
                           {l}
@@ -425,17 +428,18 @@ export default function AddressSelector({ onSelect, selected }: Props) {
                     disabled={saving}
                     className="as-save-btn w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-black transition-all"
                     style={{
-                      background: '#408A71',
+                      background: '#7C3AED',
                       color: '#fff',
                       border: 'none',
-                      boxShadow: '0 4px 16px rgba(64,138,113,0.3)',
+                      boxShadow: '0 4px 16px rgba(124,58,237,0.3)',
                       opacity: saving ? 0.6 : 1,
+                      cursor: saving ? 'not-allowed' : 'pointer',
                     }}
                     onMouseEnter={e => {
-                      if (!saving) (e.currentTarget as HTMLButtonElement).style.background = '#4eaa85'
+                      if (!saving) (e.currentTarget as HTMLButtonElement).style.background = '#6D28D9'
                     }}
                     onMouseLeave={e => {
-                      (e.currentTarget as HTMLButtonElement).style.background = '#408A71'
+                      (e.currentTarget as HTMLButtonElement).style.background = '#7C3AED'
                     }}
                   >
                     {saving
@@ -460,18 +464,17 @@ export default function AddressSelector({ onSelect, selected }: Props) {
 
 /* ── Shared CSS injected once ─────────────────────────────── */
 const sharedStyles = `
-  @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;500;600&display=swap');
 
   .as-root * { box-sizing: border-box; }
-  .as-root, .as-root button, .as-root a { cursor: pointer !important; }
-  .as-root { font-family: 'Plus Jakarta Sans', sans-serif; }
+  .as-root { font-family: 'Open Sans', sans-serif; }
 
   /* header hover */
-  .as-header { transition: opacity 0.15s ease; }
+  .as-header { transition: opacity 0.15s ease; cursor: pointer; }
   .as-header:hover { opacity: 0.85; }
 
   /* address card hover */
-  .as-addr-card:hover { border-color: rgba(64,138,113,0.38) !important; }
+  .as-addr-card:hover { border-color: rgba(124,58,237,0.25) !important; }
 
   /* animate rows in */
   @keyframes asFadeUp {
@@ -483,22 +486,22 @@ const sharedStyles = `
   /* form input */
   .as-input {
     width: 100%;
-    background: rgba(9,20,19,0.7);
-    border: 1px solid rgba(40,90,72,0.4);
+    background: rgba(243,232,255,0.5);
+    border: 1px solid rgba(124,58,237,0.2);
     border-radius: 12px;
     padding: 0.55rem 0.8rem;
-    color: #B0E4CC;
+    color: #374151;
     font-size: 0.8rem;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Open Sans', sans-serif;
     outline: none;
-    caret-color: #408A71;
+    caret-color: #7C3AED;
     transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
   }
-  .as-input::placeholder { color: rgba(176,228,204,0.2); }
+  .as-input::placeholder { color: #D1D5DB; }
   .as-input:focus {
-    border-color: #408A71;
-    background: rgba(9,20,19,0.95);
-    box-shadow: 0 0 0 3px rgba(64,138,113,0.14);
+    border-color: #7C3AED;
+    background: rgba(243,232,255,0.8);
+    box-shadow: 0 0 0 3px rgba(124,58,237,0.14);
   }
 
   /* form label */
@@ -508,9 +511,9 @@ const sharedStyles = `
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-    color: rgba(176,228,204,0.38);
+    color: #7C3AED;
     margin-bottom: 0.35rem;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: 'Montserrat', sans-serif;
   }
 
   /* save btn press */

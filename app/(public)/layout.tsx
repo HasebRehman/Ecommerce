@@ -13,144 +13,128 @@ export default function PublicLayout({
 }: {
   children: React.ReactNode
 }) {
-  /* ── all logic is completely unchanged ── */
   const { isAuthenticated } = useAuthStore()
   const { setCart }         = useCartStore()
   const { setWishlist }     = useWishlistStore()
 
   useEffect(() => {
     if (!isAuthenticated) return
-
     cartService.getCart()
       .then(data => setCart(data.cart ?? []))
       .catch(() => {})
-
     wishlistService.getWishlist()
       .then(data => {
         const ids = (data.wishlist ?? []).map((w: any) => w.product_id)
         setWishlist(ids)
       })
       .catch(() => {})
-
   }, [isAuthenticated])
 
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-        /* ── Base reset for public pages ── */
         .pl-root {
-          font-family: 'Plus Jakarta Sans', sans-serif;
+          font-family: 'Inter', sans-serif;
           min-height: 100vh;
-          background: #091413;
+          background: #FAF5FF;
           position: relative;
           overflow-x: hidden;
         }
 
-        /* ── Ambient blobs — subtle, non-distracting ── */
+        /* Ambient purple blobs */
         .pl-blob {
           position: fixed;
           border-radius: 50%;
           pointer-events: none;
           z-index: 0;
-          filter: blur(110px);
+          filter: blur(120px);
         }
         .pl-blob-tl {
-          width: 600px; height: 600px;
-          top: -200px; left: -200px;
-          background: radial-gradient(circle, rgba(40,90,72,0.18) 0%, transparent 70%);
-          animation: plDrift1 20s ease-in-out infinite alternate;
+          width: 700px; height: 700px;
+          top: -250px; left: -250px;
+          background: radial-gradient(circle, rgba(124,58,237,0.12) 0%, transparent 70%);
+          animation: plDrift1 22s ease-in-out infinite alternate;
         }
         .pl-blob-br {
-          width: 500px; height: 500px;
-          bottom: -150px; right: -150px;
-          background: radial-gradient(circle, rgba(64,138,113,0.12) 0%, transparent 70%);
-          animation: plDrift2 25s ease-in-out infinite alternate;
+          width: 600px; height: 600px;
+          bottom: -200px; right: -200px;
+          background: radial-gradient(circle, rgba(196,181,253,0.18) 0%, transparent 70%);
+          animation: plDrift2 28s ease-in-out infinite alternate;
         }
         .pl-blob-mid {
-          width: 350px; height: 350px;
-          top: 40%; left: 60%;
-          background: radial-gradient(circle, rgba(40,90,72,0.07) 0%, transparent 70%);
-          animation: plDrift3 30s ease-in-out infinite alternate;
+          width: 400px; height: 400px;
+          top: 45%; left: 55%;
+          background: radial-gradient(circle, rgba(124,58,237,0.07) 0%, transparent 70%);
+          animation: plDrift3 32s ease-in-out infinite alternate;
         }
 
         @keyframes plDrift1 {
           from { transform: translate(0, 0); }
-          to   { transform: translate(50px, 40px); }
+          to   { transform: translate(60px, 50px); }
         }
         @keyframes plDrift2 {
           from { transform: translate(0, 0); }
-          to   { transform: translate(-40px, -30px); }
+          to   { transform: translate(-50px, -40px); }
         }
         @keyframes plDrift3 {
           from { transform: translate(0, 0); }
-          to   { transform: translate(-30px, 25px); }
+          to   { transform: translate(-35px, 30px); }
         }
 
-        /* ── Dot grid texture ── */
+        /* Subtle dot grid */
         .pl-grid {
           position: fixed;
           inset: 0;
           pointer-events: none;
           z-index: 0;
-          background-image: radial-gradient(rgba(64,138,113,0.12) 1px, transparent 1px);
-          background-size: 28px 28px;
+          background-image: radial-gradient(rgba(124,58,237,0.08) 1px, transparent 1px);
+          background-size: 30px 30px;
           mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
           -webkit-mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
         }
 
-        /* ── Main content sits above decorative layers ── */
         .pl-main {
           position: relative;
           z-index: 1;
         }
 
-        /* ── Scrollbar styling ── */
         * {
           scrollbar-width: thin;
-          scrollbar-color: rgba(40,90,72,0.4) transparent;
+          scrollbar-color: rgba(124,58,237,0.3) transparent;
         }
         *::-webkit-scrollbar { width: 6px; height: 6px; }
         *::-webkit-scrollbar-track { background: transparent; }
         *::-webkit-scrollbar-thumb {
-          background: rgba(40,90,72,0.4);
+          background: rgba(124,58,237,0.3);
           border-radius: 99px;
         }
-        *::-webkit-scrollbar-thumb:hover { background: rgba(64,138,113,0.55); }
+        *::-webkit-scrollbar-thumb:hover { background: rgba(124,58,237,0.5); }
 
-        /* ── Selection colour ── */
         ::selection {
-          background: rgba(64,138,113,0.35);
-          color: #B0E4CC;
+          background: rgba(124,58,237,0.2);
+          color: #7C3AED;
         }
 
-        /* ── Global cursor for interactive elements ── */
         a, button, [role="button"], label, [class*="cursor-pointer"] {
           cursor: pointer !important;
         }
       `}</style>
 
       <div className="pl-root">
-
-        {/* Ambient background blobs */}
         <div className="pl-blob pl-blob-tl" />
         <div className="pl-blob pl-blob-br" />
         <div className="pl-blob pl-blob-mid" />
-
-        {/* Dot grid texture */}
         <div className="pl-grid" />
 
-        {/* Topbar — sits above everything */}
         <div className="relative z-50">
           <Topbar />
         </div>
 
-        {/* Page content */}
         <main className="pl-main pt-16">
           {children}
         </main>
-
       </div>
     </>
   )
