@@ -1,4 +1,4 @@
-export default function LoadingScreen() {
+export default function PublicLoading() {
   return (
     <>
       <style>{`

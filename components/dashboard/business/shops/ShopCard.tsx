@@ -1,5 +1,7 @@
 import Link from 'next/link'
+import { useState } from 'react'
 import { Edit, Trash2, Store, Package } from 'lucide-react'
+import DeleteShopModal from './DeleteShopModal'
 
 interface Shop {
   id:          string
@@ -23,8 +25,26 @@ const STATUS_STYLES = {
 }
 
 export default function ShopCard({ shop, onDelete }: Props) {
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const productCount = shop.shop_products?.[0]?.count ?? 0
   const statusStyle = STATUS_STYLES[shop.status]
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setShowDeleteModal(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    setIsDeleting(true)
+    try {
+      onDelete(shop.id)
+      setShowDeleteModal(false)
+    } finally {
+      setIsDeleting(false)
+    }
+  }
 
   return (
     <>
@@ -33,6 +53,15 @@ export default function ShopCard({ shop, onDelete }: Props) {
         .font-montserrat { font-family: 'Montserrat', sans-serif; }
         .font-open-sans { font-family: 'Open Sans', sans-serif; }
       `}</style>
+
+      {/* Delete Modal */}
+      <DeleteShopModal
+        isOpen={showDeleteModal}
+        shopName={shop.name}
+        isDeleting={isDeleting}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setShowDeleteModal(false)}
+      />
 
       <div 
         className="rounded-2xl overflow-hidden transition-all duration-300 hover:-translate-y-1 group cursor-default border flex flex-col h-full"
@@ -69,11 +98,7 @@ export default function ShopCard({ shop, onDelete }: Props) {
               </button>
             </Link>
             <button
-              onClick={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                onDelete(shop.id)
-              }}
+              onClick={handleDeleteClick}
               className="p-1.5 rounded-lg transition-all duration-200 hover:scale-110 cursor-pointer"
               style={{ background: 'rgba(239, 68, 68, 0.2)' }}
             >

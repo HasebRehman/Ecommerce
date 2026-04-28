@@ -105,7 +105,7 @@ export default function MediaUpload({
         ) : (
           <div className="flex flex-col items-center gap-2">
             <Upload className="w-8 h-8 text-slate-500" />
-            <p className="text-white text-sm font-medium">
+            <p className="text-black text-sm font-medium">
               Click or drag images here
             </p>
             <p className="text-slate-500 text-xs">

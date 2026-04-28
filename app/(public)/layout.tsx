@@ -33,10 +33,10 @@ export default function PublicLayout({
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Inter:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&family=Open+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&display=swap');
 
         .pl-root {
-          font-family: 'Inter', sans-serif;
+          font-family: 'Open Sans', sans-serif;
           min-height: 100vh;
           background: #FAF5FF;
           position: relative;

@@ -35,18 +35,8 @@ export default function ShopsPage() {
   const currentShops = shops.slice(startIndex, endIndex)
 
   const handleDelete = (id: string) => {
-    toast('Delete this shop?', {
-      description: 'All shop data and product assignments will be removed.',
-      duration:    10000,
-      action: {
-        label:   'Yes, Delete',
-        onClick: () => void deleteShop(id),
-      },
-      cancel: {
-        label:   'Cancel',
-        onClick: () => {},
-      },
-    })
+    // Modal will handle the confirmation, just pass the delete function
+    deleteShop(id)
   }
 
   const deleteShop = async (id: string) => {

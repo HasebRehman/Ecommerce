@@ -124,228 +124,418 @@ export default function ProductForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+    <div style={{ 
+      // background: '#ffffff', 
+      fontFamily: "'Open Sans', sans-serif", 
+      minHeight: 'calc(100vh - 120px)',
+      width: '100%',
+      overflowX: 'hidden'
+    }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Open+Sans:wght@400;500;600&display=swap');
+        
+        * {
+          box-sizing: border-box;
+        }
+        
+        .pf-header { font-family: 'Montserrat', sans-serif; }
+        .pf-body { font-family: 'Open Sans', sans-serif; }
+        
+        .pf-card {
+          background: rgba(255,255,255,0.95);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 2px solid rgba(196,181,253,0.3);
+          border-radius: 20px;
+          transition: all 0.3s ease;
+          box-shadow: 0 8px 25px rgba(124,58,237,0.15), 0 4px 12px rgba(124,58,237,0.08), 0 2px 6px rgba(0,0,0,0.05);
+          margin-bottom: 24px;
+          overflow: hidden;
+        }
+        
+        .pf-card:hover {
+          border-color: rgba(124,58,237,0.4);
+          box-shadow: 0 12px 35px rgba(124,58,237,0.2), 0 8px 20px rgba(124,58,237,0.12), 0 4px 10px rgba(0,0,0,0.08);
+        }
+        
+        .pf-input {
+          width: 100%;
+          padding: 14px 16px;
+          border: 2px solid rgba(196,181,253,0.3);
+          border-radius: 12px;
+          background: rgba(255,255,255,0.9);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          font-family: 'Open Sans', sans-serif;
+          font-size: 14px;
+          color: #1e1b4b;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 8px rgba(124,58,237,0.05);
+        }
+        
+        .pf-input:focus {
+          outline: none;
+          border-color: #7C3AED;
+          box-shadow: 0 4px 16px rgba(124,58,237,0.15), 0 0 0 4px rgba(124,58,237,0.1);
+        }
+        
+        .pf-input::placeholder {
+          color: #9ca3af;
+        }
+        
+        .pf-textarea {
+          width: 100%;
+          padding: 14px 16px;
+          border: 2px solid rgba(196,181,253,0.3);
+          border-radius: 12px;
+          background: rgba(255,255,255,0.9);
+          backdrop-filter: blur(10px);
+          -webkit-backdrop-filter: blur(10px);
+          font-family: 'Open Sans', sans-serif;
+          font-size: 14px;
+          color: #1e1b4b;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 8px rgba(124,58,237,0.05);
+          resize: none;
+          min-height: 100px;
+        }
+        
+        .pf-textarea:focus {
+          outline: none;
+          border-color: #7C3AED;
+          box-shadow: 0 4px 16px rgba(124,58,237,0.15), 0 0 0 4px rgba(124,58,237,0.1);
+        }
+        
+        .pf-label {
+          font-family: 'Montserrat', sans-serif;
+          font-weight: 600;
+          font-size: 14px;
+          color: #1e1b4b;
+          margin-bottom: 8px;
+          display: block;
+        }
+        
+        .pf-btn-back {
+          background: rgba(124,58,237,0.1);
+          color: #7C3AED;
+          border: 2px solid rgba(124,58,237,0.2);
+          padding: 12px;
+          border-radius: 12px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .pf-btn-back:hover {
+          background: rgba(124,58,237,0.15);
+          border-color: rgba(124,58,237,0.4);
+          transform: translateY(-1px);
+        }
+        
+        .pf-btn-primary {
+          background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+          color: white;
+          border: none;
+          padding: 16px 24px;
+          border-radius: 16px;
+          font-family: 'Montserrat', sans-serif;
+          font-weight: 600;
+          font-size: 16px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          box-shadow: 0 8px 25px rgba(124,58,237,0.25), 0 4px 12px rgba(124,58,237,0.15);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          width: 100%;
+          min-height: 56px;
+        }
+        
+        .pf-btn-primary:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 12px 35px rgba(124,58,237,0.35), 0 8px 20px rgba(124,58,237,0.25);
+        }
+        
+        .pf-btn-primary:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+          transform: none;
+        }
+        
+        .pf-error {
+          color: #EF4444;
+          font-size: 12px;
+          font-family: 'Open Sans', sans-serif;
+          margin-top: 4px;
+        }
+        
+        .pf-success {
+          color: #10B981;
+          font-size: 12px;
+          font-family: 'Open Sans', sans-serif;
+          margin-top: 4px;
+        }
+        
+        .pf-required {
+          color: #EF4444;
+        }
+        
+        .pf-grid-2 {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 16px;
+        }
+        
+        @media (max-width: 768px) {
+          .pf-grid-2 {
+            grid-template-columns: 1fr;
+          }
+        }
+        
+        .pf-main-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 24px;
+        }
+        
+        @media (min-width: 1024px) {
+          .pf-main-grid {
+            grid-template-columns: 2fr 1fr;
+          }
+        }
+      `}</style>
 
-      {/* Header */}
-      <div className="flex items-center gap-4">
-        <Link href="/dashboard/inventory">
-          <button
-            type="button"
-            className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-all"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </button>
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold text-white">
-            {mode === 'create' ? 'Add New Product' : 'Edit Product'}
-          </h1>
-          <p className="text-slate-400 text-sm mt-0.5">
-            {mode === 'create'
-              ? 'Fill in the details to add product to inventory'
-              : 'Update your product information'
-            }
-          </p>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-8" style={{ 
+        width: '100%',
+        maxWidth: '100%',
+        boxSizing: 'border-box',
+        overflowX: 'hidden',
+        marginTop: '24px'
+      }}>
+
+        {/* Header */}
+        <div className="flex items-start gap-4 flex-wrap">
+          <Link href="/dashboard/inventory">
+            <button type="button" className="pf-btn-back">
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+          </Link>
+          <div className="flex-1 min-w-0">
+            <h1 className="pf-header text-3xl sm:text-4xl font-bold text-[#1e1b4b] mb-2">
+              {mode === 'create' ? 'Add New Product' : 'Edit Product'}
+            </h1>
+            <p className="pf-body text-[#6b7280] text-base">
+              {mode === 'create'
+                ? 'Fill in the details to add product to inventory'
+                : 'Update your product information'
+              }
+            </p>
+          </div>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="pf-main-grid">
 
-        {/* Left — main info */}
-        <div className="lg:col-span-2 space-y-6">
+          {/* Left — main info */}
+          <div className="space-y-6">
 
-          {/* Basic Info */}
-          <Card className="bg-slate-900 border-slate-800">
-            <CardHeader>
-              <CardTitle className="text-white text-base">Basic Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-
-              <div className="space-y-2">
-                <Label className="text-slate-200">
-                  Product Name <span className="text-red-400">*</span>
-                </Label>
-                <Input
-                  placeholder="e.g. Classic White Shirt"
-                  className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
-                  {...register('name', { required: 'Product name is required' })}
-                />
-                {errors.name && (
-                  <p className="text-red-400 text-xs">{errors.name.message}</p>
-                )}
+            {/* Basic Info */}
+            <div className="pf-card">
+              <div style={{ padding: '24px 24px 16px 24px', borderBottom: '2px solid rgba(196,181,253,0.2)' }}>
+                <h2 className="pf-header text-xl font-bold text-[#1e1b4b]">Basic Information</h2>
               </div>
+              <div style={{ padding: '24px' }} className="space-y-6">
 
-              <div className="space-y-2">
-                <Label className="text-slate-200">Description</Label>
-                <Textarea
-                  placeholder="Describe your product..."
-                  rows={4}
-                  className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 resize-none"
-                  {...register('description')}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-slate-200">SKU (optional)</Label>
-                <Input
-                  placeholder="e.g. SHIRT-WHT-001"
-                  className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
-                  {...register('sku')}
-                />
-              </div>
-
-            </CardContent>
-          </Card>
-
-          {/* Pricing & Stock */}
-          <Card className="bg-slate-900 border-slate-800">
-            <CardHeader>
-              <CardTitle className="text-white text-base">Pricing & Stock</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-
-              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label className="text-slate-200">
-                    Price (Rs.) <span className="text-red-400">*</span>
-                  </Label>
-                  <Input
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    placeholder="0.00"
-                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
-                    {...register('price', {
-                      required: 'Price is required',
-                      min: { value: 1, message: 'Price must be greater than 0' },
-                    })}
+                  <label className="pf-label">
+                    Product Name <span className="pf-required">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Classic White Shirt"
+                    className="pf-input"
+                    {...register('name', { required: 'Product name is required' })}
                   />
-                  {errors.price && (
-                    <p className="text-red-400 text-xs">{errors.price.message}</p>
+                  {errors.name && (
+                    <p className="pf-error">{errors.name.message}</p>
                   )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label className="text-slate-200 flex items-center gap-2">
-                    Discount Price (Rs.)
-                    <DiscountBadge price={price} discountPrice={discountPrice || null} />
-                  </Label>
-                  <Input
+                  <label className="pf-label">Description</label>
+                  <textarea
+                    placeholder="Describe your product..."
+                    rows={4}
+                    className="pf-textarea"
+                    {...register('description')}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="pf-label">SKU (optional)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. SHIRT-WHT-001"
+                    className="pf-input"
+                    {...register('sku')}
+                  />
+                </div>
+
+              </div>
+            </div>
+
+            {/* Pricing & Stock */}
+            <div className="pf-card">
+              <div style={{ padding: '24px 24px 16px 24px', borderBottom: '2px solid rgba(196,181,253,0.2)' }}>
+                <h2 className="pf-header text-xl font-bold text-[#1e1b4b]">Pricing & Stock</h2>
+              </div>
+              <div style={{ padding: '24px' }} className="space-y-6">
+
+                <div className="pf-grid-2">
+                  <div className="space-y-2">
+                    <label className="pf-label">
+                      Price (Rs.) <span className="pf-required">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      placeholder="0.00"
+                      className="pf-input"
+                      {...register('price', {
+                        required: 'Price is required',
+                        min: { value: 1, message: 'Price must be greater than 0' },
+                      })}
+                    />
+                    {errors.price && (
+                      <p className="pf-error">{errors.price.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="pf-label flex items-center gap-2">
+                      Discount Price (Rs.)
+                      <DiscountBadge price={price} discountPrice={discountPrice || null} />
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      placeholder="Leave empty for no discount"
+                      className="pf-input"
+                      {...register('discount_price', {
+                        validate: (val) => {
+                          if (!val) return true
+                          if (parseFloat(val) >= price) return 'Discount price must be less than original price'
+                          return true
+                        },
+                      })}
+                    />
+                    {errors.discount_price && (
+                      <p className="pf-error">{errors.discount_price.message}</p>
+                    )}
+                    {discountPrice > 0 && discountPrice < price && (
+                      <p className="pf-success">
+                        Customer saves Rs. {(price - discountPrice).toFixed(2)}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Stock */}
+                <div className="space-y-2">
+                  <label className="pf-label">
+                    Stock Quantity <span className="pf-required">*</span>
+                  </label>
+                  <input
                     type="number"
                     min="0"
-                    step="0.01"
-                    placeholder="Leave empty for no discount"
-                    className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
-                    {...register('discount_price', {
-                      validate: (val) => {
-                        if (!val) return true
-                        if (parseFloat(val) >= price) return 'Discount price must be less than original price'
-                        return true
-                      },
+                    placeholder="0"
+                    className="pf-input"
+                    {...register('stock', {
+                      required: 'Stock is required',
+                      min: { value: 0, message: 'Stock cannot be negative' },
                     })}
                   />
-                  {errors.discount_price && (
-                    <p className="text-red-400 text-xs">{errors.discount_price.message}</p>
-                  )}
-                  {discountPrice > 0 && discountPrice < price && (
-                    <p className="text-green-400 text-xs">
-                      Customer saves Rs. {(price - discountPrice).toFixed(2)}
-                    </p>
+                  {errors.stock && (
+                    <p className="pf-error">{errors.stock.message}</p>
                   )}
                 </div>
-              </div>
 
-              {/* Stock */}
-              <div className="space-y-2">
-                <Label className="text-slate-200">
-                  Stock Quantity <span className="text-red-400">*</span>
-                </Label>
-                <Input
-                  type="number"
-                  min="0"
-                  placeholder="0"
-                  className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
-                  {...register('stock', {
-                    required: 'Stock is required',
-                    min: { value: 0, message: 'Stock cannot be negative' },
-                  })}
+              </div>
+            </div>
+
+            {/* Variants */}
+            <div className="pf-card">
+              <div style={{ padding: '24px 24px 16px 24px', borderBottom: '2px solid rgba(196,181,253,0.2)' }}>
+                <h2 className="pf-header text-xl font-bold text-[#1e1b4b]">Variants</h2>
+              </div>
+              <div style={{ padding: '24px' }} className="space-y-6">
+                <VariantsInput
+                  label="Sizes"
+                  values={sizes}
+                  onChange={setSizes}
+                  placeholder="Type custom size and press Enter"
                 />
-                {errors.stock && (
-                  <p className="text-red-400 text-xs">{errors.stock.message}</p>
-                )}
+                <VariantsInput
+                  label="Colors"
+                  values={colors}
+                  onChange={setColors}
+                  placeholder="Type custom color and press Enter"
+                  colorMode
+                />
               </div>
+            </div>
 
-            </CardContent>
-          </Card>
+          </div>
 
-          {/* Variants */}
-          <Card className="bg-slate-900 border-slate-800">
-            <CardHeader>
-              <CardTitle className="text-white text-base">Variants</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <VariantsInput
-                label="Sizes"
-                values={sizes}
-                onChange={setSizes}
-                placeholder="Type custom size and press Enter"
-              />
-              <VariantsInput
-                label="Colors"
-                values={colors}
-                onChange={setColors}
-                placeholder="Type custom color and press Enter"
-                colorMode
-              />
-            </CardContent>
-          </Card>
+          {/* Right — media & category */}
+          <div className="space-y-6">
 
+            <div className="pf-card">
+              <div style={{ padding: '24px 24px 16px 24px', borderBottom: '2px solid rgba(196,181,253,0.2)' }}>
+                <h2 className="pf-header text-xl font-bold text-[#1e1b4b]">
+                  Product Images <span className="pf-required">*</span>
+                </h2>
+              </div>
+              <div style={{ padding: '24px' }}>
+                <MediaUpload images={images} onChange={setImages} maxImages={6} />
+              </div>
+            </div>
+
+            <div className="pf-card">
+              <div style={{ padding: '24px 24px 16px 24px', borderBottom: '2px solid rgba(196,181,253,0.2)' }}>
+                <h2 className="pf-header text-xl font-bold text-[#1e1b4b]">Category</h2>
+              </div>
+              <div style={{ padding: '24px' }}>
+                <CategorySelect value={categoryId} onChange={setCategoryId} />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="pf-btn-primary"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  {mode === 'create' ? 'Creating...' : 'Saving...'}
+                </>
+              ) : (
+                <>
+                  <Save className="w-5 h-5" />
+                  {mode === 'create' ? 'Create Product' : 'Save Changes'}
+                </>
+              )}
+            </button>
+
+          </div>
         </div>
 
-        {/* Right — media & category */}
-        <div className="space-y-6">
-
-          <Card className="bg-slate-900 border-slate-800">
-            <CardHeader>
-              <CardTitle className="text-white text-base">
-                Product Images <span className="text-red-400">*</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <MediaUpload images={images} onChange={setImages} maxImages={6} />
-            </CardContent>
-          </Card>
-
-          <Card className="bg-slate-900 border-slate-800">
-            <CardHeader>
-              <CardTitle className="text-white text-base">Category</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <CategorySelect value={categoryId} onChange={setCategoryId} />
-            </CardContent>
-          </Card>
-
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-500 hover:bg-blue-600 text-white h-11"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                {mode === 'create' ? 'Creating...' : 'Saving...'}
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4 mr-2" />
-                {mode === 'create' ? 'Create Product' : 'Save Changes'}
-              </>
-            )}
-          </Button>
-
-        </div>
-      </div>
-
-    </form>
+      </form>
+    </div>
   )
 }

@@ -4,12 +4,11 @@ import { useEffect, useState, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import {
   Package, Clock, CheckCircle, Truck,
-  XCircle, ChevronRight, Loader2, RefreshCw,
-  ChevronLeft,
+  XCircle, ChevronRight, Loader2,
+  ChevronLeft, ShoppingBag,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { businessOrderService } from '@/lib/services/business-order.service'
-import { useAuthStore } from '@/store/authStore'
 import { useNewOrdersStore } from '@/store/newOrdersStore'
 import { cn } from '@/lib/utils'
 
@@ -27,21 +26,19 @@ const STATUS_TABS = [
 ]
 
 const STATUS_CONFIG: Record<string, { icon: any, color: string, bg: string, label: string }> = {
-  pending:               { icon: Clock,        color: 'text-yellow-400', bg: 'bg-yellow-500/10 border-yellow-500/30',  label: 'Pending'               },
-  confirmed:             { icon: CheckCircle,  color: 'text-blue-400',   bg: 'bg-blue-500/10 border-blue-500/30',      label: 'Confirmed'             },
-  shipped:               { icon: Truck,        color: 'text-purple-400', bg: 'bg-purple-500/10 border-purple-500/30',  label: 'Shipped'               },
-  delivered:             { icon: CheckCircle,  color: 'text-green-400',  bg: 'bg-green-500/10 border-green-500/30',    label: 'Delivered'             },
-  cancelled_by_seller:   { icon: XCircle,      color: 'text-red-400',    bg: 'bg-red-500/10 border-red-500/30',        label: 'Cancelled by Seller'   },
-  cancelled_by_customer: { icon: XCircle,      color: 'text-orange-400', bg: 'bg-orange-500/10 border-orange-500/30', label: 'Cancelled by Customer' },
-  cancelled:             { icon: XCircle,      color: 'text-red-400',    bg: 'bg-red-500/10 border-red-500/30',        label: 'Cancelled'             },
+  pending:               { icon: Clock,        color: 'text-yellow-600', bg: 'bg-yellow-100 border-yellow-200',  label: 'Pending'               },
+  confirmed:             { icon: CheckCircle,  color: 'text-blue-600',   bg: 'bg-blue-100 border-blue-200',      label: 'Confirmed'             },
+  shipped:               { icon: Truck,        color: 'text-purple-600', bg: 'bg-purple-100 border-purple-200',  label: 'Shipped'               },
+  delivered:             { icon: CheckCircle,  color: 'text-green-600',  bg: 'bg-green-100 border-green-200',    label: 'Delivered'             },
+  cancelled_by_seller:   { icon: XCircle,      color: 'text-red-600',    bg: 'bg-red-100 border-red-200',        label: 'Cancelled by Seller'   },
+  cancelled_by_customer: { icon: XCircle,      color: 'text-orange-600', bg: 'bg-orange-100 border-orange-200', label: 'Cancelled by Customer' },
+  cancelled:             { icon: XCircle,      color: 'text-red-600',    bg: 'bg-red-100 border-red-200',        label: 'Cancelled'             },
 }
 
 export default function OrdersPage() {
   const [orders,      setOrders]      = useState<any[]>([])
   const [loading,     setLoading]     = useState(true)
   const [activeTab,   setActiveTab]   = useState('')
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
-  const [isPolling,   setIsPolling]   = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
 
   const activeTabRef  = useRef('')
@@ -53,7 +50,6 @@ export default function OrdersPage() {
 
   const fetchOrders = useCallback(async (status: string, silent = false) => {
     if (!silent) setLoading(true)
-    else setIsPolling(true)
 
     try {
       const data  = await businessOrderService.getOrders(status)
@@ -85,13 +81,10 @@ export default function OrdersPage() {
           setOrders(fresh)
         }
       }
-
-      setLastUpdated(new Date())
     } catch {
       if (!silent) toast.error('Failed to load orders')
     } finally {
       setLoading(false)
-      setIsPolling(false)
     }
   }, [])
 
@@ -154,220 +147,322 @@ export default function OrdersPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div style={{ 
+      background: '#ffffff', 
+      fontFamily: "'Open Sans', sans-serif", 
+      minHeight: 'calc(100vh - 120px)',
+      width: '100%',
+      overflowX: 'hidden'
+    }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Open+Sans:wght@400;500;600&display=swap');
+        
+        * {
+          box-sizing: border-box;
+        }
+        
+        .op-header { font-family: 'Montserrat', sans-serif; }
+        .op-body { font-family: 'Open Sans', sans-serif; }
+        
+        .op-card {
+          background: rgba(255,255,255,0.95);
+          backdrop-filter: blur(20px);
+          -webkit-backdrop-filter: blur(20px);
+          border: 1px solid rgba(196,181,253,0.3);
+          border-radius: 16px;
+          transition: all 0.3s ease;
+          cursor: pointer;
+          box-shadow: 0 8px 25px rgba(124,58,237,0.15), 0 4px 12px rgba(124,58,237,0.08), 0 2px 6px rgba(0,0,0,0.05);
+          margin-bottom: 16px;
+          width: 100%;
+          max-width: 100%;
+          overflow: hidden;
+        }
+        .op-card:hover {
+          border-color: rgba(124,58,237,0.5);
+          box-shadow: 0 12px 35px rgba(124,58,237,0.25), 0 8px 20px rgba(124,58,237,0.15), 0 4px 10px rgba(0,0,0,0.08);
+          transform: translateY(-3px);
+        }
+        
+        .op-tab {
+          padding: 10px 16px;
+          border-radius: 12px;
+          font-family: 'Montserrat', sans-serif;
+          font-weight: 600;
+          font-size: 0.9rem;
+          transition: all 0.2s ease;
+          cursor: pointer;
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+        .op-tab.active {
+          background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+          color: white;
+          box-shadow: 0 4px 12px rgba(124,58,237,0.3);
+        }
+        .op-tab:not(.active) {
+          background: rgba(124,58,237,0.1);
+          color: #7C3AED;
+          border: 1px solid rgba(124,58,237,0.2);
+        }
+        .op-tab:not(.active):hover {
+          background: rgba(124,58,237,0.15);
+          border-color: rgba(124,58,237,0.4);
+        }
+        
+        .op-tabs-container {
+          overflow-x: auto;
+          overflow-y: hidden;
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+          width: 100%;
+          max-width: 100%;
+        }
+        .op-tabs-container::-webkit-scrollbar {
+          display: none;
+        }
+        
+        .op-tabs-wrapper {
+          display: flex;
+          gap: 12px;
+          padding-bottom: 8px;
+          min-width: max-content;
+        }
+        
+        .op-pagination-btn {
+          padding: 8px 16px;
+          border-radius: 10px;
+          font-family: 'Montserrat', sans-serif;
+          font-weight: 600;
+          font-size: 0.9rem;
+          transition: all 0.2s ease;
+          cursor: pointer;
+          border: 1px solid rgba(196,181,253,0.3);
+          flex-shrink: 0;
+        }
+        .op-pagination-btn.active {
+          background: linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%);
+          color: white;
+          border-color: #7C3AED;
+        }
+        .op-pagination-btn:not(.active) {
+          background: white;
+          color: #7C3AED;
+        }
+        .op-pagination-btn:not(.active):hover {
+          background: rgba(124,58,237,0.1);
+        }
+        .op-pagination-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+        
+        .op-pagination-container {
+          overflow-x: auto;
+          overflow-y: hidden;
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+          width: 100%;
+        }
+        .op-pagination-container::-webkit-scrollbar {
+          display: none;
+        }
+      `}</style>
 
-      {/* Header */}
-      <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-white">Orders</h1>
-          <p className="text-slate-400 mt-1">Manage and fulfill customer orders</p>
-        </div>
-        <div className="flex items-center gap-3">
-          {isPolling && <RefreshCw className="w-3.5 h-3.5 text-slate-500 animate-spin" />}
-          <div className="flex items-center gap-2 text-xs bg-slate-800 px-3 py-2 rounded-lg">
-            <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-green-400 font-medium">Live</span>
-            {lastUpdated && (
-              <span className="text-slate-500">
-                · {lastUpdated.toLocaleTimeString('en-US', {
-                  hour: '2-digit', minute: '2-digit', second: '2-digit'
-                })}
-              </span>
-            )}
+      {/* Content - No Header */}
+      <div className="space-y-6" style={{ 
+        width: '100%',
+        maxWidth: '100%',
+        boxSizing: 'border-box',
+        overflowX: 'hidden',
+        marginTop: '24px'
+      }}>
+
+
+
+        {/* Status Tabs */}
+        <div className="op-tabs-container">
+          <div className="op-tabs-wrapper">
+            {STATUS_TABS.map(tab => (
+              <button
+                key={tab.value}
+                onClick={() => setActiveTab(tab.value)}
+                className={cn('op-tab', activeTab === tab.value && 'active')}
+              >
+                {tab.label}
+                {tab.value === '' && totalOrders > 0 && (
+                  <span className="ml-2 text-xs opacity-70">({totalOrders})</span>
+                )}
+              </button>
+            ))}
           </div>
-          <button
-            onClick={() => fetchOrders(activeTab, false)}
-            className="p-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-slate-400 hover:text-white transition-all"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-          </button>
         </div>
-      </div>
 
-      {/* Status Tabs */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1">
-        {STATUS_TABS.map(tab => (
-          <button
-            key={tab.value}
-            onClick={() => setActiveTab(tab.value)}
-            className={cn(
-              'px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all',
-              activeTab === tab.value
-                ? 'bg-blue-500 text-white'
-                : 'bg-slate-800 text-slate-400 hover:text-white'
-            )}
-          >
-            {tab.label}
-            {tab.value === '' && totalOrders > 0 && (
-              <span className="ml-2 text-xs text-slate-500">({totalOrders})</span>
-            )}
-          </button>
-        ))}
-      </div>
-
-      {/* Orders List */}
-      {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
-        </div>
-      ) : orders.length === 0 ? (
-        <div className="text-center py-20">
-          <Package className="w-16 h-16 text-slate-600 mx-auto mb-4" />
-          <p className="text-white text-lg font-medium">No orders yet</p>
-          <p className="text-slate-400 text-sm mt-1">
-            New orders appear automatically every {POLL_INTERVAL / 1000} seconds
-          </p>
-        </div>
-      ) : (
-        <>
-          {/* Results info */}
-          <div className="flex items-center justify-between text-sm">
-            <p className="text-slate-400">
-              Showing{' '}
-              <span className="text-white font-medium">{startIndex + 1}</span>
-              {' '}–{' '}
-              <span className="text-white font-medium">{Math.min(endIndex, totalOrders)}</span>
-              {' '}of{' '}
-              <span className="text-white font-medium">{totalOrders}</span>
-              {' '}orders
+        {/* Orders List */}
+        {loading ? (
+          <div className="flex items-center justify-center py-20">
+            <Loader2 className="w-8 h-8 animate-spin text-[#7C3AED]" />
+          </div>
+        ) : orders.length === 0 ? (
+          <div className="text-center py-20 rounded-20 bg-gradient-to-br from-[#F3E8FF] to-[#EDE9FE] border border-[#C4B5FD]/30">
+            <ShoppingBag className="w-16 h-16 text-[#C4B5FD] mx-auto mb-4" />
+            <p className="op-header text-xl font-bold text-[#1e1b4b]">No orders yet</p>
+            <p className="op-body text-[#6b7280] text-sm mt-2">
+              New orders appear automatically every {POLL_INTERVAL / 1000} seconds
             </p>
-            {totalPages > 1 && (
-              <p className="text-slate-500">
-                Page {currentPage} of {totalPages}
+          </div>
+        ) : (
+          <div style={{ width: '100%' }}>
+            {/* Results info */}
+            <div className="flex items-center justify-between text-sm mb-6 flex-wrap gap-2">
+              <p className="op-body text-[#6b7280]">
+                Showing{' '}
+                <span className="text-[#1e1b4b] font-semibold">{startIndex + 1}</span>
+                {' '}–{' '}
+                <span className="text-[#1e1b4b] font-semibold">{Math.min(endIndex, totalOrders)}</span>
+                {' '}of{' '}
+                <span className="text-[#1e1b4b] font-semibold">{totalOrders}</span>
+                {' '}orders
               </p>
+              {totalPages > 1 && (
+                <p className="op-body text-[#9ca3af]">
+                  Page {currentPage} of {totalPages}
+                </p>
+              )}
+            </div>
+
+            {/* Orders */}
+            <div className="space-y-0" style={{ width: '100%', maxWidth: '100%', overflowX: 'hidden' }}>
+              {currentOrders.map(order => {
+                const cfg      = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.pending
+                const Icon     = cfg.icon
+                const addr     = order.delivery_address ?? {}
+                const items    = order.order_items      ?? []
+                const customer = order.profiles?.full_name ?? 'Customer'
+
+                return (
+                  <Link key={order.id} href={`/dashboard/orders/${order.id}`}>
+                    <div className="op-card p-4 sm:p-5 group">
+                      <div className="flex items-start justify-between gap-3 sm:gap-4">
+
+                        <div className="space-y-2 sm:space-y-3 flex-1 min-w-0">
+                          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                            <span className="op-body text-[#9ca3af] text-xs font-mono">
+                              #{order.id?.slice(0, 8).toUpperCase()}
+                            </span>
+                            <span className={cn(
+                              'flex items-center gap-1.5 px-2 sm:px-3 py-1 rounded-full text-xs font-semibold border',
+                              cfg.bg, cfg.color
+                            )}>
+                              <Icon className="w-3 h-3" />
+                              <span className="hidden sm:inline">{cfg.label}</span>
+                              <span className="sm:hidden">{cfg.label.split(' ')[0]}</span>
+                            </span>
+                          </div>
+
+                          <p className="op-header text-[#1e1b4b] font-bold text-base sm:text-lg truncate">{customer}</p>
+                          <p className="op-body text-[#6b7280] text-sm truncate">
+                            {addr.phone} · {addr.city}
+                          </p>
+
+                          <div className="flex items-center gap-2 sm:gap-3 mt-2 sm:mt-3">
+                            <div className="flex -space-x-1 sm:-space-x-2">
+                              {items.slice(0, 3).map((item: any, i: number) => (
+                                <div key={i} className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-white overflow-hidden bg-[#F3E8FF] shadow-sm">
+                                  {item.products?.images?.[0]
+                                    ? <img src={item.products.images[0]} alt="" className="w-full h-full object-cover" />
+                                    : <div className="w-full h-full flex items-center justify-center">
+                                        <Package className="w-4 h-4 sm:w-5 sm:h-5 text-[#C4B5FD]" />
+                                      </div>
+                                  }
+                                </div>
+                              ))}
+                              {items.length > 3 && (
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg border-2 border-white bg-[#7C3AED] flex items-center justify-center shadow-sm">
+                                  <span className="text-white text-xs font-bold">
+                                    +{items.length - 3}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            <span className="op-body text-[#6b7280] text-sm">
+                              {items.length} item{items.length !== 1 ? 's' : ''}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col items-end gap-1 sm:gap-2 shrink-0 text-right">
+                          <p className="op-header text-[#1e1b4b] font-bold text-lg sm:text-xl">
+                            Rs. {order.total_amount?.toLocaleString()}
+                          </p>
+                          <p className="op-body text-[#9ca3af] text-xs">
+                            {new Date(order.created_at).toLocaleDateString('en-US', {
+                              day: 'numeric', month: 'short', year: 'numeric'
+                            })}
+                          </p>
+                          <p className="op-body text-[#9ca3af] text-xs capitalize hidden sm:block">
+                            {addr.payment_method?.replace('_', ' ')}
+                          </p>
+                          <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-[#C4B5FD] group-hover:text-[#7C3AED] mt-1 sm:mt-2 transition-colors" />
+                        </div>
+
+                      </div>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="op-pagination-container pt-4">
+                <div className="flex items-center justify-center gap-2 flex-wrap">
+
+                  {/* Prev */}
+                  <button
+                    onClick={() => goToPage(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="op-pagination-btn flex items-center gap-2"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    Prev
+                  </button>
+
+                  {/* Page numbers */}
+                  {getPageNumbers().map((page, i) => (
+                    page === '...' ? (
+                      <span key={`dots-${i}`} className="px-2 text-[#9ca3af]">...</span>
+                    ) : (
+                      <button
+                        key={page}
+                        onClick={() => goToPage(page as number)}
+                        className={cn(
+                          'op-pagination-btn w-10 h-10 flex items-center justify-center',
+                          currentPage === page && 'active'
+                        )}
+                      >
+                        {page}
+                      </button>
+                    )
+                  ))}
+
+                  {/* Next */}
+                  <button
+                    onClick={() => goToPage(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="op-pagination-btn flex items-center gap-2"
+                  >
+                    Next
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+
+                </div>
+              </div>
             )}
           </div>
+        )}
 
-          {/* Orders */}
-          <div className="space-y-3">
-            {currentOrders.map(order => {
-              const cfg      = STATUS_CONFIG[order.status] ?? STATUS_CONFIG.pending
-              const Icon     = cfg.icon
-              const addr     = order.delivery_address ?? {}
-              const items    = order.order_items      ?? []
-              const customer = order.profiles?.full_name ?? 'Customer'
-
-              return (
-                <Link key={order.id} href={`/dashboard/orders/${order.id}`}>
-                  <div className="bg-slate-900 border border-slate-800 hover:border-slate-700 rounded-xl p-5 transition-all cursor-pointer group">
-                    <div className="flex items-start justify-between gap-4 flex-wrap">
-
-                      <div className="space-y-2 flex-1 min-w-0">
-                        <div className="flex items-center gap-3 flex-wrap">
-                          <span className="text-slate-400 text-xs font-mono">
-                            #{order.id?.slice(0, 8).toUpperCase()}
-                          </span>
-                          <span className={cn(
-                            'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border',
-                            cfg.bg, cfg.color
-                          )}>
-                            <Icon className="w-3 h-3" />
-                            {cfg.label}
-                          </span>
-                        </div>
-
-                        <p className="text-white font-semibold">{customer}</p>
-                        <p className="text-slate-400 text-sm">
-                          {addr.phone} · {addr.city}
-                        </p>
-
-                        <div className="flex items-center gap-2 mt-2">
-                          <div className="flex -space-x-2">
-                            {items.slice(0, 3).map((item: any, i: number) => (
-                              <div key={i} className="w-8 h-8 rounded-lg border-2 border-slate-900 overflow-hidden bg-slate-800">
-                                {item.products?.images?.[0]
-                                  ? <img src={item.products.images[0]} alt="" className="w-full h-full object-cover" />
-                                  : <div className="w-full h-full flex items-center justify-center">
-                                      <Package className="w-4 h-4 text-slate-600" />
-                                    </div>
-                                }
-                              </div>
-                            ))}
-                            {items.length > 3 && (
-                              <div className="w-8 h-8 rounded-lg border-2 border-slate-900 bg-slate-700 flex items-center justify-center">
-                                <span className="text-slate-300 text-xs font-medium">
-                                  +{items.length - 3}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                          <span className="text-slate-400 text-xs">
-                            {items.length} item{items.length !== 1 ? 's' : ''}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-col items-end gap-2 shrink-0">
-                        <p className="text-white font-bold text-lg">
-                          Rs. {order.total_amount?.toLocaleString()}
-                        </p>
-                        <p className="text-slate-500 text-xs">
-                          {new Date(order.created_at).toLocaleDateString('en-US', {
-                            day: 'numeric', month: 'short', year: 'numeric'
-                          })}
-                        </p>
-                        <p className="text-slate-500 text-xs capitalize">
-                          {addr.payment_method?.replace('_', ' ')}
-                        </p>
-                        <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-slate-400 mt-1" />
-                      </div>
-
-                    </div>
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
-
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 pt-2">
-
-              {/* Prev */}
-              <button
-                onClick={() => goToPage(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-400 hover:text-white text-sm rounded-lg transition-all"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Prev
-              </button>
-
-              {/* Page numbers */}
-              {getPageNumbers().map((page, i) => (
-                page === '...' ? (
-                  <span key={`dots-${i}`} className="px-2 text-slate-600">...</span>
-                ) : (
-                  <button
-                    key={page}
-                    onClick={() => goToPage(page as number)}
-                    className={cn(
-                      'w-9 h-9 rounded-lg text-sm font-medium transition-all',
-                      currentPage === page
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700'
-                    )}
-                  >
-                    {page}
-                  </button>
-                )
-              ))}
-
-              {/* Next */}
-              <button
-                onClick={() => goToPage(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="flex items-center gap-1.5 px-3 py-2 bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-400 hover:text-white text-sm rounded-lg transition-all"
-              >
-                Next
-                <ChevronRight className="w-4 h-4" />
-              </button>
-
-            </div>
-          )}
-        </>
-      )}
-
+      </div>
     </div>
   )
 }
