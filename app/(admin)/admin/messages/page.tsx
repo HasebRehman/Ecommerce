@@ -4,7 +4,6 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { Send, Search, MessageSquare, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuthStore } from '@/store/authStore'
-import { cn } from '@/lib/utils'
 import api from '@/lib/axios'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -35,25 +34,46 @@ const ROLE_LABEL: Record<string, string> = {
 }
 
 const ROLE_COLOR: Record<string, string> = {
-  super_admin:      'text-red-400',
-  platform_admin:   'text-orange-400',
-  operations_admin: 'text-yellow-400',
+  super_admin:      '#ef4444',
+  platform_admin:   '#f97316',
+  operations_admin: '#ca8a04',
 }
 
-const AVATAR_COLOR: Record<string, string> = {
-  super_admin:      'bg-red-500',
-  platform_admin:   'bg-orange-500',
-  operations_admin: 'bg-yellow-500',
-}
+const AVATAR_COLORS = [
+  '#7C3AED','#6D28D9','#2563eb','#0891b2','#16a34a','#ca8a04','#dc2626','#db2777',
+]
+const avatarColor = (name: string) =>
+  AVATAR_COLORS[(name?.charCodeAt(0) ?? 0) % AVATAR_COLORS.length]
 
 function Avatar({ admin, size = 'md' }: { admin: Admin; size?: 'sm' | 'md' | 'lg' }) {
-  const sz = size === 'sm' ? 'w-8 h-8 text-xs' : size === 'lg' ? 'w-12 h-12 text-base' : 'w-10 h-10 text-sm'
+  const sizeMap = { sm: '32px', md: '40px', lg: '48px' }
+  const fontMap = { sm: '12px', md: '14px', lg: '16px' }
+  const bgColor = ROLE_COLOR[admin.role] || avatarColor(admin.full_name ?? 'A')
+  
   return (
-    <div className={cn('rounded-full shrink-0 overflow-hidden', sz)}>
+    <div style={{
+      width: sizeMap[size],
+      height: sizeMap[size],
+      borderRadius: '50%',
+      overflow: 'hidden',
+      flexShrink: 0,
+      border: '2px solid rgba(196,181,253,0.4)',
+    }}>
       {admin.avatar_url ? (
-        <img src={admin.avatar_url} alt={admin.full_name ?? ''} className="w-full h-full object-cover" />
+        <img src={admin.avatar_url} alt={admin.full_name ?? ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
       ) : (
-        <div className={cn('w-full h-full flex items-center justify-center text-white font-bold', AVATAR_COLOR[admin.role] ?? 'bg-blue-500')}>
+        <div style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: bgColor,
+          color: 'white',
+          fontFamily: "'Montserrat', sans-serif",
+          fontWeight: 700,
+          fontSize: fontMap[size],
+        }}>
           {admin.full_name?.charAt(0)?.toUpperCase() ?? 'A'}
         </div>
       )}
@@ -100,7 +120,7 @@ export default function AdminMessagesPage() {
       ])
       setAdmins(adminsRes.data.admins ?? [])
       setUnreadMap(unreadRes.data.unreadMap ?? {})
-      setDbError(null) // Clear any previous errors
+      setDbError(null)
     } catch (err: any) {
       console.error('Error loading admins:', err)
       const errorMsg = err.response?.data?.error || err.message
@@ -114,7 +134,6 @@ export default function AdminMessagesPage() {
 
   useEffect(() => { loadAdmins() }, [loadAdmins])
 
-  // Log helpful setup info on mount
   useEffect(() => {
     console.log('📬 Admin Messaging System')
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
@@ -131,7 +150,6 @@ export default function AdminMessagesPage() {
     try {
       const res = await api.get(`/api/admin/messages/${adminId}`)
       setMessages(res.data.messages ?? [])
-      // Mark as read
       await api.patch(`/api/admin/messages/${adminId}`)
       setUnreadMap(prev => ({ ...prev, [adminId]: 0 }))
     } catch {
@@ -161,16 +179,14 @@ export default function AdminMessagesPage() {
         table:  'admin_messages',
       }, (payload) => {
         const msg     = payload.new as Message
-        const current = selectedRef.current   // always fresh, no stale closure
+        const current = selectedRef.current
 
         if (
           current &&
           ((msg.sender_id === user.id      && msg.receiver_id === current.id) ||
            (msg.sender_id === current.id   && msg.receiver_id === user.id))
         ) {
-          // Belongs to the open conversation
           setMessages(prev => {
-            // Check if message already exists (from optimistic update)
             const exists = prev.some(m => 
               m.id === msg.id || 
               (m.message === msg.message && 
@@ -179,7 +195,6 @@ export default function AdminMessagesPage() {
             )
             
             if (exists) {
-              // Replace temporary message with real one
               return prev.map(m => 
                 m.id.startsWith('temp-') && 
                 m.message === msg.message && 
@@ -189,16 +204,13 @@ export default function AdminMessagesPage() {
               )
             }
             
-            // New message from other user - append it
             return [...prev, msg]
           })
           
-          // Mark read if we're the receiver
           if (msg.receiver_id === user.id) {
             api.patch(`/api/admin/messages/${current.id}`).catch(() => {})
           }
         } else if (msg.receiver_id === user.id) {
-          // Different conversation — bump unread badge
           setUnreadMap(prev => ({
             ...prev,
             [msg.sender_id]: (prev[msg.sender_id] ?? 0) + 1,
@@ -208,7 +220,7 @@ export default function AdminMessagesPage() {
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
-  }, [user])   // ← no `selected` dep — we use selectedRef instead
+  }, [user])
 
   // ── Auto-scroll ───────────────────────────────────────────────────────────
 
@@ -221,12 +233,11 @@ export default function AdminMessagesPage() {
   const handleSend = async () => {
     if (!input.trim() || !selected || sending || !user) return
     const text = input.trim()
-    setInput('') // Clear immediately for better UX
+    setInput('')
     setSending(true)
     
-    // Create optimistic message (appears instantly)
     const optimisticMessage: Message = {
-      id: `temp-${Date.now()}`, // Temporary ID
+      id: `temp-${Date.now()}`,
       sender_id: user.id,
       receiver_id: selected.id,
       message: text,
@@ -234,7 +245,6 @@ export default function AdminMessagesPage() {
       created_at: new Date().toISOString(),
     }
     
-    // Add message to UI immediately (optimistic update)
     setMessages(prev => [...prev, optimisticMessage])
     
     try {
@@ -244,7 +254,6 @@ export default function AdminMessagesPage() {
       })
       
       if (res.data?.message) {
-        // Replace optimistic message with real one from database
         setMessages(prev => 
           prev.map(msg => 
             msg.id === optimisticMessage.id ? res.data.message : msg
@@ -255,11 +264,9 @@ export default function AdminMessagesPage() {
     } catch (err: any) {
       console.error('❌ Failed to send message:', err)
       
-      // Remove optimistic message on failure
       setMessages(prev => prev.filter(msg => msg.id !== optimisticMessage.id))
-      setInput(text) // restore on failure
+      setInput(text)
       
-      // Better error messages
       const errorMsg = err.response?.data?.error || err.message || 'Unknown error'
       
       if (errorMsg.includes('admin_messages') || errorMsg.includes('relation') || errorMsg.includes('does not exist')) {
@@ -287,218 +294,506 @@ export default function AdminMessagesPage() {
 
   const totalUnread = Object.values(unreadMap).reduce((s, n) => s + n, 0)
 
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="h-[calc(100vh-120px)] flex flex-col">
-      
-      {/* Database Error Banner */}
+    <div style={{ fontFamily: "'Open Sans', sans-serif", width: '100%' }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Open+Sans:wght@400;500;600&display=swap');
+        .msg-header { font-family: 'Montserrat', sans-serif; }
+        .msg-body   { font-family: 'Open Sans',   sans-serif; }
+        a, button  { cursor: pointer !important; }
+
+        /* Hide scrollbar but keep functionality */
+        .msg-scroll {
+          scrollbar-width: none;
+          -ms-overflow-style: none;
+        }
+        .msg-scroll::-webkit-scrollbar {
+          display: none;
+        }
+
+        .msg-container {
+          background: #EDE9FE;
+          border: 1.5px solid rgba(196,181,253,0.55);
+          border-radius: 20px;
+          box-shadow: 0 4px 18px rgba(124,58,237,0.09), 0 1px 4px rgba(0,0,0,0.04);
+          overflow: hidden;
+          height: calc(100vh - 180px);
+          min-height: 500px;
+          display: flex;
+        }
+
+        .msg-sidebar {
+          width: 320px;
+          background: white;
+          border-right: 1.5px solid rgba(196,181,253,0.35);
+          display: flex;
+          flex-direction: column;
+          flex-shrink: 0;
+        }
+
+        .msg-search {
+          width: 100%;
+          height: 40px;
+          padding: 0 12px 0 36px;
+          background: #EDE9FE;
+          border: 1.5px solid rgba(196,181,253,0.55);
+          border-radius: 12px;
+          font-family: 'Open Sans', sans-serif;
+          font-size: 13px;
+          color: #1e1b4b;
+          outline: none;
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .msg-search::placeholder { color: #9ca3af; }
+        .msg-search:focus {
+          border-color: #7C3AED;
+          box-shadow: 0 0 0 3px rgba(124,58,237,0.10);
+        }
+
+        .msg-admin-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 16px;
+          transition: all 0.2s ease;
+          border: none;
+          background: transparent;
+          width: 100%;
+          text-align: left;
+          border-left: 3px solid transparent;
+        }
+        .msg-admin-item:hover {
+          background: rgba(124,58,237,0.06);
+        }
+        .msg-admin-item.active {
+          background: rgba(124,58,237,0.10);
+          border-left-color: #7C3AED;
+        }
+
+        .msg-badge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 22px;
+          height: 22px;
+          padding: 0 6px;
+          border-radius: 999px;
+          background: #7C3AED;
+          color: white;
+          font-family: 'Montserrat', sans-serif;
+          font-weight: 800;
+          font-size: 11px;
+        }
+
+        .msg-chat-area {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          background: white;
+          min-width: 0;
+        }
+
+        .msg-chat-header {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 16px 20px;
+          border-bottom: 1.5px solid rgba(196,181,253,0.35);
+          background: rgba(124,58,237,0.02);
+        }
+
+        .msg-messages {
+          flex: 1;
+          overflow-y: auto;
+          padding: 20px;
+          background: linear-gradient(to bottom, rgba(237,233,254,0.3) 0%, white 100%);
+        }
+
+        .msg-bubble {
+          max-width: 70%;
+          padding: 12px 16px;
+          border-radius: 16px;
+          font-size: 14px;
+          line-height: 1.5;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+          word-wrap: break-word;
+        }
+        .msg-bubble.mine {
+          background: #7C3AED;
+          color: white;
+          border-bottom-right-radius: 4px;
+          margin-left: auto;
+        }
+        .msg-bubble.theirs {
+          background: #EDE9FE;
+          color: #1e1b4b;
+          border-bottom-left-radius: 4px;
+          border: 1px solid rgba(196,181,253,0.4);
+        }
+
+        .msg-input-area {
+          padding: 16px 20px;
+          border-top: 1.5px solid rgba(196,181,253,0.35);
+          background: rgba(124,58,237,0.02);
+        }
+
+        .msg-input-wrapper {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          background: #EDE9FE;
+          border: 1.5px solid rgba(196,181,253,0.55);
+          border-radius: 14px;
+          padding: 10px 14px;
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .msg-input-wrapper:focus-within {
+          border-color: #7C3AED;
+          box-shadow: 0 0 0 3px rgba(124,58,237,0.10);
+        }
+
+        .msg-input {
+          flex: 1;
+          background: transparent;
+          border: none;
+          outline: none;
+          font-family: 'Open Sans', sans-serif;
+          font-size: 14px;
+          color: #1e1b4b;
+        }
+        .msg-input::placeholder { color: #9ca3af; }
+
+        .msg-send-btn {
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border: none;
+          transition: all 0.2s ease;
+          flex-shrink: 0;
+        }
+        .msg-send-btn.active {
+          background: #7C3AED;
+          color: white;
+          box-shadow: 0 2px 8px rgba(124,58,237,0.3);
+        }
+        .msg-send-btn.active:hover {
+          background: #6D28D9;
+          box-shadow: 0 4px 12px rgba(124,58,237,0.4);
+        }
+        .msg-send-btn.disabled {
+          background: rgba(196,181,253,0.3);
+          color: #9ca3af;
+          cursor: not-allowed !important;
+        }
+
+        .msg-error-banner {
+          background: rgba(239,68,68,0.08);
+          border: 1.5px solid rgba(239,68,68,0.25);
+          border-radius: 16px;
+          padding: 16px;
+          margin-bottom: 16px;
+        }
+
+        .msg-empty-state {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          height: 100%;
+          gap: 16px;
+          text-align: center;
+          padding: 32px;
+        }
+
+        .msg-time-divider {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 16px 0;
+        }
+        .msg-time-divider span {
+          background: rgba(124,58,237,0.10);
+          color: #7C3AED;
+          font-size: 11px;
+          font-weight: 600;
+          padding: 4px 12px;
+          border-radius: 999px;
+          border: 1px solid rgba(124,58,237,0.2);
+        }
+
+        @media (max-width: 768px) {
+          .msg-container {
+            height: calc(100vh - 140px);
+            flex-direction: column;
+          }
+          .msg-sidebar {
+            width: 100%;
+            max-height: 40%;
+            border-right: none;
+            border-bottom: 1.5px solid rgba(196,181,253,0.35);
+          }
+          .msg-chat-area {
+            height: 60%;
+          }
+        }
+      `}</style>
+
       {dbError && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-4 mb-4">
-          <div className="flex items-start gap-3">
-            <div className="w-5 h-5 rounded-full bg-red-500 flex items-center justify-center shrink-0 mt-0.5">
-              <span className="text-white text-xs font-bold">!</span>
+        <div className="msg-error-banner">
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+            <div style={{
+              width: '20px',
+              height: '20px',
+              borderRadius: '50%',
+              background: '#ef4444',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+              marginTop: '2px',
+            }}>
+              <span style={{ color: 'white', fontSize: '12px', fontWeight: 'bold' }}>!</span>
             </div>
-            <div className="flex-1">
-              <h3 className="text-red-400 font-semibold text-sm mb-1">Database Setup Required</h3>
-              <p className="text-red-300/80 text-sm mb-2">
+            <div style={{ flex: 1 }}>
+              <h3 className="msg-header" style={{ color: '#ef4444', fontWeight: 700, fontSize: '14px', marginBottom: '6px' }}>
+                Database Setup Required
+              </h3>
+              <p className="msg-body" style={{ color: '#dc2626', fontSize: '13px', marginBottom: '12px' }}>
                 The admin_messages table is missing from your database. Messages cannot be sent until this is fixed.
               </p>
-              <div className="bg-slate-900/50 rounded-lg p-3 text-xs text-slate-300 font-mono">
-                <p className="mb-2">📝 To fix this:</p>
-                <ol className="list-decimal list-inside space-y-1 ml-2">
+              <div style={{
+                background: 'rgba(30,27,75,0.05)',
+                borderRadius: '12px',
+                padding: '12px',
+                fontSize: '12px',
+                color: '#4c1d95',
+                fontFamily: 'monospace',
+              }}>
+                <p style={{ marginBottom: '8px', fontWeight: 600 }}>📝 To fix this:</p>
+                <ol style={{ listStyle: 'decimal', listStylePosition: 'inside', marginLeft: '8px' }}>
                   <li>Open Supabase Dashboard → SQL Editor</li>
-                  <li>Run the SQL in: <span className="text-blue-400">supabase-migrations/create-admin-messages-table.sql</span></li>
+                  <li>Run the SQL in: <span style={{ color: '#7C3AED' }}>supabase-migrations/create-admin-messages-table.sql</span></li>
                   <li>Refresh this page</li>
                 </ol>
-                <p className="mt-2 text-slate-400">See <span className="text-blue-400">MESSAGING-SETUP.md</span> for detailed instructions</p>
+                <p style={{ marginTop: '8px', color: '#6b7280' }}>
+                  See <span style={{ color: '#7C3AED' }}>MESSAGING-SETUP.md</span> for detailed instructions
+                </p>
               </div>
             </div>
           </div>
         </div>
       )}
 
-      <div className="flex-1 flex rounded-2xl overflow-hidden border border-slate-800 bg-slate-900">
+      <div className="msg-container">
 
-      {/* ── Left panel: Admin list ── */}
-      <div className="w-72 shrink-0 flex flex-col border-r border-slate-800">
+        {/* Left panel: Admin list */}
+        <div className="msg-sidebar">
 
-        {/* Header */}
-        <div className="p-4 border-b border-slate-800">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-white font-bold text-base">Messages</h2>
-            {totalUnread > 0 && (
-              <span className="bg-blue-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-                {totalUnread}
-              </span>
+          <div style={{ padding: '20px', borderBottom: '1.5px solid rgba(196,181,253,0.35)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <h2 className="msg-header" style={{ color: '#1e1b4b', fontWeight: 800, fontSize: '18px' }}>Messages</h2>
+              {totalUnread > 0 && (
+                <span className="msg-badge">{totalUnread}</span>
+              )}
+            </div>
+            <div style={{ position: 'relative' }}>
+              <Search style={{
+                position: 'absolute',
+                left: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                width: '14px',
+                height: '14px',
+                color: '#A78BFA',
+                pointerEvents: 'none',
+              }} />
+              <input
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                placeholder="Search admins..."
+                className="msg-search"
+              />
+            </div>
+          </div>
+
+          <div className="msg-scroll" style={{ flex: 1, overflowY: 'auto' }}>
+            {loadingAdmins ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '48px 0' }}>
+                <Loader2 style={{ width: '24px', height: '24px', color: '#7C3AED' }} className="animate-spin" />
+              </div>
+            ) : filteredAdmins.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '48px 16px' }}>
+                <p className="msg-body" style={{ color: '#9ca3af', fontSize: '14px' }}>No other admins found</p>
+              </div>
+            ) : (
+              filteredAdmins.map(admin => {
+                const unread    = unreadMap[admin.id] ?? 0
+                const isActive  = selected?.id === admin.id
+                return (
+                  <button
+                    key={admin.id}
+                    onClick={() => handleSelectAdmin(admin)}
+                    className={`msg-admin-item ${isActive ? 'active' : ''}`}
+                  >
+                    <div style={{ position: 'relative', flexShrink: 0 }}>
+                      <Avatar admin={admin} size="md" />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p className="msg-header" style={{
+                        fontSize: '14px',
+                        fontWeight: 700,
+                        color: isActive ? '#7C3AED' : '#1e1b4b',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {admin.full_name ?? 'Admin'}
+                      </p>
+                      <p className="msg-body" style={{
+                        fontSize: '12px',
+                        color: ROLE_COLOR[admin.role] ?? '#6b7280',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                      }}>
+                        {ROLE_LABEL[admin.role] ?? admin.role}
+                      </p>
+                    </div>
+                    {unread > 0 && (
+                      <span className="msg-badge" style={{ flexShrink: 0 }}>
+                        {unread > 9 ? '9+' : unread}
+                      </span>
+                    )}
+                  </button>
+                )
+              })
             )}
           </div>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
-            <input
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search admins..."
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg pl-9 pr-3 py-2 text-sm text-white placeholder:text-slate-500 outline-none focus:border-slate-600 transition-colors"
-            />
-          </div>
         </div>
 
-        {/* Admin list */}
-        <div className="flex-1 overflow-y-auto">
-          {loadingAdmins ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-5 h-5 animate-spin text-slate-500" />
-            </div>
-          ) : filteredAdmins.length === 0 ? (
-            <div className="text-center py-12 px-4">
-              <p className="text-slate-500 text-sm">No other admins found</p>
-            </div>
-          ) : (
-            filteredAdmins.map(admin => {
-              const unread    = unreadMap[admin.id] ?? 0
-              const isActive  = selected?.id === admin.id
-              return (
-                <button
-                  key={admin.id}
-                  onClick={() => handleSelectAdmin(admin)}
-                  className={cn(
-                    'w-full flex items-center gap-3 px-4 py-3 transition-all text-left',
-                    isActive
-                      ? 'bg-slate-800 border-r-2 border-blue-500'
-                      : 'hover:bg-slate-800/60'
-                  )}
-                >
-                  <div className="relative shrink-0">
-                    <Avatar admin={admin} size="md" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className={cn('text-sm font-medium truncate', isActive ? 'text-white' : 'text-slate-200')}>
-                      {admin.full_name ?? 'Admin'}
-                    </p>
-                    <p className={cn('text-xs truncate', ROLE_COLOR[admin.role] ?? 'text-slate-400')}>
-                      {ROLE_LABEL[admin.role] ?? admin.role}
-                    </p>
-                  </div>
-                  {unread > 0 && (
-                    <span className="shrink-0 bg-blue-500 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center">
-                      {unread > 9 ? '9+' : unread}
-                    </span>
-                  )}
-                </button>
-              )
-            })
-          )}
-        </div>
-      </div>
+        {/* Right panel: Chat area */}
+        <div className="msg-chat-area">
 
-      {/* ── Right panel: Chat area ── */}
-      <div className="flex-1 flex flex-col min-w-0">
-
-        {!selected ? (
-          // Empty state
-          <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center px-8">
-            <div className="w-16 h-16 rounded-2xl bg-slate-800 flex items-center justify-center">
-              <MessageSquare className="w-8 h-8 text-slate-600" />
-            </div>
-            <div>
-              <p className="text-white font-semibold">Select a conversation</p>
-              <p className="text-slate-500 text-sm mt-1">Choose an admin from the left to start messaging</p>
-            </div>
-          </div>
-        ) : (
-          <>
-            {/* Chat header */}
-            <div className="flex items-center gap-3 px-5 py-4 border-b border-slate-800 shrink-0">
-              <Avatar admin={selected} size="md" />
+          {!selected ? (
+            <div className="msg-empty-state">
+              <div style={{
+                width: '64px',
+                height: '64px',
+                borderRadius: '16px',
+                background: 'rgba(124,58,237,0.10)',
+                border: '1.5px solid rgba(196,181,253,0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <MessageSquare style={{ width: '32px', height: '32px', color: '#7C3AED' }} />
+              </div>
               <div>
-                <p className="text-white font-semibold text-sm">{selected.full_name ?? 'Admin'}</p>
-                <p className={cn('text-xs', ROLE_COLOR[selected.role] ?? 'text-slate-400')}>
-                  {ROLE_LABEL[selected.role] ?? selected.role}
+                <p className="msg-header" style={{ color: '#1e1b4b', fontWeight: 700, fontSize: '16px' }}>
+                  Select a conversation
+                </p>
+                <p className="msg-body" style={{ color: '#6b7280', fontSize: '14px', marginTop: '4px' }}>
+                  Choose an admin from the left to start messaging
                 </p>
               </div>
             </div>
+          ) : (
+            <>
+              <div className="msg-chat-header">
+                <Avatar admin={selected} size="md" />
+                <div>
+                  <p className="msg-header" style={{ color: '#1e1b4b', fontWeight: 700, fontSize: '15px' }}>
+                    {selected.full_name ?? 'Admin'}
+                  </p>
+                  <p className="msg-body" style={{ fontSize: '12px', color: ROLE_COLOR[selected.role] ?? '#6b7280' }}>
+                    {ROLE_LABEL[selected.role] ?? selected.role}
+                  </p>
+                </div>
+              </div>
 
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto px-5 py-4 space-y-1">
-              {loadingMsgs ? (
-                <div className="flex items-center justify-center h-full">
-                  <Loader2 className="w-6 h-6 animate-spin text-slate-500" />
-                </div>
-              ) : messages.length === 0 ? (
-                <div className="flex items-center justify-center h-full">
-                  <p className="text-slate-600 text-sm">No messages yet. Say hello!</p>
-                </div>
-              ) : (
-                <>
-                  {messages.map((msg, i) => {
-                    const isMine    = msg.sender_id === user?.id
-                    const prevMsg   = messages[i - 1]
-                    const showGap   = !prevMsg || new Date(msg.created_at).getTime() - new Date(prevMsg.created_at).getTime() > 5 * 60 * 1000
-                    return (
-                      <div key={msg.id}>
-                        {showGap && (
-                          <div className="flex items-center justify-center my-4">
-                            <span className="text-xs text-slate-600 bg-slate-800/60 px-3 py-1 rounded-full">
-                              {formatTime(msg.created_at)}
-                            </span>
-                          </div>
-                        )}
-                        <div className={cn('flex mb-1', isMine ? 'justify-end' : 'justify-start')}>
-                          <div
-                            className={cn(
-                              'max-w-[70%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed shadow-sm',
-                              isMine
-                                ? 'bg-blue-600 text-white rounded-br-sm'
-                                : 'bg-slate-800 text-slate-100 rounded-bl-sm'
-                            )}
-                          >
-                            {msg.message}
-                            <p className={cn('text-[10px] mt-1 text-right', isMine ? 'text-blue-200' : 'text-slate-500')}>
-                              {new Date(msg.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-                            </p>
+              <div className="msg-messages msg-scroll">
+                {loadingMsgs ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                    <Loader2 style={{ width: '32px', height: '32px', color: '#7C3AED' }} className="animate-spin" />
+                  </div>
+                ) : messages.length === 0 ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                    <p className="msg-body" style={{ color: '#9ca3af', fontSize: '14px' }}>
+                      No messages yet. Say hello!
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    {messages.map((msg, i) => {
+                      const isMine    = msg.sender_id === user?.id
+                      const prevMsg   = messages[i - 1]
+                      const showGap   = !prevMsg || new Date(msg.created_at).getTime() - new Date(prevMsg.created_at).getTime() > 5 * 60 * 1000
+                      return (
+                        <div key={msg.id}>
+                          {showGap && (
+                            <div className="msg-time-divider">
+                              <span>{formatTime(msg.created_at)}</span>
+                            </div>
+                          )}
+                          <div style={{
+                            display: 'flex',
+                            justifyContent: isMine ? 'flex-end' : 'flex-start',
+                            marginBottom: '8px',
+                          }}>
+                            <div className={`msg-bubble ${isMine ? 'mine' : 'theirs'}`}>
+                              <div className="msg-body">{msg.message}</div>
+                              <p className="msg-body" style={{
+                                fontSize: '10px',
+                                marginTop: '6px',
+                                textAlign: 'right',
+                                color: isMine ? 'rgba(255,255,255,0.7)' : '#9ca3af',
+                              }}>
+                                {new Date(msg.created_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                              </p>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    )
-                  })}
-                  <div ref={bottomRef} />
-                </>
-              )}
-            </div>
-
-            {/* Input */}
-            <div className="px-4 py-3 border-t border-slate-800 shrink-0">
-              <div className="flex items-center gap-2 bg-slate-800 rounded-xl px-4 py-2 border border-slate-700 focus-within:border-slate-600 transition-colors">
-                <input
-                  ref={inputRef}
-                  value={input}
-                  onChange={e => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder={`Message ${selected.full_name ?? 'admin'}...`}
-                  className="flex-1 bg-transparent text-sm text-white placeholder:text-slate-500 outline-none"
-                />
-                <button
-                  onClick={handleSend}
-                  disabled={!input.trim() || sending}
-                  className={cn(
-                    'w-8 h-8 rounded-lg flex items-center justify-center transition-all shrink-0',
-                    input.trim() && !sending
-                      ? 'bg-blue-600 hover:bg-blue-500 text-white'
-                      : 'bg-slate-700 text-slate-500 cursor-not-allowed'
-                  )}
-                >
-                  {sending
-                    ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    : <Send className="w-3.5 h-3.5" />
-                  }
-                </button>
+                      )
+                    })}
+                    <div ref={bottomRef} />
+                  </>
+                )}
               </div>
-              <p className="text-xs text-slate-600 mt-1.5 text-center">Press Enter to send</p>
-            </div>
-          </>
-        )}
-      </div>
+
+              <div className="msg-input-area">
+                <div className="msg-input-wrapper">
+                  <input
+                    ref={inputRef}
+                    value={input}
+                    onChange={e => setInput(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder={`Message ${selected.full_name ?? 'admin'}...`}
+                    className="msg-input"
+                  />
+                  <button
+                    onClick={handleSend}
+                    disabled={!input.trim() || sending}
+                    className={`msg-send-btn ${input.trim() && !sending ? 'active' : 'disabled'}`}
+                  >
+                    {sending
+                      ? <Loader2 style={{ width: '16px', height: '16px' }} className="animate-spin" />
+                      : <Send style={{ width: '16px', height: '16px' }} />
+                    }
+                  </button>
+                </div>
+                <p className="msg-body" style={{ fontSize: '11px', color: '#9ca3af', marginTop: '8px', textAlign: 'center' }}>
+                  Press Enter to send
+                </p>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </div>
   )

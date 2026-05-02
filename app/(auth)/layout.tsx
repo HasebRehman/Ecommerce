@@ -199,7 +199,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             Buy, sell and grow — join thousands of local retailers and shoppers across Pakistan.
           </p>
           <img
-            src="/sign-up-page-image.png"
+            src="/shopping-vector.png"
             alt="VendoSphere marketplace"
             className="auth-illustration"
           />

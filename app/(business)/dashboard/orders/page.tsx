@@ -148,7 +148,6 @@ export default function OrdersPage() {
 
   return (
     <div style={{ 
-      background: '#ffffff', 
       fontFamily: "'Open Sans', sans-serif", 
       minHeight: 'calc(100vh - 120px)',
       width: '100%',
@@ -165,22 +164,21 @@ export default function OrdersPage() {
         .op-body { font-family: 'Open Sans', sans-serif; }
         
         .op-card {
-          background: rgba(255,255,255,0.95);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: 1px solid rgba(196,181,253,0.3);
+          background: #F3E8FF;
+          border: 1px solid rgba(196,181,253,0.5);
           border-radius: 16px;
-          transition: all 0.3s ease;
+          transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
           cursor: pointer;
-          box-shadow: 0 8px 25px rgba(124,58,237,0.15), 0 4px 12px rgba(124,58,237,0.08), 0 2px 6px rgba(0,0,0,0.05);
+          box-shadow: 0 4px 16px rgba(124,58,237,0.10), 0 2px 6px rgba(0,0,0,0.04);
           margin-bottom: 16px;
           width: 100%;
           max-width: 100%;
           overflow: hidden;
+          will-change: transform;
         }
         .op-card:hover {
           border-color: rgba(124,58,237,0.5);
-          box-shadow: 0 12px 35px rgba(124,58,237,0.25), 0 8px 20px rgba(124,58,237,0.15), 0 4px 10px rgba(0,0,0,0.08);
+          box-shadow: 0 8px 28px rgba(124,58,237,0.18), 0 4px 12px rgba(124,58,237,0.10);
           transform: translateY(-3px);
         }
         

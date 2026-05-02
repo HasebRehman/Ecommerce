@@ -5,12 +5,8 @@ import {
   CheckCircle, XCircle, Loader2, Search,
   UserCheck, Clock, Ban,
 } from 'lucide-react'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
 import { toast } from 'sonner'
 import { adminService } from '@/lib/services/admin.service'
-import { cn } from '@/lib/utils'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -36,24 +32,19 @@ interface RoleRequest {
 
 const ATTEMPT_LABEL: Record<number, string> = { 1: '1st', 2: '2nd', 3: '3rd' }
 
-const STATUS_BADGE: Record<RequestStatus, string> = {
-  pending:  'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-  approved: 'bg-green-500/20  text-green-400  border-green-500/30',
-  rejected: 'bg-red-500/20    text-red-400    border-red-500/30',
-}
-
-const ATTEMPT_BADGE: Record<number, string> = {
-  1: 'bg-blue-500/20   text-blue-400   border-blue-500/30',
-  2: 'bg-orange-500/20 text-orange-400 border-orange-500/30',
-  3: 'bg-red-500/20    text-red-400    border-red-500/30',
-}
-
 const TABS: { key: FilterTab; label: string }[] = [
   { key: 'all',      label: 'All'      },
   { key: 'pending',  label: 'Pending'  },
   { key: 'approved', label: 'Approved' },
   { key: 'rejected', label: 'Rejected' },
 ]
+
+// Avatar color generator
+const AVATAR_COLORS = [
+  '#7C3AED','#6D28D9','#2563eb','#0891b2','#16a34a','#ca8a04','#dc2626','#db2777',
+]
+const avatarColor = (name: string) =>
+  AVATAR_COLORS[(name?.charCodeAt(0) ?? 0) % AVATAR_COLORS.length]
 
 // ── Component ────────────────────────────────────────────────────────────────
 
@@ -116,79 +107,301 @@ export default function RoleRequestsPage() {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6">
+    <div style={{ fontFamily: "'Open Sans', sans-serif", width: '100%' }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Open+Sans:wght@400;500;600&display=swap');
+        .rr-header { font-family: 'Montserrat', sans-serif; }
+        .rr-body   { font-family: 'Open Sans',   sans-serif; }
+        a, button  { cursor: pointer !important; }
 
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-white">Role Requests</h1>
-        <p className="text-slate-400 mt-1">
-          Review seller access requests from customers
-        </p>
-      </div>
+        .rr-card {
+          background: #EDE9FE;
+          border: 1.5px solid rgba(196,181,253,0.55);
+          border-radius: 20px;
+          transform: translateZ(0);
+          -webkit-transform: translateZ(0);
+          box-shadow: 0 4px 18px rgba(124,58,237,0.09), 0 1px 4px rgba(0,0,0,0.04);
+          overflow: hidden;
+          width: 100%;
+          transition: all 0.2s ease;
+        }
+        .rr-card:hover {
+          border-color: rgba(124,58,237,0.4);
+          box-shadow: 0 6px 24px rgba(124,58,237,0.12), 0 2px 6px rgba(0,0,0,0.06);
+        }
 
-      {/* Search + Tabs */}
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="relative w-full sm:max-w-xs">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <Input
-            placeholder="Search by name or username…"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            className="bg-slate-900 border-slate-700 text-white placeholder:text-slate-500 pl-10"
-          />
+        .rr-search-wrap {
+          position: relative;
+          width: 100%;
+          max-width: 420px;
+        }
+        .rr-search {
+          width: 100%;
+          height: 46px;
+          padding: 0 16px 0 42px;
+          background: #EDE9FE;
+          border: 1.5px solid rgba(196,181,253,0.55);
+          border-radius: 14px;
+          font-family: 'Open Sans', sans-serif;
+          font-size: 14px;
+          color: #1e1b4b;
+          outline: none;
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
+          box-shadow: 0 2px 8px rgba(124,58,237,0.06);
+        }
+        .rr-search::placeholder { color: #9ca3af; }
+        .rr-search:focus {
+          border-color: #7C3AED;
+          box-shadow: 0 0 0 4px rgba(124,58,237,0.10);
+        }
+
+        /* Tabs */
+        .rr-tabs {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          background: #EDE9FE;
+          border: 1.5px solid rgba(196,181,253,0.55);
+          border-radius: 14px;
+          padding: 6px;
+          box-shadow: 0 2px 8px rgba(124,58,237,0.06);
+        }
+        .rr-tab {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 8px 16px;
+          border-radius: 10px;
+          font-family: 'Montserrat', sans-serif;
+          font-weight: 700;
+          font-size: 13px;
+          transition: all 0.2s ease;
+          border: none;
+          background: transparent;
+          color: #6b7280;
+          white-space: nowrap;
+        }
+        .rr-tab:hover {
+          color: #7C3AED;
+          background: rgba(124,58,237,0.08);
+        }
+        .rr-tab.active {
+          background: white;
+          color: #7C3AED;
+          box-shadow: 0 2px 8px rgba(124,58,237,0.12);
+        }
+        .rr-tab-count {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 20px;
+          height: 20px;
+          padding: 0 6px;
+          border-radius: 999px;
+          font-size: 11px;
+          font-weight: 800;
+        }
+        .rr-tab.active .rr-tab-count {
+          background: rgba(124,58,237,0.15);
+          color: #7C3AED;
+        }
+        .rr-tab:not(.active) .rr-tab-count {
+          background: rgba(107,114,128,0.15);
+          color: #6b7280;
+        }
+
+        /* Status badges */
+        .rr-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 4px 10px;
+          border-radius: 999px;
+          font-family: 'Montserrat', sans-serif;
+          font-weight: 700;
+          font-size: 11px;
+          border: 1px solid;
+          white-space: nowrap;
+          text-transform: capitalize;
+        }
+        .rr-badge.pending {
+          background: rgba(234,179,8,0.12);
+          color: #ca8a04;
+          border-color: rgba(234,179,8,0.3);
+        }
+        .rr-badge.approved {
+          background: rgba(34,197,94,0.12);
+          color: #16a34a;
+          border-color: rgba(34,197,94,0.3);
+        }
+        .rr-badge.rejected {
+          background: rgba(239,68,68,0.12);
+          color: #ef4444;
+          border-color: rgba(239,68,68,0.3);
+        }
+        .rr-badge.attempt-1 {
+          background: rgba(59,130,246,0.12);
+          color: #2563eb;
+          border-color: rgba(59,130,246,0.3);
+        }
+        .rr-badge.attempt-2 {
+          background: rgba(249,115,22,0.12);
+          color: #f97316;
+          border-color: rgba(249,115,22,0.3);
+        }
+        .rr-badge.attempt-3 {
+          background: rgba(239,68,68,0.12);
+          color: #ef4444;
+          border-color: rgba(239,68,68,0.3);
+        }
+
+        /* Action buttons */
+        .rr-btn {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 10px 18px;
+          border-radius: 12px;
+          font-family: 'Montserrat', sans-serif;
+          font-weight: 700;
+          font-size: 13px;
+          border: 1.5px solid;
+          transition: all 0.2s ease;
+          white-space: nowrap;
+        }
+        .rr-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed !important;
+        }
+        .rr-btn-approve {
+          background: rgba(34,197,94,0.12);
+          color: #16a34a;
+          border-color: rgba(34,197,94,0.3);
+        }
+        .rr-btn-approve:not(:disabled):hover {
+          background: #16a34a;
+          color: white;
+          border-color: #16a34a;
+          box-shadow: 0 4px 12px rgba(34,197,94,0.25);
+        }
+        .rr-btn-reject {
+          background: rgba(239,68,68,0.12);
+          color: #ef4444;
+          border-color: rgba(239,68,68,0.3);
+        }
+        .rr-btn-reject:not(:disabled):hover {
+          background: #ef4444;
+          color: white;
+          border-color: #ef4444;
+          box-shadow: 0 4px 12px rgba(239,68,68,0.25);
+        }
+
+        /* Warning banner */
+        .rr-warning {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 12px 16px;
+          border-radius: 12px;
+          background: rgba(239,68,68,0.08);
+          border: 1.5px solid rgba(239,68,68,0.25);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+          .rr-tabs {
+            overflow-x: auto;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+          }
+          .rr-tabs::-webkit-scrollbar {
+            display: none;
+          }
+          .rr-card-actions {
+            width: 100%;
+            flex-direction: column;
+          }
+          .rr-btn {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+        @media (max-width: 640px) {
+          .rr-tab {
+            padding: 6px 12px;
+            font-size: 12px;
+          }
+        }
+      `}</style>
+
+      <div className="space-y-6">
+
+        {/* ── Header ── */}
+        <div>
+          <h1 className="rr-header text-2xl sm:text-3xl font-bold text-[#1e1b4b]">Role Requests</h1>
+          <p className="rr-body text-[#6b7280] text-sm mt-1">
+            Review seller access requests from customers
+          </p>
         </div>
 
-        <div className="flex items-center gap-1 bg-slate-900 border border-slate-800 rounded-xl p-1">
-          {TABS.map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={cn(
-                'px-3 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5',
-                activeTab === tab.key
-                  ? 'bg-slate-700 text-white'
-                  : 'text-slate-400 hover:text-white'
-              )}
-            >
-              {tab.label}
-              <span className={cn(
-                'text-xs px-1.5 py-0.5 rounded-full font-bold',
-                activeTab === tab.key ? 'bg-slate-600 text-slate-200' : 'bg-slate-800 text-slate-500'
-              )}>
-                {counts[tab.key]}
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Content */}
-      {isLoading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
-        </div>
-      ) : filtered.length === 0 ? (
-        <Card className="bg-slate-900 border-slate-800">
-          <CardContent className="py-16 text-center">
-            <UserCheck className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-            <p className="text-white font-medium">No requests found</p>
-            <p className="text-slate-500 text-sm mt-1">
-              {search ? 'Try a different search term' : 'No role requests yet'}
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-3">
-          {filtered.map(req => (
-            <RequestCard
-              key={req.id}
-              req={req}
-              processing={processing}
-              onReview={handleReview}
+        {/* ── Search + Tabs ── */}
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          <div className="rr-search-wrap">
+            <Search style={{
+              position: 'absolute', left: '14px', top: '50%',
+              transform: 'translateY(-50%)',
+              width: '16px', height: '16px', color: '#A78BFA', pointerEvents: 'none',
+            }} />
+            <input
+              className="rr-search"
+              placeholder="Search by name or username..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
             />
-          ))}
+          </div>
+
+          <div className="rr-tabs">
+            {TABS.map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`rr-tab ${activeTab === tab.key ? 'active' : ''}`}
+              >
+                {tab.label}
+                <span className="rr-tab-count">{counts[tab.key]}</span>
+              </button>
+            ))}
+          </div>
         </div>
-      )}
+
+        {/* ── Content ── */}
+        {isLoading ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '80px 24px' }}>
+            <Loader2 style={{ width: '40px', height: '40px', color: '#7C3AED' }} className="animate-spin" />
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="rr-card">
+            <div style={{ textAlign: 'center', padding: '80px 24px' }}>
+              <UserCheck style={{ width: '48px', height: '48px', color: '#C4B5FD', margin: '0 auto 16px' }} />
+              <p className="rr-header text-[#1e1b4b] font-bold text-lg">No requests found</p>
+              <p className="rr-body text-[#6b7280] text-sm mt-2">
+                {search ? 'Try a different search term' : 'No role requests yet'}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {filtered.map(req => (
+              <RequestCard
+                key={req.id}
+                req={req}
+                processing={processing}
+                onReview={handleReview}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
@@ -210,64 +423,75 @@ function RequestCard({
   const rejectingThis   = processing === `${req.id}-reject`
   const anyProcessing   = approvingThis || rejectingThis
   const attemptLabel    = ATTEMPT_LABEL[req.request_count] ?? `${req.request_count}th`
-  const attemptBadge    = ATTEMPT_BADGE[req.request_count] ?? ATTEMPT_BADGE[3]
+  const attemptClass    = req.request_count === 1 ? 'attempt-1' : req.request_count === 2 ? 'attempt-2' : 'attempt-3'
+  const initials        = req.profiles?.full_name?.charAt(0)?.toUpperCase() ?? 'U'
+  const bgColor         = avatarColor(req.profiles?.full_name ?? 'U')
 
   return (
-    <Card className={cn(
-      'border transition-all',
-      isBlocked
-        ? 'bg-slate-900/60 border-slate-800/60 opacity-75'
-        : 'bg-slate-900 border-slate-800 hover:border-slate-700'
-    )}>
-      <CardContent className="p-5">
-        <div className="flex items-start gap-4 flex-wrap sm:flex-nowrap">
+    <div className="rr-card">
+      <div style={{ padding: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', flexWrap: 'wrap' }}>
 
           {/* Avatar */}
-          <div className="w-11 h-11 rounded-full shrink-0 overflow-hidden">
+          <div style={{
+            width: '56px', height: '56px',
+            borderRadius: '50%',
+            overflow: 'hidden',
+            flexShrink: 0,
+            border: '2px solid rgba(196,181,253,0.5)',
+          }}>
             {req.profiles?.avatar_url ? (
               <img
                 src={req.profiles.avatar_url}
                 alt={req.profiles.full_name ?? 'User'}
-                className="w-full h-full object-cover"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
               />
             ) : (
-              <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-bold text-base">
-                {req.profiles?.full_name?.charAt(0)?.toUpperCase() ?? 'U'}
+              <div style={{
+                width: '100%', height: '100%',
+                background: bgColor,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'white',
+                fontFamily: "'Montserrat', sans-serif",
+                fontWeight: 700,
+                fontSize: '20px',
+              }}>
+                {initials}
               </div>
             )}
           </div>
 
           {/* Info */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <p className="text-white font-semibold text-sm">
+          <div style={{ flex: 1, minWidth: '200px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '6px' }}>
+              <p className="rr-header text-[#1e1b4b] font-bold text-base">
                 {req.profiles?.full_name ?? 'Unknown User'}
               </p>
-              <span className="text-slate-600 text-xs">·</span>
-              <p className="text-slate-400 text-xs">
+              <span style={{ color: '#C4B5FD', fontSize: '12px' }}>·</span>
+              <p className="rr-body text-[#6b7280] text-sm">
                 @{req.profiles?.username ?? 'no-username'}
               </p>
             </div>
 
-            <p className="text-slate-400 text-xs mt-1">
-              <span className="text-blue-400 font-medium">Customer</span>
-              <span className="mx-1.5 text-slate-600">→</span>
-              <span className="text-green-400 font-medium">Seller</span>
+            <p className="rr-body text-[#6b7280] text-sm" style={{ marginBottom: '12px' }}>
+              <span style={{ color: '#2563eb', fontWeight: 600 }}>Customer</span>
+              <span style={{ margin: '0 8px', color: '#C4B5FD' }}>→</span>
+              <span style={{ color: '#16a34a', fontWeight: 600 }}>Seller</span>
             </p>
 
-            <div className="flex items-center gap-2 mt-2.5 flex-wrap">
-              <Badge className={cn('text-xs border capitalize', STATUS_BADGE[req.status])}>
-                {req.status === 'pending'  && <Clock        className="w-3 h-3 mr-1" />}
-                {req.status === 'approved' && <CheckCircle  className="w-3 h-3 mr-1" />}
-                {req.status === 'rejected' && <XCircle      className="w-3 h-3 mr-1" />}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <span className={`rr-badge ${req.status}`}>
+                {req.status === 'pending'  && <Clock        style={{ width: '12px', height: '12px' }} />}
+                {req.status === 'approved' && <CheckCircle  style={{ width: '12px', height: '12px' }} />}
+                {req.status === 'rejected' && <XCircle      style={{ width: '12px', height: '12px' }} />}
                 {req.status}
-              </Badge>
+              </span>
 
-              <Badge className={cn('text-xs border', attemptBadge)}>
+              <span className={`rr-badge ${attemptClass}`}>
                 {attemptLabel} request
-              </Badge>
+              </span>
 
-              <span className="text-slate-500 text-xs">
+              <span className="rr-body text-[#9ca3af] text-xs">
                 {new Date(req.created_at).toLocaleDateString('en-US', {
                   day: 'numeric', month: 'short', year: 'numeric',
                 })}
@@ -275,9 +499,9 @@ function RequestCard({
             </div>
 
             {isBlocked && (
-              <div className="flex items-center gap-2 mt-3 px-3 py-2 rounded-lg bg-red-500/10 border border-red-500/20">
-                <Ban className="w-3.5 h-3.5 text-red-400 shrink-0" />
-                <p className="text-red-400 text-xs font-medium">
+              <div className="rr-warning" style={{ marginTop: '12px' }}>
+                <Ban style={{ width: '16px', height: '16px', color: '#ef4444', flexShrink: 0 }} />
+                <p className="rr-body text-[#ef4444] text-xs font-semibold">
                   This user can no longer send seller requests.
                 </p>
               </div>
@@ -285,59 +509,35 @@ function RequestCard({
           </div>
 
           {/* Actions */}
-          {isPending && !isBlocked && (
-            <div className="flex items-center gap-2 shrink-0 self-start mt-0.5">
-              {/* Approve */}
+          {isPending && (
+            <div className="rr-card-actions" style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
               <button
                 disabled={anyProcessing}
                 onClick={() => onReview(req.id, 'approve')}
-                className={cn(
-                  'flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-all',
-                  'bg-green-500/15 text-green-400 border border-green-500/30',
-                  !anyProcessing && 'hover:bg-green-500 hover:text-white hover:border-green-500',
-                  anyProcessing && 'opacity-50 cursor-not-allowed'
-                )}
+                className="rr-btn rr-btn-approve"
               >
                 {approvingThis
-                  ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  : <CheckCircle className="w-3.5 h-3.5" />
+                  ? <Loader2 style={{ width: '14px', height: '14px' }} className="animate-spin" />
+                  : <CheckCircle style={{ width: '14px', height: '14px' }} />
                 }
                 Approve
               </button>
 
-              {/* Reject */}
               <button
                 disabled={anyProcessing}
                 onClick={() => onReview(req.id, 'reject')}
-                className={cn(
-                  'flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold transition-all',
-                  'bg-red-500/15 text-red-400 border border-red-500/30',
-                  !anyProcessing && 'hover:bg-red-500 hover:text-white hover:border-red-500',
-                  anyProcessing && 'opacity-50 cursor-not-allowed'
-                )}
+                className="rr-btn rr-btn-reject"
               >
                 {rejectingThis
-                  ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  : <XCircle className="w-3.5 h-3.5" />
+                  ? <Loader2 style={{ width: '14px', height: '14px' }} className="animate-spin" />
+                  : <XCircle style={{ width: '14px', height: '14px' }} />
                 }
                 Reject
               </button>
             </div>
           )}
-
-          {/* Disabled state after final rejection */}
-          {isBlocked && (
-            <div className="flex items-center gap-2 shrink-0 self-start mt-0.5">
-              <button disabled className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-slate-800 text-slate-600 border border-slate-700 cursor-not-allowed opacity-40">
-                <CheckCircle className="w-3.5 h-3.5" /> Approve
-              </button>
-              <button disabled className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-slate-800 text-slate-600 border border-slate-700 cursor-not-allowed opacity-40">
-                <XCircle className="w-3.5 h-3.5" /> Reject
-              </button>
-            </div>
-          )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   )
 }

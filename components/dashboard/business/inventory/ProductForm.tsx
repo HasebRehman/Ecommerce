@@ -134,49 +134,43 @@ export default function ProductForm({
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Open+Sans:wght@400;500;600&display=swap');
         
-        * {
-          box-sizing: border-box;
-        }
-        
         .pf-header { font-family: 'Montserrat', sans-serif; }
         .pf-body { font-family: 'Open Sans', sans-serif; }
         
         .pf-card {
-          background: rgba(255,255,255,0.95);
-          backdrop-filter: blur(20px);
-          -webkit-backdrop-filter: blur(20px);
-          border: 2px solid rgba(196,181,253,0.3);
+          background: #EDE9FE;
+          border: 2px solid rgba(196,181,253,0.5);
           border-radius: 20px;
-          transition: all 0.3s ease;
-          box-shadow: 0 8px 25px rgba(124,58,237,0.15), 0 4px 12px rgba(124,58,237,0.08), 0 2px 6px rgba(0,0,0,0.05);
+          transform: translateZ(0);
+          -webkit-transform: translateZ(0);
+          transition: border-color 0.25s ease, box-shadow 0.25s ease;
+          box-shadow: 0 4px 18px rgba(124,58,237,0.10), 0 2px 6px rgba(0,0,0,0.04);
           margin-bottom: 24px;
           overflow: hidden;
         }
         
         .pf-card:hover {
-          border-color: rgba(124,58,237,0.4);
-          box-shadow: 0 12px 35px rgba(124,58,237,0.2), 0 8px 20px rgba(124,58,237,0.12), 0 4px 10px rgba(0,0,0,0.08);
+          border-color: rgba(124,58,237,0.45);
+          box-shadow: 0 8px 28px rgba(124,58,237,0.16), 0 4px 12px rgba(124,58,237,0.10);
         }
         
         .pf-input {
           width: 100%;
           padding: 14px 16px;
-          border: 2px solid rgba(196,181,253,0.3);
+          border: 2px solid rgba(196,181,253,0.4);
           border-radius: 12px;
-          background: rgba(255,255,255,0.9);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
+          background: #FAF5FF;
           font-family: 'Open Sans', sans-serif;
           font-size: 14px;
           color: #1e1b4b;
-          transition: all 0.3s ease;
-          box-shadow: 0 2px 8px rgba(124,58,237,0.05);
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
+          box-shadow: 0 1px 4px rgba(124,58,237,0.05);
         }
         
         .pf-input:focus {
           outline: none;
           border-color: #7C3AED;
-          box-shadow: 0 4px 16px rgba(124,58,237,0.15), 0 0 0 4px rgba(124,58,237,0.1);
+          box-shadow: 0 0 0 4px rgba(124,58,237,0.10);
         }
         
         .pf-input::placeholder {
@@ -186,16 +180,14 @@ export default function ProductForm({
         .pf-textarea {
           width: 100%;
           padding: 14px 16px;
-          border: 2px solid rgba(196,181,253,0.3);
+          border: 2px solid rgba(196,181,253,0.4);
           border-radius: 12px;
-          background: rgba(255,255,255,0.9);
-          backdrop-filter: blur(10px);
-          -webkit-backdrop-filter: blur(10px);
+          background: #FAF5FF;
           font-family: 'Open Sans', sans-serif;
           font-size: 14px;
           color: #1e1b4b;
-          transition: all 0.3s ease;
-          box-shadow: 0 2px 8px rgba(124,58,237,0.05);
+          transition: border-color 0.2s ease, box-shadow 0.2s ease;
+          box-shadow: 0 1px 4px rgba(124,58,237,0.05);
           resize: none;
           min-height: 100px;
         }
@@ -203,7 +195,7 @@ export default function ProductForm({
         .pf-textarea:focus {
           outline: none;
           border-color: #7C3AED;
-          box-shadow: 0 4px 16px rgba(124,58,237,0.15), 0 0 0 4px rgba(124,58,237,0.1);
+          box-shadow: 0 0 0 4px rgba(124,58,237,0.10);
         }
         
         .pf-label {

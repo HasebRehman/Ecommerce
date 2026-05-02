@@ -16,7 +16,7 @@ export async function PUT(
     const { data: roleRecord } = await supabase
       .from('user_roles').select('role').eq('user_id', user.id).single()
 
-    if (roleRecord?.role !== 'super_admin') {
+    if (!['super_admin', 'platform_admin'].includes(roleRecord?.role)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

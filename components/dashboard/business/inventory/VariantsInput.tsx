@@ -2,20 +2,19 @@
 
 import { useState } from 'react'
 import { X, Plus } from 'lucide-react'
-import { cn } from '@/lib/utils'
 
 interface Props {
-  label:    string
-  values:   string[]
-  onChange: (values: string[]) => void
+  label:        string
+  values:       string[]
+  onChange:     (values: string[]) => void
   placeholder?: string
-  colorMode?: boolean
+  colorMode?:   boolean
 }
 
 const PRESET_SIZES  = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL']
 const PRESET_COLORS = [
   { name: 'Black',  hex: '#000000' },
-  { name: 'White',  hex: '#FFFFFF' },
+  { name: 'White',  hex: '#E5E7EB' },
   { name: 'Red',    hex: '#EF4444' },
   { name: 'Blue',   hex: '#3B82F6' },
   { name: 'Green',  hex: '#22C55E' },
@@ -49,54 +48,124 @@ export default function VariantsInput({
   const presets = colorMode ? PRESET_COLORS.map(c => c.name) : PRESET_SIZES
 
   return (
-    <div className="space-y-2">
-      <p className="text-slate-200 text-sm font-medium">{label}</p>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+
+      {/* Label */}
+      <p style={{
+        fontFamily: "'Montserrat', sans-serif",
+        fontWeight: 700,
+        fontSize: '13px',
+        color: '#7C3AED',
+        letterSpacing: '0.04em',
+        textTransform: 'uppercase',
+        margin: 0,
+      }}>
+        {label}
+      </p>
 
       {/* Preset chips */}
-      <div className="flex flex-wrap gap-1.5">
-        {presets.map(preset => (
-          <button
-            key={preset}
-            type="button"
-            onClick={() => add(preset)}
-            disabled={values.includes(preset)}
-            className={cn(
-              'px-2.5 py-1 rounded-full text-xs font-medium border transition-all',
-              values.includes(preset)
-                ? 'bg-blue-500/20 text-blue-400 border-blue-500/30 cursor-default'
-                : 'bg-slate-800 text-slate-400 border-slate-700 hover:border-blue-500 hover:text-white'
-            )}
-          >
-            {colorMode && (
-              <span
-                className="inline-block w-2 h-2 rounded-full mr-1.5"
-                style={{
-                  backgroundColor: PRESET_COLORS.find(
-                    c => c.name === preset
-                  )?.hex,
-                }}
-              />
-            )}
-            {preset}
-          </button>
-        ))}
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+        {presets.map(preset => {
+          const isSelected = values.includes(preset)
+          return (
+            <button
+              key={preset}
+              type="button"
+              onClick={() => isSelected ? remove(preset) : add(preset)}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 14px',
+                borderRadius: '999px',
+                fontFamily: "'Montserrat', sans-serif",
+                fontWeight: 600,
+                fontSize: '12px',
+                border: isSelected
+                  ? '2px solid rgba(124,58,237,0.5)'
+                  : '2px solid rgba(196,181,253,0.5)',
+                background: isSelected
+                  ? 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)'
+                  : '#FAF5FF',
+                color: isSelected ? '#ffffff' : '#7C3AED',
+                cursor: isSelected ? 'pointer' : 'pointer',
+                transition: 'all 0.18s ease',
+                boxShadow: isSelected ? '0 2px 8px rgba(124,58,237,0.25)' : 'none',
+              }}
+              onMouseEnter={e => {
+                if (!isSelected) {
+                  e.currentTarget.style.background = '#EDE9FE'
+                  e.currentTarget.style.borderColor = 'rgba(124,58,237,0.5)'
+                } else {
+                  e.currentTarget.style.opacity = '0.8'
+                }
+              }}
+              onMouseLeave={e => {
+                if (!isSelected) {
+                  e.currentTarget.style.background = '#FAF5FF'
+                  e.currentTarget.style.borderColor = 'rgba(196,181,253,0.5)'
+                } else {
+                  e.currentTarget.style.opacity = '1'
+                }
+              }}
+            >
+              {colorMode && (
+                <span
+                  style={{
+                    display: 'inline-block',
+                    width: '10px',
+                    height: '10px',
+                    borderRadius: '50%',
+                    backgroundColor: PRESET_COLORS.find(c => c.name === preset)?.hex,
+                    border: preset === 'White' ? '1px solid #D1D5DB' : 'none',
+                    flexShrink: 0,
+                  }}
+                />
+              )}
+              {preset}
+            </button>
+          )
+        })}
       </div>
 
-      {/* Selected values */}
-      {values.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
-          {values.map(val => (
+      {/* Selected custom values (not in presets) */}
+      {values.filter(v => !presets.includes(v)).length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+          {values.filter(v => !presets.includes(v)).map(val => (
             <span
               key={val}
-              className="flex items-center gap-1 px-2.5 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xs font-medium"
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '6px 12px',
+                background: 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)',
+                color: '#ffffff',
+                borderRadius: '999px',
+                fontFamily: "'Montserrat', sans-serif",
+                fontWeight: 600,
+                fontSize: '12px',
+                boxShadow: '0 2px 8px rgba(124,58,237,0.25)',
+              }}
             >
               {val}
               <button
                 type="button"
                 onClick={() => remove(val)}
-                className="hover:text-white transition-colors"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  padding: 0,
+                  cursor: 'pointer',
+                  color: 'rgba(255,255,255,0.75)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  transition: 'color 0.15s ease',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.color = '#ffffff')}
+                onMouseLeave={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.75)')}
               >
-                <X className="w-3 h-3" />
+                <X style={{ width: '12px', height: '12px' }} />
               </button>
             </span>
           ))}
@@ -104,7 +173,7 @@ export default function VariantsInput({
       )}
 
       {/* Custom input */}
-      <div className="flex items-center gap-2">
+      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <input
           type="text"
           value={input}
@@ -116,15 +185,54 @@ export default function VariantsInput({
             }
           }}
           placeholder={placeholder}
-          className="flex-1 h-9 px-3 bg-slate-800 border border-slate-700 rounded-lg text-white text-sm focus:outline-none focus:border-blue-500 placeholder:text-slate-500"
+          style={{
+            flex: 1,
+            height: '44px',
+            padding: '0 14px',
+            background: '#FAF5FF',
+            border: '2px solid rgba(196,181,253,0.5)',
+            borderRadius: '12px',
+            fontFamily: "'Open Sans', sans-serif",
+            fontSize: '13px',
+            color: '#1e1b4b',
+            outline: 'none',
+            transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
+          }}
+          onFocus={e => {
+            e.currentTarget.style.borderColor = '#7C3AED'
+            e.currentTarget.style.boxShadow = '0 0 0 4px rgba(124,58,237,0.10)'
+          }}
+          onBlur={e => {
+            e.currentTarget.style.borderColor = 'rgba(196,181,253,0.5)'
+            e.currentTarget.style.boxShadow = 'none'
+          }}
         />
         <button
           type="button"
           onClick={() => add(input)}
           disabled={!input.trim()}
-          className="h-9 px-3 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white rounded-lg transition-colors"
+          style={{
+            width: '44px',
+            height: '44px',
+            background: input.trim()
+              ? 'linear-gradient(135deg, #7C3AED 0%, #6D28D9 100%)'
+              : 'rgba(196,181,253,0.3)',
+            border: 'none',
+            borderRadius: '12px',
+            cursor: input.trim() ? 'pointer' : 'not-allowed',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'background 0.2s ease, box-shadow 0.2s ease',
+            boxShadow: input.trim() ? '0 2px 8px rgba(124,58,237,0.25)' : 'none',
+            flexShrink: 0,
+          }}
         >
-          <Plus className="w-4 h-4" />
+          <Plus style={{
+            width: '18px',
+            height: '18px',
+            color: input.trim() ? '#ffffff' : '#9ca3af',
+          }} />
         </button>
       </div>
     </div>
