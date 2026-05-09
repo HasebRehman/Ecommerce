@@ -467,6 +467,7 @@ export default function LandingPage() {
           <section className="py-12">
             <div className="max-w-7xl mx-auto px-4 sm:px-6">
               <div
+                id="best-deals"
                 className="relative rounded-3xl px-4 sm:px-8 py-10 border border-[#C4B5FD]/25 shadow-xl shadow-[#7C3AED]/15"
                 style={{
                   background: 'radial-gradient(ellipse 90% 60% at 50% 0%, rgba(196,181,253,0.18) 0%, transparent 70%), white',
@@ -492,7 +493,7 @@ export default function LandingPage() {
         )}
 
         {/* TOP SHOPS */}
-        <section className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+        <section id="live-stores" className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
           <SectionHeader
             eyebrow="Top Shops"
             title="Explore Live Stores"
@@ -603,28 +604,28 @@ export default function LandingPage() {
                   title: 'Shop',
                   links: [
                     { label: 'All Products', href: '/products' },
-                    { label: 'Top Deals',    href: '/products?sort=discount' },
-                    { label: 'New Arrivals', href: '/products?sort=new' },
-                    { label: 'All Shops',    href: '/shops' },
+                    { label: 'Top Deals',    href: '#best-deals', scroll: true },
+                    { label: 'All Shops',    href: '#live-stores', scroll: true },
                   ],
                 },
-                {
+                ...(isAuthenticated ? [{
                   title: 'Sell',
                   links: [
-                    { label: 'Become a Seller',  href: '/request-seller' },
-                    { label: 'Seller Dashboard', href: '/dashboard' },
-                    { label: 'Manage Inventory', href: '/dashboard/inventory' },
-                    { label: 'My Shops',         href: '/dashboard/shops' },
+                    ...(userRole !== 'business_owner' ? [{ label: 'Become a Seller', href: '/request-seller' }] : []),
+                    { label: 'Sell Products', href: '/how-to-sell' },
+                    ...(userRole === 'business_owner' ? [{ label: 'Seller Dashboard', href: '/dashboard' }] : []),
                   ],
-                },
+                }] : []),
                 {
                   title: 'Account',
-                  links: [
-                    { label: 'Login',      href: '/login' },
-                    { label: 'Sign Up',    href: '/signup' },
-                    { label: 'My Account', href: '/account' },
+                  links: isAuthenticated ? [
+                    { label: 'My Profile', href: '/profile' },
                     { label: 'My Orders',  href: '/orders' },
                     { label: 'Wishlist',   href: '/wishlist' },
+                    { label: 'Cart',       href: '/cart' },
+                  ] : [
+                    { label: 'Login',      href: '/login' },
+                    { label: 'Sign Up',    href: '/signup' },
                   ],
                 },
                 {
@@ -641,11 +642,28 @@ export default function LandingPage() {
                   <ul className="space-y-3">
                     {col.links.map(item => (
                       <li key={item.label}>
-                        <Link href={item.href}>
-                          <span className="text-[#6b7280] hover:text-[#7C3AED] text-sm transition-colors cursor-pointer">
+                        {(item as any).scroll ? (
+                          <a
+                            href={item.href}
+                            onClick={(e) => {
+                              e.preventDefault()
+                              const id = item.href.replace('#', '')
+                              const element = document.getElementById(id)
+                              if (element) {
+                                element.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                              }
+                            }}
+                            className="text-[#6b7280] hover:text-[#7C3AED] text-sm transition-colors cursor-pointer"
+                          >
                             {item.label}
-                          </span>
-                        </Link>
+                          </a>
+                        ) : (
+                          <Link href={item.href}>
+                            <span className="text-[#6b7280] hover:text-[#7C3AED] text-sm transition-colors cursor-pointer">
+                              {item.label}
+                            </span>
+                          </Link>
+                        )}
                       </li>
                     ))}
                   </ul>

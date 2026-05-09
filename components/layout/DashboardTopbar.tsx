@@ -53,6 +53,7 @@ const TYPE_CONFIG: Record<string, { icon: any, color: string, bg: string }> = {
   cancelled_by_seller:   { icon: XCircle,      color: 'text-red-400',    bg: 'bg-red-500/10'    },
   cancelled_by_customer: { icon: XCircle,      color: 'text-orange-400', bg: 'bg-orange-500/10' },
   order:                 { icon: ShoppingBag,  color: 'text-blue-400',   bg: 'bg-blue-500/10'   },
+  announcement:          { icon: Bell,         color: 'text-purple-600', bg: 'bg-purple-500/10' },
 }
 
 interface Props {
@@ -94,6 +95,9 @@ export default function DashboardTopbar({ variant, onToggleSidebar }: Props) {
         setNotifications(list, unreadCount)
         list.forEach((n: any) => knownIds.current.add(n.id))
         isFirst.current = false
+        
+        // Also fetch and add announcements
+        fetchAnnouncements()
         return
       }
 
@@ -105,6 +109,32 @@ export default function DashboardTopbar({ variant, onToggleSidebar }: Props) {
           addNotification(n)
         })
       }
+    } catch { /* silent */ }
+  }
+
+  // ── Fetch announcements and add to notifications ──
+  const fetchAnnouncements = async () => {
+    try {
+      const res = await fetch('/api/announcements/active', { credentials: 'include' })
+      const data = await res.json()
+      const announcements = data.announcements ?? []
+      
+      // Add each announcement as a notification
+      announcements.forEach((a: any) => {
+        const notifId = `announcement-${a.id}`
+        if (!knownIds.current.has(notifId)) {
+          knownIds.current.add(notifId)
+          addNotification({
+            id: notifId,
+            title: a.subject,
+            message: a.message,
+            type: 'announcement',
+            order_id: null,
+            is_read: false,
+            created_at: a.scheduled_at,
+          })
+        }
+      })
     } catch { /* silent */ }
   }
 

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check Announcements Table</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #7C3AED;
+            margin-bottom: 10px;
+        }
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: 600;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background: #7C3AED;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        button:hover {
+            background: #6D28D9;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 14px;
+        }
+        .instructions {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .instructions h3 {
+            margin-top: 0;
+            color: #856404;
+        }
+        .instructions ol {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+        .instructions li {
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Announcements Table Checker</h1>
+        <p>This tool checks if the <code>announcements</code> table exists in your Supabase database.</p>
+        
+        <div class="instructions">
+            <h3>⚠️ Before Running This Check:</h3>
+            <ol>
+                <li>Make sure your <code>.env</code> file has the correct Supabase credentials</li>
+                <li>Your development server should be running (<code>npm run dev</code>)</li>
+                <li>You should be logged in as Super Admin or Platform Admin</li>
+            </ol>
+        </div>
+
+        <button onclick="checkTable()" id="checkBtn">Check Table Status</button>
+        
+        <div id="result"></div>
+
+        <div class="instructions" style="margin-top: 30px;">
+            <h3>📝 If Table Doesn't Exist:</h3>
+            <ol>
+                <li>Open your Supabase Dashboard: <a href="https://supabase.com/dashboard" target="_blank">https://supabase.com/dashboard</a></li>
+                <li>Go to <strong>SQL Editor</strong> → <strong>New Query</strong></li>
+                <li>Open the file <code>RUN_THIS_SQL.md</code> in this project</li>
+                <li>Copy the SQL code and paste it into the Supabase SQL Editor</li>
+                <li>Click <strong>Run</strong></li>
+                <li>Come back here and click "Check Table Status" again</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        async function checkTable() {
+            const btn = document.getElementById('checkBtn');
+            const result = document.getElementById('result');
+            
+            btn.disabled = true;
+            btn.textContent = 'Checking...';
+            result.innerHTML = '<div class="status info">Checking database...</div>';
+
+            try {
+                // Try to fetch announcements
+                const response = await fetch('/api/announcements', {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    result.innerHTML = `
+                        <div class="status success">
+                            ✅ <strong>Success!</strong> The announcements table exists and is working correctly.
+                            <br><br>
+                            Found ${data.announcements?.length || 0} announcement(s) in the database.
+                            <br><br>
+                            You can now create announcements from the admin panel!
+                        </div>
+                    `;
+                } else if (data.error && data.error.includes('announcements')) {
+                    result.innerHTML = `
+                        <div class="status error">
+                            ❌ <strong>Table Not Found!</strong>
+                            <br><br>
+                            Error: ${data.error}
+                            <br><br>
+                            <strong>Solution:</strong> You need to create the announcements table in Supabase.
+                            Follow the instructions below.
+                        </div>
+                    `;
+                } else if (response.status === 401) {
+                    result.innerHTML = `
+                        <div class="status error">
+                            ❌ <strong>Not Authenticated</strong>
+                            <br><br>
+                            Please log in to your admin account first, then try again.
+                        </div>
+                    `;
+                } else if (response.status === 403) {
+                    result.innerHTML = `
+                        <div class="status error">
+                            ❌ <strong>Access Denied</strong>
+                            <br><br>
+                            You need to be logged in as Super Admin or Platform Admin to check this.
+                        </div>
+                    `;
+                } else {
+                    result.innerHTML = `
+                        <div class="status error">
+                            ❌ <strong>Error</strong>
+                            <br><br>
+                            ${data.error || 'Unknown error occurred'}
+                            <br><br>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                result.innerHTML = `
+                    <div class="status error">
+                        ❌ <strong>Connection Error</strong>
+                        <br><br>
+                        ${error.message}
+                        <br><br>
+                        Make sure your development server is running.
+                    </div>
+                `;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Check Table Status';
+            }
+        }
+    </script>
+</body>
+</html>

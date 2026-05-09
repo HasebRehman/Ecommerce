@@ -141,4 +141,13 @@ REPORTS: {
   DETAIL: (id: string) => `${BASE}/reports/${id}`,
 },
 
+// ── ANNOUNCEMENTS ─────────────────────────
+ANNOUNCEMENTS: {
+  LIST:   `${BASE}/announcements`,
+  CREATE: `${BASE}/announcements`,
+  ACTIVE: `${BASE}/announcements/active`,
+  DETAIL: (id: string) => `${BASE}/announcements/${id}`,
+  CRON:   `${BASE}/announcements/cron`,
+},
+
 } as const

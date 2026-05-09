@@ -20,6 +20,7 @@ const TYPE_CONFIG: Record<string, { icon: any; color: string; bg: string; dot: s
   cancelled_by_seller:   { icon: XCircle,     color: '#991B1B',  bg: 'rgba(153,27,27,0.12)',    dot: '#991B1B'  },
   cancelled_by_customer: { icon: XCircle,     color: '#92400E',  bg: 'rgba(146,64,14,0.12)',    dot: '#92400E'  },
   order:                 { icon: ShoppingBag, color: '#6D28D9',  bg: 'rgba(109,40,217,0.12)',   dot: '#6D28D9'  },
+  announcement:          { icon: Bell,        color: '#7C3AED',  bg: 'rgba(124,58,237,0.12)',   dot: '#7C3AED'  },
 }
 
 const POLL_MS = 4000

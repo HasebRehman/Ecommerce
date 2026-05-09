@@ -5,8 +5,10 @@ import Topbar from '@/components/layout/Topbar'
 import { useCartStore } from '@/store/cartStore'
 import { useWishlistStore } from '@/store/wishlistStore'
 import { useAuthStore } from '@/store/authStore'
+import { useNotificationStore } from '@/store/notificationStore'
 import { cartService } from '@/lib/services/cart.service'
 import { wishlistService } from '@/lib/services/wishlist.service'
+import { announcementService } from '@/lib/services/announcement.service'
 
 export default function PublicLayout({
   children,
@@ -16,6 +18,7 @@ export default function PublicLayout({
   const { isAuthenticated } = useAuthStore()
   const { setCart }         = useCartStore()
   const { setWishlist }     = useWishlistStore()
+  const { addNotification } = useNotificationStore()
 
   useEffect(() => {
     if (!isAuthenticated) return
@@ -26,6 +29,23 @@ export default function PublicLayout({
       .then(data => {
         const ids = (data.wishlist ?? []).map((w: any) => w.product_id)
         setWishlist(ids)
+      })
+      .catch(() => {})
+
+    // Push customer-targeted announcements into the notification bell
+    announcementService.getActive()
+      .then(announcements => {
+        announcements.forEach(a => {
+          addNotification({
+            id:         a.id,
+            title:      a.subject,
+            message:    a.message,
+            type:       'announcement',
+            order_id:   null,
+            is_read:    false,
+            created_at: a.scheduled_at,
+          })
+        })
       })
       .catch(() => {})
   }, [isAuthenticated])

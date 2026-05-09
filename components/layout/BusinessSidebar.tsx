@@ -249,7 +249,7 @@ export default function BusinessSidebar({ subRoles, isCollapsed }: Props) {
                 key={item.href} 
                 href={item.href}
                 className={cn(
-                  'flex items-center gap-3 rounded-xl text-sm transition-all duration-200 group relative cursor-pointer',
+                  'flex items-center gap-3 rounded-xl text-sm transition-all duration-300 group relative cursor-pointer',
                   isCollapsed ? 'px-3 py-3 justify-center' : 'px-3 py-2.5',
                   isActive
                     ? 'text-white font-semibold'
@@ -258,6 +258,20 @@ export default function BusinessSidebar({ subRoles, isCollapsed }: Props) {
                 style={{
                   background: isActive ? 'rgba(255, 255, 255, 0.15)' : 'transparent',
                   color: isActive ? '#ffffff' : 'rgba(255, 255, 255, 0.7)',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.10)'
+                    e.currentTarget.style.color = '#ffffff'
+                    e.currentTarget.style.transform = 'translateX(4px)'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = 'transparent'
+                    e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)'
+                    e.currentTarget.style.transform = 'translateX(0)'
+                  }
                 }}
                 title={isCollapsed ? item.label : undefined}
               >
@@ -303,10 +317,18 @@ export default function BusinessSidebar({ subRoles, isCollapsed }: Props) {
           <button
             onClick={handleLogout}
             className={cn(
-              'flex items-center gap-3 rounded-xl text-sm transition-all w-full group cursor-pointer',
+              'flex items-center gap-3 rounded-xl text-sm transition-all duration-300 w-full group cursor-pointer',
               isCollapsed ? 'px-3 py-3 justify-center' : 'px-3 py-2.5'
             )}
             style={{ color: 'rgba(255, 255, 255, 0.7)' }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(239,68,68,0.15)'
+              e.currentTarget.style.color = '#FCA5A5'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)'
+            }}
             title={isCollapsed ? 'Logout' : undefined}
           >
             <LogOut className="w-5 h-5 shrink-0 group-hover:text-red-300 transition-colors" />

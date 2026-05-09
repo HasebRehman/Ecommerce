@@ -91,3 +91,32 @@ export interface RiderConnection {
   notes: string | null
   created_at: string
 }
+
+// ── ANNOUNCEMENTS ─────────────────────────────────────────────
+
+export type AnnouncementStatus = 'scheduled' | 'published'
+
+export interface Announcement {
+  id:           string
+  subject:      string
+  message:      string
+  scheduled_at: string          // ISO 8601 timestamptz
+  status:       AnnouncementStatus
+  target_roles: UserRole[]
+  created_by:   string          // UUID
+  created_at:   string          // ISO 8601 timestamptz
+}
+
+export interface CreateAnnouncementPayload {
+  subject:     string
+  message:     string
+  scheduledAt: string           // ISO 8601 — sent from client
+  targetRoles: UserRole[]
+}
+
+export interface UpdateAnnouncementPayload {
+  subject?:     string
+  message?:     string
+  scheduledAt?: string
+  targetRoles?: UserRole[]
+}

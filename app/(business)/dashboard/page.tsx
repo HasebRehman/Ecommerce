@@ -2,8 +2,10 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { useAuthStore } from '@/store/authStore'
-import { Loader2 } from 'lucide-react'
 import RetailerStats from '@/components/dashboard/business/RetailerStats'
+import { announcementService } from '@/lib/services/announcement.service'
+import AnnouncementBannerDisplay from '@/components/announcements/AnnouncementBannerDisplay'
+import type { Announcement } from '@/types'
 // import RecentOrders from '@/components/dashboard/business/RecentOrders'
 
 const POLL_INTERVAL = 30000 // 30 seconds for dashboard stats
@@ -25,12 +27,11 @@ const DEFAULT_STATS = {
 export default function BusinessDashboard() {
   const { user }          = useAuthStore()
   const [stats,   setStats]   = useState(DEFAULT_STATS)
-  const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
+  const [activeAnnouncements, setActiveAnnouncements] = useState<Announcement[]>([])
   const pollRef = useRef<NodeJS.Timeout | null>(null)
 
   const fetchStats = useCallback(async (silent = false) => {
-    if (!silent) setLoading(true)
     try {
       const res  = await fetch('/api/business/stats', { credentials: 'include' })
       const data = await res.json()
@@ -39,11 +40,15 @@ export default function BusinessDashboard() {
         setLastUpdated(new Date())
       }
     } catch { /* silent */ }
-    finally { if (!silent) setLoading(false) }
   }, [])
 
   useEffect(() => {
     fetchStats(false)
+
+    // Load active announcements silently
+    announcementService.getActive()
+      .then(data => setActiveAnnouncements(data))
+      .catch(() => {})
 
     // Poll every 30s
     pollRef.current = setInterval(() => fetchStats(true), POLL_INTERVAL)
@@ -82,14 +87,13 @@ export default function BusinessDashboard() {
           </div>
         </div>
 
+        {/* Announcement Banner */}
+        <AnnouncementBannerDisplay announcements={activeAnnouncements} />
+
         {/* Stats */}
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin" style={{ color: '#7C3AED' }} />
-          </div>
-        ) : (
+        <div style={{ marginTop: '24px' }}>
           <RetailerStats stats={stats} />
-        )}
+        </div>
 
         {/* Recent Orders */}
         {/* <RecentOrders /> */}

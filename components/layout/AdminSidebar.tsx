@@ -4,9 +4,9 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
   LayoutDashboard, Users, TrendingUp,
-  LogOut, Activity, FileText,
+  LogOut, Activity,
   Layers, ChevronRight, MessageSquare,
-  AlertTriangle,
+  AlertTriangle, Megaphone, Bell, Mail,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
@@ -50,16 +50,16 @@ const ALL_MENU_ITEMS: MenuItem[] = [
     roles: [],
   },
   {
-    label: 'Monitoring',
+    label: 'System Monitoring',
     href:  '/admin/monitoring',
     icon:  Activity,
-    roles: ['operations_admin'],
+    roles: ['super_admin', 'operations_admin'],
   },
   {
-    label: 'System Logs',
-    href:  '/admin/logs',
-    icon:  FileText,
-    roles: ['operations_admin'],
+    label: 'System Notifications',
+    href:  '/admin/notifications',
+    icon:  Bell,
+    roles: ['super_admin', 'operations_admin'],
   },
   {
     label: 'Messages',
@@ -72,6 +72,18 @@ const ALL_MENU_ITEMS: MenuItem[] = [
     href:  '/admin/reports',
     icon:  AlertTriangle,
     roles: ['super_admin', 'platform_admin', 'operations_admin'],
+  },
+  {
+    label: 'Announcements',
+    href:  '/admin/announcements',
+    icon:  Megaphone,
+    roles: ['super_admin', 'platform_admin'],
+  },
+  {
+    label: 'Complaints',
+    href:  '/admin/complaints',
+    icon:  Mail,
+    roles: ['super_admin', 'operations_admin'],
   },
 ]
 
@@ -91,8 +103,10 @@ export default function AdminSidebar({ isCollapsed }: Props) {
   const { clearAuth, user, role } = useAuthStore()
   const [unreadMessages, setUnreadMessages] = useState(0)
 
-  const userRole = role as UserRole
-  const config   = ROLE_CONFIG[userRole] ?? ROLE_CONFIG.super_admin
+  // Use the role from the store. While the store is hydrating (role === null),
+  // we cannot determine which items to show, so we wait.
+  const userRole = role as UserRole | null
+  const config   = ROLE_CONFIG[userRole ?? 'super_admin'] ?? ROLE_CONFIG.super_admin
 
   useEffect(() => {
     if (!user) return
@@ -116,7 +130,11 @@ export default function AdminSidebar({ isCollapsed }: Props) {
   }, [user])
 
   const menuItems = ALL_MENU_ITEMS
-    .filter(item => item.roles.includes(userRole))
+    .filter(item => {
+      // While the store is hydrating, show nothing (avoids flash of wrong items)
+      if (!userRole) return false
+      return item.roles.includes(userRole)
+    })
     .filter((item, idx, self) => idx === self.findIndex(i => i.href === item.href))
 
   const handleLogout = async () => {
@@ -229,12 +247,26 @@ export default function AdminSidebar({ isCollapsed }: Props) {
                 href={item.href}
                 onClick={() => { if (isMessages) setUnreadMessages(0) }}
                 className={cn(
-                  'flex items-center gap-3 rounded-xl text-sm transition-all duration-200 group relative',
+                  'flex items-center gap-3 rounded-xl text-sm transition-all duration-300 group relative',
                   isCollapsed ? 'px-3 py-3 justify-center' : 'px-3 py-2.5',
                 )}
                 style={{
                   background: isActive ? 'rgba(255,255,255,0.16)' : 'transparent',
                   color:      isActive ? '#ffffff' : 'rgba(255,255,255,0.70)',
+                }}
+                onMouseEnter={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.10)'
+                    e.currentTarget.style.color = '#ffffff'
+                    e.currentTarget.style.transform = 'translateX(4px)'
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isActive) {
+                    e.currentTarget.style.background = 'transparent'
+                    e.currentTarget.style.color = 'rgba(255,255,255,0.70)'
+                    e.currentTarget.style.transform = 'translateX(0)'
+                  }
                 }}
                 title={isCollapsed ? item.label : undefined}
               >
@@ -272,10 +304,18 @@ export default function AdminSidebar({ isCollapsed }: Props) {
           <button
             onClick={handleLogout}
             className={cn(
-              'flex items-center gap-3 rounded-xl text-sm transition-all w-full group',
+              'flex items-center gap-3 rounded-xl text-sm transition-all duration-300 w-full group',
               isCollapsed ? 'px-3 py-3 justify-center' : 'px-3 py-2.5',
             )}
             style={{ color: 'rgba(255,255,255,0.70)' }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(239,68,68,0.15)'
+              e.currentTarget.style.color = '#FCA5A5'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.color = 'rgba(255,255,255,0.70)'
+            }}
             title={isCollapsed ? 'Logout' : undefined}
           >
             <LogOut className="w-5 h-5 shrink-0 group-hover:text-red-300 transition-colors" />
