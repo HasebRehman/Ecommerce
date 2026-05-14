@@ -39,3 +39,24 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Supabase local files and migrations
+/supabase/
+/supabase-migrations/
+
+# Instruction and documentation files
+*.md
+!README.md
+*.sql
+*.bat
+*.html
+
+# MCP config files
+*MCP*.json
+CORRECT-MCP-CONFIG.json
+FIXED-MCP-CONFIG.json
+MINIMAL-MCP-CONFIG.json
+WORKING-MCP-CONFIG.json
+
+# Hero image (if not needed in production)
+Hero-image.png
