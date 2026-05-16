@@ -176,7 +176,7 @@ export default function StoreProductCard({ product, onQuickBuy }: Props) {
       `}</style>
 
       <div className={cn(
-        'pc-root pc-card group relative flex flex-col rounded-2xl overflow-hidden',
+        'pc-root pc-card group relative flex flex-col rounded-2xl overflow-hidden h-full',
         'border',
         isOutOfStock
           ? 'bg-[#0a1512] border-[#7C3AED]/15 opacity-70'
@@ -335,11 +335,17 @@ export default function StoreProductCard({ product, onQuickBuy }: Props) {
           {/* Product name */}
           <Link href={`/product/${product.id}`}>
             <p className={cn(
-              'text-sm font-semibold line-clamp-2 leading-snug transition-colors duration-200',
+              'text-sm font-semibold leading-snug transition-colors duration-200 min-h-[2.5rem]',
               isOutOfStock
                 ? 'text-[#9ca3af]'
                 : 'text-[#374151] hover:text-[#7C3AED]'
-            )}>
+            )}
+            style={{
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden'
+            }}>
               {product.name}
             </p>
           </Link>

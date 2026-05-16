@@ -18,20 +18,32 @@ export default function ShopPage() {
     setLoading(true)
     try {
       const supabase = createClient()
-      const { data, error } = await supabase
+      
+      // Build query
+      let query = supabase
         .from('shops')
         .select(`*, shop_products(
           products(id, name, price, discount_price, images, stock, is_active, categories(id, name))
         )`)
         .eq('id', params.id as string)
         .eq('status', 'live')
-        .single()
+      
+      // Try to filter by deleted_at if column exists
+      // This prevents errors if migration hasn't been run yet
+      try {
+        query = query.is('deleted_at', null)
+      } catch (e) {
+        // Column doesn't exist yet, skip this filter
+        console.log('deleted_at column not found, skipping filter')
+      }
+      
+      const { data, error } = await query.single()
 
       if (error) throw error
       setShop(data)
     } catch (err: any) {
-      console.error(err)
-      // optional: toast.error('Failed to fetch shop')
+      console.error('Error fetching shop:', err)
+      setShop(null)
     } finally {
       setLoading(false)
     }

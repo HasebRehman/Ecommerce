@@ -15,16 +15,18 @@ export async function GET(request: Request) {
       .from('shop_products')
       .select(`
         product_id,
-        shops!inner(id, name, slug, logo_url, status, owner_id),
+        shops!inner(id, name, slug, logo_url, status, owner_id, deleted_at),
         products!inner(
           id, name, description, price,
           discount_price, images, stock,
-          is_active, sizes, colors,
+          is_active, sizes, colors, deleted_at,
           categories(id, name)
         )
       `)
       .eq('shops.status', 'live')
+      .is('shops.deleted_at', null)  // Only active shops
       .eq('products.is_active', true)
+      .is('products.deleted_at', null)  // Only non-deleted products
       .gt('products.stock', 0)
       .range(offset, offset + limit - 1)
 

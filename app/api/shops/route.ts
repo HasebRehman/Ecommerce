@@ -14,16 +14,42 @@ export async function GET() {
       .from('shops')
       .select(`
         *,
-        shop_products(count)
+        shop_products(
+          products(id, deleted_at)
+        )
       `)
       .eq('owner_id', user.id)
+      .is('deleted_at', null)  // Only get non-deleted shops
       .order('created_at', { ascending: false })
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 400 })
     }
 
-    return NextResponse.json({ shops: shops ?? [] })
+    // Calculate product count for each shop, excluding soft-deleted products
+    const shopsWithCount = (shops ?? []).map((shop: any) => {
+      const productCount = (shop.shop_products ?? []).filter((sp: any) => {
+        const product = Array.isArray(sp.products) ? sp.products[0] : sp.products
+        return product && product.deleted_at === null
+      }).length
+
+      return {
+        ...shop,
+        shop_products: [{ count: productCount }]
+      }
+    })
+
+    // Return with no-cache headers to prevent stale data
+    return NextResponse.json(
+      { shops: shopsWithCount },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0',
+        },
+      }
+    )
 
   } catch (err) {
     return NextResponse.json(
