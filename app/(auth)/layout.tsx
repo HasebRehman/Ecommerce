@@ -102,6 +102,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           filter: drop-shadow(0 12px 32px rgba(124,58,237,0.18));
           flex-shrink: 1;
           min-height: 0;
+          margin-top: 2rem;
         }
 
         @keyframes floatImg {
@@ -199,7 +200,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             Buy, sell and grow — join thousands of local retailers and shoppers across Pakistan.
           </p>
           <img
-            src="/shopping-vector.png"
+            src="/ecommerce-vector.png"
             alt="VendoSphere marketplace"
             className="auth-illustration"
           />

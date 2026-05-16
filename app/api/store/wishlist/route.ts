@@ -12,14 +12,19 @@ export async function GET() {
       .from('wishlists')
       .select(`
         id, product_id,
-        products(id, name, price, discount_price, images, stock, is_active)
+        products(id, name, price, discount_price, images, stock, is_active, deleted_at)
       `)
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
-    return NextResponse.json({ wishlist: data ?? [] })
+    // Filter out items with soft-deleted products
+    const activeWishlistItems = (data ?? []).filter((item: any) => {
+      return item.products && item.products.deleted_at === null
+    })
+
+    return NextResponse.json({ wishlist: activeWishlistItems })
 
   } catch (err) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

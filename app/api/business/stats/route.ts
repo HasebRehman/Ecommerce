@@ -22,6 +22,7 @@ export async function GET() {
       .from('shops')
       .select('id, status')
       .eq('owner_id', user.id)
+      .is('deleted_at', null)  // Only count non-deleted shops
 
     const totalShops = shops?.length ?? 0
     const liveShops  = shops?.filter(s => s.status === 'live').length ?? 0
@@ -31,6 +32,7 @@ export async function GET() {
       .from('products')
       .select('id', { count: 'exact', head: true })
       .eq('owner_id', user.id)
+      .is('deleted_at', null)  // Only count non-deleted products
 
     // ── Orders ──
     const { data: orders } = await supabase
