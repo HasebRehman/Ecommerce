@@ -10,6 +10,7 @@ export async function GET() {
       .from('shops')
       .select('id, name, logo_url, slug, owner_id')
       .eq('status', 'live')
+      .is('deleted_at', null)  // Only show non-deleted shops
       .order('name', { ascending: true })
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
