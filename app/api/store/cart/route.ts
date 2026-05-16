@@ -12,13 +12,18 @@ export async function GET() {
       .from('carts')
       .select(`
         id, quantity,
-        products(id, name, price, discount_price, images, stock)
+        products(id, name, price, discount_price, images, stock, deleted_at)
       `)
       .eq('user_id', user.id)
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
 
-    return NextResponse.json({ cart: data ?? [] })
+    // Filter out items with soft-deleted products
+    const activeCartItems = (data ?? []).filter((item: any) => {
+      return item.products && item.products.deleted_at === null
+    })
+
+    return NextResponse.json({ cart: activeCartItems })
 
   } catch (err) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })

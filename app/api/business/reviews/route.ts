@@ -7,11 +7,12 @@ export async function GET(request: Request) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    // Step 1 — get seller's products
+    // Step 1 — get seller's products (only non-deleted)
     const { data: myProducts, error: prodError } = await supabase
       .from('products')
       .select('id, name, images, price, discount_price')
       .eq('owner_id', user.id)
+      .is('deleted_at', null)  // Only get non-deleted products
 
     if (prodError || !myProducts?.length) {
       return NextResponse.json({ products: [] })
