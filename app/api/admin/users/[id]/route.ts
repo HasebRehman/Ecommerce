@@ -41,20 +41,22 @@ export async function GET(
 
     // Business owner stats (match exactly with business dashboard)
     if (role?.role === 'business_owner') {
-      // Shops (all shops, not just active)
+      // Shops (only non-deleted shops)
       const { data: shops } = await adminSupabase
         .from('shops')
         .select('id, status')
         .eq('owner_id', id)
+        .is('deleted_at', null)  // Only count non-deleted shops
 
       stats.shops = shops?.length ?? 0
       stats.liveShops = shops?.filter(s => s.status === 'live').length ?? 0
 
-      // Products (owned by this user)
+      // Products (owned by this user, only non-deleted)
       const { count: productsCount } = await adminSupabase
         .from('products')
         .select('id', { count: 'exact', head: true })
         .eq('owner_id', id)
+        .is('deleted_at', null)  // Only count non-deleted products
 
       stats.products = productsCount ?? 0
 
@@ -103,11 +105,12 @@ export async function GET(
         )
         .reduce((sum, o) => sum + (o.total_amount ?? 0), 0)
 
-      // Reviews count — reviews on products owned by this user
+      // Reviews count — reviews on products owned by this user (only non-deleted products)
       const { data: ownerProducts } = await adminSupabase
         .from('products')
         .select('id')
         .eq('owner_id', id)
+        .is('deleted_at', null)  // Only count reviews for non-deleted products
 
       const ownerProductIds = ownerProducts?.map(p => p.id) ?? []
 
