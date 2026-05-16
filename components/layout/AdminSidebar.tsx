@@ -175,27 +175,27 @@ export default function AdminSidebar({ isCollapsed }: Props) {
           className={cn('border-b transition-all duration-300', isCollapsed ? 'p-4' : 'p-6')}
           style={{ borderColor: 'rgba(255,255,255,0.12)' }}
         >
-          <Link href="/admin/dashboard" className="block">
+          <Link href="/admin/dashboard" className="block cursor-pointer">
             {isCollapsed ? (
               <div className="flex items-center justify-center">
                 <img
                   src="/logo-for-dark-short.png"
                   alt="VendoSphere"
                   className="object-contain"
-                  style={{ maxWidth: '44px', maxHeight: '44px' }}
+                  style={{ maxWidth: '100px', maxHeight: '100px' }}
                 />
               </div>
             ) : (
-              <img
-                src="/logo-for-dark-removebg-preview.png"
-                alt="VendoSphere"
-                className="h-10 w-auto object-contain"
-                style={{ maxHeight: '40px', maxWidth: '180px' }}
-              />
+              <div className="flex items-center justify-start">
+                <img
+                  src="/logo-for-dark-removebg-preview.png"
+                  alt="VendoSphere"
+                  className="h-10 w-auto object-contain"
+                  style={{ maxHeight: '40px', maxWidth: '200px' }}
+                />
+              </div>
             )}
           </Link>
-
-
         </div>
 
         {/* ── User Info ── */}

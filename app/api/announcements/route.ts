@@ -32,10 +32,20 @@ export async function GET() {
       .eq('status', 'scheduled')
       .lte('scheduled_at', new Date().toISOString())
 
-    // Then fetch all announcements
+    // Calculate start of today (midnight UTC) for auto-expiry
+    const now = new Date()
+    const startOfToday = new Date(Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate(),
+      0, 0, 0, 0
+    ))
+
+    // Then fetch all announcements from today onwards (auto-expire at midnight)
     const { data: announcements, error } = await adminClient
       .from('announcements')
       .select('*')
+      .gte('scheduled_at', startOfToday.toISOString())
       .order('created_at', { ascending: false })
 
     if (error) {

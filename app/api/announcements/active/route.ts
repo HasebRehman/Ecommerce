@@ -26,12 +26,23 @@ export async function GET() {
       .eq('status', 'scheduled')
       .lte('scheduled_at', new Date().toISOString())
 
+    // Calculate start of today (midnight UTC) for auto-expiry
+    const now = new Date()
+    const startOfToday = new Date(Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate(),
+      0, 0, 0, 0
+    ))
+
     // Filter published announcements whose target_roles contains the user's role
+    // Only show announcements from today onwards (auto-expire at midnight)
     const { data: announcements, error } = await supabase
       .from('announcements')
       .select('id, subject, message, scheduled_at, target_roles, status, created_at')
       .eq('status', 'published')
       .contains('target_roles', [userRole])
+      .gte('scheduled_at', startOfToday.toISOString())
       .order('scheduled_at', { ascending: false })
 
     if (error) {
