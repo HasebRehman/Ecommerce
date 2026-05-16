@@ -15,6 +15,7 @@ export async function GET(
       .from('shops')
       .select('owner_id')
       .eq('id', id)
+      .is('deleted_at', null)  // Only check non-deleted shops
       .single()
 
     if (shop?.owner_id) {
@@ -31,7 +32,7 @@ export async function GET(
 
     const { data, error } = await supabase
       .from('shop_products')
-      .select('products(id, name, images)')
+      .select('products(id, name, images, deleted_at)')
       .eq('shop_id', id)
 
     if (error) return NextResponse.json({ error: error.message }, { status: 400 })
@@ -39,7 +40,7 @@ export async function GET(
     const products = (data ?? []).map((row: any) => {
       const p = Array.isArray(row.products) ? row.products[0] : row.products
       return p
-    }).filter(Boolean)
+    }).filter((p: any) => p && p.deleted_at === null)  // Filter out soft-deleted products
 
     return NextResponse.json({ products })
   } catch {
