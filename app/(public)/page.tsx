@@ -80,12 +80,12 @@ function ProductRow({ products, onQuickBuy, loading }: {
   products: any[]; onQuickBuy: (p: any) => void; loading: boolean
 }) {
   if (loading) return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
-      {Array.from({ length: 10 }).map((_, i) => <ProductSkeleton key={i} />)}
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
+      {Array.from({ length: 8 }).map((_, i) => <ProductSkeleton key={i} />)}
     </div>
   )
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
       {products.map((product, i) => (
         <div
           key={product.id}
@@ -416,7 +416,7 @@ export default function LandingPage() {
               <p className="text-[#6b7280] font-semibold">No products available yet</p>
             </div>
           ) : (
-            <ProductRow products={featured.slice(0, 10)} onQuickBuy={setQuickBuy} loading={loadingFeatured} />
+            <ProductRow products={featured.slice(0, 8)} onQuickBuy={setQuickBuy} loading={loadingFeatured} />
           )}
           {featured.length > 0 && (
             <div className="flex justify-center mt-8">
@@ -485,7 +485,7 @@ export default function LandingPage() {
                     <p className="text-[#6b7280] font-semibold">No discounted products yet</p>
                   </div>
                 ) : (
-                  <ProductRow products={discounted.slice(0, 10)} onQuickBuy={setQuickBuy} loading={loadingDiscounted} />
+                  <ProductRow products={discounted.slice(0, 4)} onQuickBuy={setQuickBuy} loading={loadingDiscounted} />
                 )}
               </div>
             </div>
