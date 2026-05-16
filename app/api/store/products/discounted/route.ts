@@ -9,15 +9,17 @@ export async function GET() {
       .from('shop_products')
       .select(`
         product_id,
-        shops!inner(id, name, slug, logo_url, status, owner_id),
+        shops!inner(id, name, slug, logo_url, status, owner_id, deleted_at),
         products!inner(
           id, name, price, discount_price,
-          images, stock, is_active,
+          images, stock, is_active, deleted_at,
           categories(id, name)
         )
       `)
       .eq('shops.status', 'live')
+      .is('shops.deleted_at', null)
       .eq('products.is_active', true)
+      .is('products.deleted_at', null)
       .gt('products.stock', 0)
       .not('products.discount_price', 'is', null)
       .limit(50)
