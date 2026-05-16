@@ -25,6 +25,7 @@ export async function GET(request: Request) {
         categories(id, name)
       `, { count: 'exact' })
       .eq('owner_id', user.id)
+      .is('deleted_at', null)  // Only get non-deleted products
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
 
