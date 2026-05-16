@@ -9,15 +9,16 @@ export async function GET() {
       .from('shops')
       .select(`
         id, name, slug, description,
-        logo_url, banner_url, status, is_active, owner_id,
+        logo_url, banner_url, status, is_active, owner_id, deleted_at,
         shop_products(
           products(
-            id, name, price, discount_price, images
+            id, name, price, discount_price, images, is_active, deleted_at
           )
         )
       `)
       .eq('status', 'live')
       .eq('is_active', true)
+      .is('deleted_at', null)
       .limit(8)
 
     if (error) {
@@ -31,17 +32,25 @@ export async function GET() {
 
     const enriched = (shops ?? [])
       .filter((shop: any) => shop.status === 'live' && shop.is_active === true && !bannedIds.has(shop.owner_id))
-      .map((shop: any) => ({
-        ...shop,
-        product_count: shop.shop_products?.length ?? 0,
-        preview_images: (shop.shop_products ?? [])
-          .slice(0, 4)
-          .map((sp: any) => {
-            const product = Array.isArray(sp.products) ? sp.products[0] : sp.products
-            return product?.images?.[0]
-          })
-          .filter(Boolean),
-      }))
+      .map((shop: any) => {
+        // Filter out soft-deleted and inactive products
+        const activeProducts = (shop.shop_products ?? []).filter((sp: any) => {
+          const product = Array.isArray(sp.products) ? sp.products[0] : sp.products
+          return product && product.is_active === true && product.deleted_at === null
+        })
+
+        return {
+          ...shop,
+          product_count: activeProducts.length,
+          preview_images: activeProducts
+            .slice(0, 4)
+            .map((sp: any) => {
+              const product = Array.isArray(sp.products) ? sp.products[0] : sp.products
+              return product?.images?.[0]
+            })
+            .filter(Boolean),
+        }
+      })
 
     return NextResponse.json({ shops: enriched })
 

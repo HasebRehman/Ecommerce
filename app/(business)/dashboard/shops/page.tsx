@@ -17,6 +17,8 @@ export default function ShopsPage() {
 
   const loadShops = async () => {
     try {
+      setLoading(true)
+      // Add timestamp to prevent caching
       const data = await shopService.getShops()
       setShops(data.shops ?? [])
     } catch {
@@ -42,19 +44,27 @@ export default function ShopsPage() {
   const deleteShop = async (id: string) => {
     const toastId = toast.loading('Deleting shop...')
     try {
+      // Optimistically remove from UI
+      setShops(prevShops => prevShops.filter(shop => shop.id !== id))
+      
       await shopService.deleteShop(id)
       toast.dismiss(toastId)
-      toast.success('Shop deleted!')
-      // If last item on page, go back one page
+      toast.success('Shop deleted successfully!')
+      
+      // Adjust pagination if needed
       const newTotal = shops.length - 1
       const newPages = Math.ceil(newTotal / SHOPS_PER_PAGE)
       if (currentPage > newPages && currentPage > 1) {
         setCurrentPage(p => p - 1)
       }
-      loadShops()
+      
+      // Reload to ensure consistency with server
+      await loadShops()
     } catch (err: any) {
       toast.dismiss(toastId)
       toast.error(err.message || 'Failed to delete shop')
+      // Reload shops to restore the UI if deletion failed
+      await loadShops()
     }
   }
 

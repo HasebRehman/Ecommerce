@@ -60,3 +60,6 @@ WORKING-MCP-CONFIG.json
 
 # Hero image (if not needed in production)
 Hero-image.png
+branch_structure.json
+temp_auto_push.bat
+temp_interactive_push.bat

@@ -16,6 +16,7 @@ export async function GET(
       .select('*, categories(id, name)')
       .eq('id', id)
       .eq('owner_id', user.id)
+      .is('deleted_at', null)  // Only get non-deleted products
       .single()
 
     if (error || !product) {
@@ -36,6 +37,18 @@ export async function PUT(
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    // Prevent updating deleted products
+    const { data: existingProduct } = await supabase
+      .from('products')
+      .select('deleted_at')
+      .eq('id', id)
+      .eq('owner_id', user.id)
+      .single()
+    
+    if (existingProduct?.deleted_at) {
+      return NextResponse.json({ error: 'Cannot update a deleted product' }, { status: 400 })
+    }
 
     const body = await request.json()
 
@@ -61,6 +74,7 @@ export async function PUT(
       .update(updateData)
       .eq('id', id)
       .eq('owner_id', user.id)
+      .is('deleted_at', null)  // Only update non-deleted products
       .select()
       .single()
 
@@ -86,9 +100,42 @@ export async function DELETE(
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-    await supabase.from('products').delete().eq('id', id).eq('owner_id', user.id)
-    return NextResponse.json({ message: 'Product deleted!' })
+    // Verify the product belongs to the user
+    const { data: product, error: fetchError } = await supabase
+      .from('products')
+      .select('id, owner_id, deleted_at')
+      .eq('id', id)
+      .eq('owner_id', user.id)
+      .single()
+
+    if (fetchError || !product) {
+      return NextResponse.json({ error: 'Product not found or unauthorized' }, { status: 404 })
+    }
+
+    // Check if already deleted
+    if (product.deleted_at) {
+      return NextResponse.json({ error: 'Product is already deleted' }, { status: 400 })
+    }
+
+    // SOFT DELETE: Set deleted_at timestamp instead of removing the record
+    // This preserves the product data for order history while hiding it from public view
+    const { error: deleteError } = await supabase
+      .from('products')
+      .update({ 
+        deleted_at: new Date().toISOString(),
+        is_active: false  // Ensure it's not active
+      })
+      .eq('id', id)
+      .eq('owner_id', user.id)
+
+    if (deleteError) {
+      console.error('Error soft deleting product:', deleteError)
+      return NextResponse.json({ error: deleteError.message }, { status: 500 })
+    }
+
+    return NextResponse.json({ message: 'Product deleted successfully!' })
   } catch (err) {
+    console.error('Product deletion error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
